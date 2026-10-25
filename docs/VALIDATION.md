@@ -1,5 +1,15 @@
 # 验证记录
 
+## 2026-10-25 tratify 首版发布
+
+- `tratify@0.1.0` 已公开发布到 [npm](https://www.npmjs.com/package/tratify/v/0.1.0)，`latest` 指向 `0.1.0`，维护者为 `t-trat`，作者为 `T-TrAt`。
+- 源码与 `tratify-v0.1.0` 标签已推送至 [T-TrAt/tratify](https://github.com/T-TrAt/tratify)。Apptify 和脚手架保持私有，Actions 继续停用。
+- 发布前 195 项单元测试、100 项 Chrome 浏览器测试及工作区类型检查通过。
+- 安装包仅包含 Material 运行时、主题、类型、说明及许可，共 482 个文件，压缩大小 489334 字节；npm 的 SHA-512 完整性值与通过独立安装、类型和浏览器交互验收的归档一致。
+- 发布后在全新临时项目中执行 `npm install tratify@0.1.0` 成功，Vue peer 依赖自动安装，`tratify` 与 `tratify/style.css` 均能构建。
+
+以下保留 Apptify 的历史验证记录。
+
 验证日期：2026-09-26。以下是本次实际执行的验证，不代表所有设备和业务场景的认证。
 
 ## 已执行
@@ -10,7 +20,7 @@
 - WebKit 390px、触屏/移动视口模拟验证了输入、叠层弹窗、滚动锁、图片加载与翻页以及系统减少动态效果。
 - `npm run test:package`：TypeScript 检查、展示站构建、ESM 库构建、声明生成，以及通过包名 `apptify` 和 `apptify/style.css` 导入的独立消费示例均通过。消费者使用纯 JavaScript Options API，不要求 TypeScript。
 - `npm audit`：本次锁文件检查为 0 项已知漏洞。此结果仅代表当时的软件漏洞数据库。
-- 此节为原 Apptify 的 2026-09-26 历史记录，不代表本分支已发布。本分支的 Apptify 与脚手架均为私有，Material 的独立包 `tratify` 尚未发布。
+- 此节为原 Apptify 的 2026-09-26 历史记录，不代表本分支的 Apptify 已发布。本分支的 Apptify 与脚手架均为私有，Material 独立包 `tratify` 的首发验证见上方记录。
 
 ## 回归修复
 
