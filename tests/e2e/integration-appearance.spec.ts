@@ -1,6 +1,6 @@
 import { waitForPageLayout } from './component-navigation'
 import { expect, test } from '@playwright/test'
-import { catalog } from '../../playground/catalog'
+import { overviewCatalog as catalog } from '../../playground/catalog'
 
 for (const [width, columns] of [[320,1],[768,1],[1440,2],[1920,2],[2240,2],[2560,2]]) {
   test(`component cards use ${columns} columns in ${width}px available layout`, async ({page}) => {

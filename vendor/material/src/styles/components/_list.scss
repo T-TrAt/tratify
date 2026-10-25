@@ -1,0 +1,143 @@
+// Standard Compose ListItem.kt: 56/72/88px rows, 16px horizontal spacing,
+// 8px vertical padding (12px for three-line rows). ListTokens.kt supplies roles/media.
+//
+// Two variants. Standard (the default) is the baseline list: no container,
+// square rows in every state. Segmented is the expressive list, as Compose's
+// SegmentedListItem: each row paints its own colour and shape, a gap apart.
+// The list itself has no background and no radius in either.
+//
+// Segmented hooks, named the way the button names its container shape
+// (`--<prefix>-button-shape`, `--<prefix>-button-shape-pressed`,
+// `--<prefix>-button-shape-selected`): the row at rest, the outer corners of
+// the first and the last row, the hovered row, the active row (focused,
+// pressed, selected) and the gap between rows. The row's colour,
+// `--<prefix>-list-item-container-color`, is read in both variants. The rules
+// read them and do not declare them, so a value on the list, on any
+// ancestor, or on the `<m-list>` element inherits.
+@use "../abstract/base" as base;
+@use "../abstract/mixins" as m;
+@use "../abstract/theme" as t;
+@use "../abstract/variables" as v;
+
+$component: "#{base.$prefix}-list";
+.#{$component} {
+  --#{base.$prefix}-list-item-offset: 0px;
+  position: relative;
+  overflow: auto;
+  color: t.color("on-surface");
+  padding-block: 8px;
+  &__content { display: flex; flex-direction: column; }
+  &__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 56px;
+    padding: 8px 16px;
+    // The row's colour, in both variants: surface here, surface-container on a
+    // segmented row. `transparent` leaves a row without a colour of its own.
+    background: var(--#{base.$prefix}-list-item-container-color, t.color("surface"));
+    transform: translateY(var(--#{base.$prefix}-list-item-offset));
+    &--two-line { min-height: 72px; }
+    &--three-line { min-height: 88px; padding-block: 12px; align-items: flex-start; }
+  }
+  &__text { min-width: 0; flex: 1; }
+  &__headline { @include m.typography("body-large"); color: t.color("on-surface"); }
+  &__overline { @include m.typography("label-small"); color: t.color("on-surface-variant"); }
+  &__supporting { @include m.typography("body-medium"); color: t.color("on-surface-variant"); }
+  &__headline, &__overline { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__supporting {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  &__item--three-line &__supporting { -webkit-line-clamp: 2; }
+  &__item--three-line:has(.#{$component}__overline) &__supporting { -webkit-line-clamp: 1; }
+  &__leading, &__trailing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: t.color("on-surface-variant");
+    &--icon { width: 24px; height: 24px; }
+    &--icon svg { width: 100%; height: 100%; }
+    &--avatar {
+      width: 40px; height: 40px; overflow: hidden; border-radius: 50%;
+      background: t.color("primary-container"); color: t.color("on-primary-container");
+      @include m.typography("title-medium");
+    }
+    &--image { width: 56px; height: 56px; overflow: hidden; }
+    &--video { width: 100px; height: 56px; overflow: hidden; border-radius: v.shape('small'); }
+    &--avatar, &--image, &--video {
+      img, svg, video { width: 100%; height: 100%; object-fit: cover; }
+    }
+    &--text { @include m.typography("label-small"); white-space: nowrap; }
+  }
+  &__item--three-line &__leading--video { width: 114px; height: 64px; }
+  &__action {
+    appearance: none;
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%; padding: 0; margin: 0;
+    border: 0; border-radius: inherit;
+    background: transparent;
+    cursor: pointer;
+    &::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: t.color("on-surface"); opacity: 0; }
+    &:hover:not(:disabled)::before { opacity: v.state("hover-state-layer-opacity"); }
+    &:active:not(:disabled)::before { opacity: v.state("pressed-state-layer-opacity"); }
+    &:focus-visible { outline: 2px solid t.color("secondary"); outline-offset: -2px; }
+    &:focus-visible::before { opacity: v.state("focus-state-layer-opacity"); }
+    &:disabled { cursor: default; }
+  }
+  // Slotted controls are siblings of the row action and remain independently operable.
+  &__item :is(button, input, select, textarea, a, [contenteditable="true"], [data-list-control]):not(.#{$component}__action) { position: relative; z-index: 1; }
+  // Segmented. The child combinators keep a list nested in a row out of it.
+  &--segmented > &__content {
+    gap: var(--#{base.$prefix}-list-segmented-gap, 2px);
+    // Rest shape: extra-small where a row meets another row.
+    > .#{$component}__item { border-radius: var(--#{base.$prefix}-list-item-shape, v.shape('extra-small')); }
+    > .#{$component}__item:not(.#{$component}__item--selected) { background: var(--#{base.$prefix}-list-item-container-color, t.color("surface-container")); }
+    // Outer corners of a group (the first row, the last, and a row beside a
+    // divider or subheader) are large. Specs, 2026-10-02: 4dp inner, 16dp outer.
+    > .#{$component}__item:first-child,
+    > :not(.#{$component}__item) + .#{$component}__item {
+      border-start-start-radius: var(--#{base.$prefix}-list-item-shape-outer, v.shape('large'));
+      border-start-end-radius: var(--#{base.$prefix}-list-item-shape-outer, v.shape('large'));
+    }
+    > .#{$component}__item:last-child,
+    > .#{$component}__item:has(+ :not(.#{$component}__item)) {
+      border-end-start-radius: var(--#{base.$prefix}-list-item-shape-outer, v.shape('large'));
+      border-end-end-radius: var(--#{base.$prefix}-list-item-shape-outer, v.shape('large'));
+    }
+    // Hover, keyboard focus, press and selection replace that shape on every
+    // corner. Focus is the row's own action under :focus-visible, so a click
+    // or a trailing control does not take it; press stays :active. A selected
+    // row stays on the active shape; a disabled row stays at rest.
+    > .#{$component}__item:hover:not(.#{$component}__item--disabled):not(.#{$component}__item--selected) {
+      border-radius: var(--#{base.$prefix}-list-item-shape-hover, v.shape('medium'));
+    }
+    > .#{$component}__item:has(.#{$component}__action:focus-visible):not(.#{$component}__item--disabled):not(.#{$component}__item--selected),
+    > .#{$component}__item:active:not(.#{$component}__item--disabled):not(.#{$component}__item--selected),
+    > .#{$component}__item.#{$component}__item--selected {
+      border-radius: var(--#{base.$prefix}-list-item-shape-active, v.shape('large'));
+    }
+  }
+  &__item--selected {
+    background: t.color("secondary-container");
+    .#{$component}__headline, .#{$component}__overline, .#{$component}__supporting, .#{$component}__leading, .#{$component}__trailing { color: t.color("on-secondary-container"); }
+    .#{$component}__action::before { background: t.color("on-secondary-container"); }
+  }
+  &__item--disabled {
+    &.#{$component}__item--selected { background: t.alpha("on-surface", 0.38); }
+    .#{$component}__headline, .#{$component}__overline, .#{$component}__supporting, .#{$component}__leading, .#{$component}__trailing { color: t.color("on-surface"); }
+    .#{$component}__text, .#{$component}__leading, .#{$component}__trailing { opacity: 0.38; }
+  }
+  &__divider { height: 1px; min-height: 1px; background: t.color("outline-variant"); margin-block: 0; }
+  &__divider--inset { margin-inline-start: 72px; margin-inline-end: 16px; }
+  &__subheader { @include m.typography("label-large"); color: t.color("on-surface-variant"); padding: 16px 16px 8px; }
+  &__empty { @include m.typography("body-medium"); color: t.color("on-surface-variant"); padding: 16px; }
+}

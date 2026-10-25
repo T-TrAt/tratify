@@ -1,0 +1,277 @@
+// src/styles/themes/_spring.scss
+// Medium/high contrast: Tonal Spot from seed #76D275, secondary from #526350, tertiary from #386667.
+@use "../abstract/base" as *;
+@use "base-theme" as *;
+
+@include create-theme("spring") {
+    // Key colors generated from seed color #76D275 (fresh spring green)
+    --#{$prefix}-sys-color-primary: #006e2b;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #95f99a;
+    --#{$prefix}-sys-color-on-primary-container: #002108;
+
+    --#{$prefix}-sys-color-secondary: #526350;
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #d5e8cf;
+    --#{$prefix}-sys-color-on-secondary-container: #101f10;
+
+    --#{$prefix}-sys-color-tertiary: #386667;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-tertiary-container: #bbecee;
+    --#{$prefix}-sys-color-on-tertiary-container: #002021;
+
+    // fixed roles: generated, do not edit
+    // (tones 90, 80, 10, 30 of this theme's primary, secondary and tertiary;
+    // the same in dark, so declared once)
+    --#{$prefix}-sys-color-primary-fixed: #9af7a3;
+    --#{$prefix}-sys-color-primary-fixed-dim: #7eda8a;
+    --#{$prefix}-sys-color-on-primary-fixed: #002108;
+    --#{$prefix}-sys-color-on-primary-fixed-variant: #00531e;
+    --#{$prefix}-sys-color-secondary-fixed: #d5e8d0;
+    --#{$prefix}-sys-color-secondary-fixed-dim: #b9ccb5;
+    --#{$prefix}-sys-color-on-secondary-fixed: #101f10;
+    --#{$prefix}-sys-color-on-secondary-fixed-variant: #3b4b39;
+    --#{$prefix}-sys-color-tertiary-fixed: #bbebec;
+    --#{$prefix}-sys-color-tertiary-fixed-dim: #a0cfd0;
+    --#{$prefix}-sys-color-on-tertiary-fixed: #002020;
+    --#{$prefix}-sys-color-on-tertiary-fixed-variant: #1e4e4f;
+    // end of fixed roles
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #f8fff3;
+    --#{$prefix}-sys-color-surface-dim: #d9e8d3;
+    --#{$prefix}-sys-color-surface-bright: #f8fff3;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-low: #f2faed;
+    --#{$prefix}-sys-color-surface-container: #ecf4e7;
+    --#{$prefix}-sys-color-surface-container-high: #e6eee1;
+    --#{$prefix}-sys-color-surface-container-highest: #e0e8db;
+
+    --#{$prefix}-sys-color-on-surface: #191d19;
+    --#{$prefix}-sys-color-on-surface-variant: #424940;
+    --#{$prefix}-sys-color-surface-variant: #dee5d8; // generated: neutral variant tone 90
+
+    --#{$prefix}-sys-color-outline: #727970;
+    --#{$prefix}-sys-color-outline-variant: #c1c9be;
+    // Inverse roles (M3: inverse-surface N20, inverse-on-surface N95,
+    // inverse-primary P80), from this theme's neutral and primary palettes.
+    --#{$prefix}-sys-color-inverse-surface: #2b322a;
+    --#{$prefix}-sys-color-inverse-on-surface: #ebf3e6;
+    --#{$prefix}-sys-color-inverse-primary: #7eda8a;
+
+    // Include status colors for light theme
+    @include status-colors-light();
+
+    &[data-theme-mode="dark"] {
+        // Key colors
+        --#{$prefix}-sys-color-primary: #79dc80;
+        --#{$prefix}-sys-color-on-primary: #003914;
+        --#{$prefix}-sys-color-primary-container: #00531f;
+        --#{$prefix}-sys-color-on-primary-container: #95f99a;
+
+        --#{$prefix}-sys-color-secondary: #b9ccb3;
+        --#{$prefix}-sys-color-on-secondary: #263424;
+        --#{$prefix}-sys-color-secondary-container: #3c4b3a;
+        --#{$prefix}-sys-color-on-secondary-container: #d5e8cf;
+
+        --#{$prefix}-sys-color-tertiary: #a0d0d2;
+        --#{$prefix}-sys-color-on-tertiary: #003738;
+        --#{$prefix}-sys-color-tertiary-container: #1f4e4f;
+        --#{$prefix}-sys-color-on-tertiary-container: #bbecee;
+
+        // Neutral colors
+        --#{$prefix}-sys-color-surface: #121711;
+        --#{$prefix}-sys-color-surface-dim: #0d120c;
+        --#{$prefix}-sys-color-surface-bright: #2d3229;
+        --#{$prefix}-sys-color-surface-container-lowest: #0a0f09;
+        --#{$prefix}-sys-color-surface-container-low: #121711;
+        --#{$prefix}-sys-color-surface-container: #161b15;
+        --#{$prefix}-sys-color-surface-container-high: #20251e;
+        --#{$prefix}-sys-color-surface-container-highest: #2a2f27;
+
+        --#{$prefix}-sys-color-on-surface: #d9e3d4;
+        --#{$prefix}-sys-color-on-surface-variant: #c1c9be;
+        --#{$prefix}-sys-color-surface-variant: #424940; // generated: neutral variant tone 30
+
+        --#{$prefix}-sys-color-outline: #8b9388;
+        --#{$prefix}-sys-color-outline-variant: #424940;
+        // Inverse roles (M3: inverse-surface N90 = on-surface, inverse-on-surface N20,
+        // inverse-primary P40).
+        --#{$prefix}-sys-color-inverse-surface: #d9e3d4;
+        --#{$prefix}-sys-color-inverse-on-surface: #2b322a;
+        --#{$prefix}-sys-color-inverse-primary: #006e2b;
+
+        // Include status colors for dark theme
+        @include status-colors-dark();
+    }
+}
+
+// contrast roles: generated, do not edit
+@include create-theme-contrast("spring", (
+    medium: (
+        light: (
+            error: #740006,
+            error-container: #cf2c27,
+            on-error-container: #ffffff,
+            primary: #113f15,
+            primary-container: #497847,
+            on-primary-container: #ffffff,
+            secondary: #2a3a29,
+            secondary-container: #60725e,
+            on-secondary-container: #ffffff,
+            tertiary: #063d3e,
+            tertiary-container: #477576,
+            on-tertiary-container: #ffffff,
+            primary-fixed: #497847,
+            primary-fixed-dim: #315f31,
+            on-primary-fixed: #ffffff,
+            on-primary-fixed-variant: #ffffff,
+            secondary-fixed: #60725e,
+            secondary-fixed-dim: #485947,
+            on-secondary-fixed: #ffffff,
+            on-secondary-fixed-variant: #ffffff,
+            tertiary-fixed: #477576,
+            tertiary-fixed-dim: #2e5c5d,
+            on-tertiary-fixed: #ffffff,
+            on-tertiary-fixed-variant: #ffffff,
+            surface: #f7fbf1,
+            surface-dim: #c4c8bf,
+            surface-bright: #f7fbf1,
+            surface-container-low: #f1f5ec,
+            surface-container: #e6e9e0,
+            surface-container-high: #daded5,
+            surface-container-highest: #cfd3ca,
+            on-surface: #0e120d,
+            on-surface-variant: #323830,
+            outline: #4e544b,
+            outline-variant: #686f65,
+            inverse-surface: #2d322c,
+            inverse-on-surface: #eef2e9,
+            inverse-primary: #a1d39a,
+        ),
+        dark: (
+            error: #ffd2cc,
+            on-error: #540003,
+            error-container: #ff5449,
+            on-error-container: #000000,
+            primary: #b6eaaf,
+            on-primary: #002d07,
+            primary-container: #6c9c68,
+            on-primary-container: #000000,
+            secondary: #cfe2ca,
+            on-secondary: #1a291a,
+            secondary-container: #849680,
+            on-secondary-container: #000000,
+            tertiary: #b5e5e6,
+            on-tertiary: #002b2c,
+            tertiary-container: #6b999a,
+            on-tertiary-container: #000000,
+            primary-fixed: #bcf0b4,
+            primary-fixed-dim: #a1d39a,
+            on-primary-fixed: #001602,
+            on-primary-fixed-variant: #113f15,
+            on-secondary-fixed: #061407,
+            on-secondary-fixed-variant: #2a3a29,
+            on-tertiary-fixed: #001415,
+            on-tertiary-fixed-variant: #063d3e,
+            surface: #10140f,
+            surface-dim: #10140f,
+            surface-bright: #41463f,
+            surface-container-lowest: #050805,
+            surface-container-low: #1b1f19,
+            surface-container: #252923,
+            surface-container-high: #2f342e,
+            surface-container-highest: #3b3f39,
+            on-surface: #ffffff,
+            on-surface-variant: #d8ded2,
+            outline: #adb4a9,
+            outline-variant: #8c9288,
+            inverse-surface: #e0e4db,
+            inverse-on-surface: #272b25,
+            inverse-primary: #245125,
+        ),
+    ),
+    high: (
+        light: (
+            error: #600004,
+            error-container: #98000a,
+            on-error-container: #ffffff,
+            primary: #04340b,
+            primary-container: #265326,
+            on-primary-container: #ffffff,
+            secondary: #203020,
+            secondary-container: #3d4d3b,
+            on-secondary-container: #ffffff,
+            tertiary: #003233,
+            tertiary-container: #215051,
+            on-tertiary-container: #ffffff,
+            primary-fixed: #265326,
+            primary-fixed-dim: #0c3b12,
+            on-primary-fixed: #ffffff,
+            on-primary-fixed-variant: #ffffff,
+            secondary-fixed: #3d4d3b,
+            secondary-fixed-dim: #273726,
+            on-secondary-fixed: #ffffff,
+            on-secondary-fixed-variant: #ffffff,
+            tertiary-fixed: #215051,
+            tertiary-fixed-dim: #01393a,
+            on-tertiary-fixed: #ffffff,
+            on-tertiary-fixed-variant: #ffffff,
+            surface: #f7fbf1,
+            surface-dim: #b6bab2,
+            surface-bright: #f7fbf1,
+            surface-container-low: #eef2e9,
+            surface-container: #e0e4db,
+            surface-container-high: #d2d6cd,
+            surface-container-highest: #c4c8bf,
+            on-surface: #000000,
+            on-surface-variant: #000000,
+            outline: #282e26,
+            outline-variant: #444b42,
+            inverse-surface: #2d322c,
+            inverse-on-surface: #ffffff,
+            inverse-primary: #a1d39a,
+        ),
+        dark: (
+            error: #ffece9,
+            on-error: #000000,
+            error-container: #ffaea4,
+            on-error-container: #220001,
+            primary: #c9fec1,
+            on-primary: #000000,
+            primary-container: #9dcf97,
+            on-primary-container: #000f01,
+            secondary: #e2f5dd,
+            on-secondary: #000000,
+            secondary-container: #b5c8b1,
+            on-secondary-container: #020e03,
+            tertiary: #c8f9fa,
+            on-tertiary: #000000,
+            tertiary-container: #9ccbcc,
+            on-tertiary-container: #000e0e,
+            primary-fixed: #bcf0b4,
+            primary-fixed-dim: #a1d39a,
+            on-primary-fixed: #000000,
+            on-primary-fixed-variant: #001602,
+            on-secondary-fixed: #000000,
+            on-secondary-fixed-variant: #061407,
+            on-tertiary-fixed: #000000,
+            on-tertiary-fixed-variant: #001415,
+            surface: #10140f,
+            surface-dim: #10140f,
+            surface-bright: #4d514b,
+            surface-container-lowest: #000000,
+            surface-container-low: #1c211b,
+            surface-container: #2d322c,
+            surface-container-high: #383d36,
+            surface-container-highest: #444841,
+            on-surface: #ffffff,
+            on-surface-variant: #ffffff,
+            outline: #ecf2e6,
+            outline-variant: #bec5b9,
+            inverse-surface: #e0e4db,
+            inverse-on-surface: #000000,
+            inverse-primary: #245125,
+        ),
+    ),
+));

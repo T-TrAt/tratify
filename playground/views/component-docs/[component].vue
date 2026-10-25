@@ -29,8 +29,8 @@ const ComponentPlayground = defineAsyncComponent(() => import('../../editor/Comp
 const route = useRoute()
 const router = useRouter()
 const breadcrumbs = computed(() => [
-  { label: '组件', value: 'components', href: '/components' },
-  { label: registration.value?.group || '组件', value: 'group', href: `/components#${String(route.params.component)}` },
+  { label: registration.value?.directory?.label || '组件', value: 'components', href: registration.value?.directory?.href || '/components' },
+  { label: registration.value?.group || '组件', value: 'group', href: registration.value?.directory?.anchor || (route.params.component === 'apple-tag' ? '/tags' : `/components#${String(route.params.component)}`) },
   { label: registration.value?.label || '', value: 'current' },
 ])
 function navigateBreadcrumb(item: AppleItem, event: MouseEvent) {

@@ -1,0 +1,257 @@
+// src/components/checkbox/_checkbox.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-checkbox';
+
+.#{$component} {
+  // Base styles
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  // 48dp minimum interactive size: MDC minTouchTargetSize, Compose
+  // minimumInteractiveComponentSize(). Compose has no checkbox token for it. The input
+  // below is absolute at 100%/100%, so the hit area follows this box; min-width covers
+  // the unlabelled case, where the content is only the 18px icon.
+  min-height: 48px;
+  min-width: 48px;
+  padding: 4px 0;
+  user-select: none;
+
+  // With no label the root is its own 48px target, so the box belongs in its
+  // centre: M3 "Icon alignment Center-aligned", (48 - 18) / 2 = 15px a side,
+  // which leaves the 40px state layer 4px inside the root on all sides. With
+  // a label the root hugs box, gap and label, has no free space, and keeps
+  // the box at the inline-start (the layout scripts/check-elements.ts holds
+  // as its contract).
+  &:not(:has(> .#{$component}__label)) {
+    justify-content: center;
+  }
+
+  // Input (visually hidden but accessible)
+  &__input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  // The box: 18dp, a 2dp corner and a 2dp on-surface-variant outline, with no fill
+  // until selected (CheckboxTokens, md-comp-checkbox). It carried a
+  // surface-container-highest fill and an outline-coloured stroke.
+  &__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    // CheckboxTokens.ContainerShape: 2dp, outside the shape scale
+    border-radius: 2px;
+    background-color: transparent;
+    border: 2px solid t.color('on-surface-variant');
+    transition: m.spring(background-color, fast-effects), m.spring(border-color, fast-effects);
+
+    // The 40dp state layer, centred on the box. Its colour carries the state
+    // opacity, so its outline can be the focus ring at full strength.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -13px;
+      border-radius: 50%;
+      background-color: transparent;
+      pointer-events: none;
+    }
+
+    // The check draws in on the default spatial spring and snaps off, as Compose's
+    // does: the transition belongs to the checked state only.
+    svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translate(-50%, -50%) scale(0);
+      fill: currentColor;
+      color: t.color('on-primary');
+    }
+  }
+
+  // Label styling
+  &__label {
+    @include m.typography('body-large');
+    color: t.color('on-surface');
+  }
+
+  // The gap follows the reading direction on both sides.
+  &--label-end .#{$component}__label {
+    margin-inline-start: 12px;
+  }
+
+  &--label-start .#{$component}__label {
+    margin-inline-end: 12px;
+  }
+
+  // Selected: checked or indeterminate, primary with on-primary content.
+  .#{$component}__input:checked ~ .#{$component}__icon,
+  &--indeterminate .#{$component}__icon {
+    background-color: t.color('primary');
+    border-color: t.color('primary');
+  }
+
+  .#{$component}__input:checked ~ .#{$component}__icon svg {
+    transform: translate(-50%, -50%) scale(1);
+    transition: m.spring(transform, default-spatial);
+  }
+
+  // Indeterminate state
+  &--indeterminate {
+    .#{$component}__icon {
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 2px;
+        background-color: t.color('on-primary');
+      }
+
+      svg {
+        display: none;
+      }
+    }
+  }
+
+  // Error (m3: "those states on error"): the outline, the selected container and
+  // every state layer are error, the check and dash on-error.
+  &--error {
+    .#{$component}__icon {
+      border-color: t.color('error');
+    }
+
+    .#{$component}__input:checked ~ .#{$component}__icon,
+    &.#{$component}--indeterminate .#{$component}__icon {
+      background-color: t.color('error');
+      border-color: t.color('error');
+    }
+
+    .#{$component}__icon svg {
+      color: t.color('on-error');
+    }
+
+    &.#{$component}--indeterminate .#{$component}__icon::after {
+      background-color: t.color('on-error');
+    }
+  }
+
+  // Disabled state. Per role, not a blanket opacity: CheckboxTokens gives the
+  // unselected outline and the selected container OnSurface at 0.38, and the selected
+  // checkmark Surface at full opacity. The indeterminate dash follows the check: it
+  // was an on-primary dash on a transparent box, which painted nothing.
+  &--disabled {
+    .#{$component}__input {
+      cursor: not-allowed;
+    }
+
+    .#{$component}__icon {
+      background-color: transparent;
+      border-color: t.alpha('on-surface', 0.38);
+    }
+
+    .#{$component}__input:checked ~ .#{$component}__icon,
+    &.#{$component}--indeterminate .#{$component}__icon {
+      background-color: t.alpha('on-surface', 0.38);
+      border-color: transparent;
+    }
+
+    .#{$component}__icon svg {
+      color: t.color('surface');
+    }
+
+    &.#{$component}--indeterminate .#{$component}__icon::after {
+      background-color: t.color('surface');
+    }
+
+    .#{$component}__label {
+      color: t.alpha('on-surface', 0.38);
+    }
+  }
+
+  // State layers (md-comp-checkbox). Unselected: on-surface on hover and focus, and
+  // the outline turns on-surface; selected: primary. A press takes the colour of the
+  // state it leads to (unselected presses primary, selected presses on-surface), and
+  // error is error throughout. Checked hover used the pressed opacity.
+  &:not(&--disabled) {
+    $input: '.#{$component}__input';
+    $layer: '.#{$component}__icon::before';
+
+    #{$input}:is(:hover, :focus-visible, :active):not(:checked) ~ .#{$component}__icon {
+      border-color: t.color('on-surface');
+    }
+
+    #{$input}:hover ~ #{$layer} { background-color: t.alpha('on-surface', v.state('hover-state-layer-opacity')); }
+    #{$input}:focus-visible ~ #{$layer} { background-color: t.alpha('on-surface', v.state('focus-state-layer-opacity')); }
+    #{$input}:active ~ #{$layer} { background-color: t.alpha('primary', v.state('pressed-state-layer-opacity')); }
+
+    #{$input}:checked:hover ~ #{$layer},
+    &.#{$component}--indeterminate #{$input}:hover ~ #{$layer} { background-color: t.alpha('primary', v.state('hover-state-layer-opacity')); }
+    #{$input}:checked:focus-visible ~ #{$layer},
+    &.#{$component}--indeterminate #{$input}:focus-visible ~ #{$layer} { background-color: t.alpha('primary', v.state('focus-state-layer-opacity')); }
+    #{$input}:checked:active ~ #{$layer},
+    &.#{$component}--indeterminate #{$input}:active ~ #{$layer} { background-color: t.alpha('on-surface', v.state('pressed-state-layer-opacity')); }
+
+    &.#{$component}--error {
+      #{$input}:not(:checked):is(:hover, :focus-visible, :active) ~ .#{$component}__icon { border-color: t.color('error'); }
+      #{$input}:hover ~ #{$layer} { background-color: t.alpha('error', v.state('hover-state-layer-opacity')); }
+      #{$input}:focus-visible ~ #{$layer} { background-color: t.alpha('error', v.state('focus-state-layer-opacity')); }
+      #{$input}:active ~ #{$layer} { background-color: t.alpha('error', v.state('pressed-state-layer-opacity')); }
+    }
+
+    // md.comp.focus-ring: 3dp secondary, 2dp outside the state layer.
+    #{$input}:focus-visible ~ #{$layer} {
+      outline: 3px solid t.color('secondary');
+      outline-offset: 2px;
+    }
+  }
+
+  // Accessibility
+  @include m.reduced-motion {
+    .#{$component}__icon,
+    .#{$component}__icon svg {
+      transition: none;
+    }
+  }
+
+  @include m.high-contrast {
+    .#{$component}__icon {
+      border-width: 2px;
+    }
+  }
+
+  // Touch target
+  // @include m.touch-target;
+}
+
+// Checkbox group layout
+.#{$component}-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &--horizontal {
+    flex-direction: row;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+}

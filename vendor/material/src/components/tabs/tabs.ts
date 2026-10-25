@@ -1,0 +1,89 @@
+// src/components/tabs/tabs.ts
+import { pipe } from '../../core/compose';
+import { createBase } from '../../core/compose/component';
+import { withEvents, withLifecycle } from '../../core/compose/features';
+import { withAPI, getApiConfig } from './api';
+import { 
+  withTabsManagement, 
+  withScrollable, 
+  withDivider,
+  withIndicator
+} from './features';
+import { createTabsConfig, getTabsElementConfig } from './config';
+import { TabsConfig, TabsComponent, TabsEvents } from './types';
+import { setupKeyboardNavigation, syncTabStops, updateTabPanels } from './utils';
+
+/**
+ * Creates a new Tabs component following MD3 guidelines
+ * @param {TabsConfig} config - Tabs configuration object
+ * @returns {TabsComponent} Tabs component instance
+ * @example
+ * ```typescript
+ * // Create basic tabs with three items
+ * const tabs = createTabs({
+ *   tabs: [
+ *     { text: 'Home', value: 'home', state: 'active' },
+ *     { text: 'Products', value: 'products' },
+ *     { text: 'About', value: 'about' }
+ *   ]
+ * });
+ * 
+ * // Add tabs to DOM
+ * document.body.appendChild(tabs.element);
+ * 
+ * // Listen for tab changes
+ * tabs.on('change', (e) => {
+ *   console.log(`Active tab: ${e.value}`);
+ * });
+ * ```
+ */
+const createTabs = (config: TabsConfig = {}): TabsComponent => {
+  const baseConfig = createTabsConfig(config);
+  
+  try {
+    // Build the tabs component with all features
+    const component = pipe(
+      createBase,
+      withEvents(),
+      getTabsElementConfig(baseConfig),
+      withScrollable(baseConfig),
+      withTabsManagement(baseConfig),
+      withDivider(baseConfig),
+      withIndicator(baseConfig),  // Add indicator feature
+      withLifecycle(),
+      comp => withAPI(getApiConfig(comp))(comp)
+    )(baseConfig);
+    
+    // Handlers passed as config.on were documented and never registered.
+    if (config.on) {
+      Object.entries(config.on).forEach(([event, handler]) => {
+        if (typeof handler === 'function') component.on(event as keyof TabsEvents, handler as TabsEvents[keyof TabsEvents]);
+      });
+    }
+    
+    // Set up keyboard navigation
+    setupKeyboardNavigation(component, { autoActivate: config.autoActivate });
+
+    // Whatever changes which tab is active, or which tabs exist, moves the
+    // single tab stop with it
+    component.on('change', () => syncTabStops(component));
+    for (const method of ['addTab', 'add', 'removeTab', 'setActiveTab'] as const) {
+      const original = component[method] as (...args: unknown[]) => unknown;
+      (component as unknown as Record<string, unknown>)[method] = (...args: unknown[]) => {
+        const result = original.apply(component, args);
+        syncTabStops(component);
+        // Panels follow a selection made from code as they follow a click; only
+        // the click path updated them.
+        if (method === 'setActiveTab') updateTabPanels(component);
+        return result;
+      };
+    }
+    
+    return component;
+  } catch (error) {
+    console.error('Tabs creation error:', error);
+    throw new Error(`Failed to create tabs: ${(error as Error).message}`);
+  }
+};
+
+export default createTabs;

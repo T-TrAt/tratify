@@ -1,0 +1,166 @@
+import { expect, test } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+import { waitForPageLayout } from './component-navigation'
+
+const manifest = JSON.parse(readFileSync(new URL('../../public/textures/transparent-textures/manifest.json', import.meta.url), 'utf8')) as { textures: { file: string; title: string; author: string }[] }
+
+test('all collected textures load, switch the tag surface and retain their author credits', async ({ page }) => {
+  const failed: string[] = []
+  page.on('pageerror', error => failed.push(error.message))
+  page.on('response', response => {
+    if (response.url().includes('/textures/') && !response.ok()) failed.push(`${response.status()} ${response.url()}`)
+  })
+  await page.goto('/tags')
+  const choices = page.getByRole('group', { name: '选择纹理', exact: true })
+  await expect(choices.getByRole('button')).toHaveCount(manifest.textures.length)
+  const surface = page.locator('.hero-tag .texture-tag__texture')
+  for (const texture of manifest.textures) {
+    const choice = choices.getByRole('button', { name: `使用 ${texture.title}`, exact: true })
+    await choice.click()
+    await expect(choice).toHaveAttribute('aria-pressed', 'true')
+    await expect(choices.locator('[aria-pressed=true]')).toHaveCount(1)
+    await expect(surface).toHaveCSS('background-image', new RegExp(`${texture.file.replaceAll('.', '\\.')}"\\)$`))
+    await expect(page.locator('.texture-credit')).toContainText(texture.author === 'Unknown' ? '作者未知' : texture.author)
+  }
+  expect(failed).toEqual([])
+})
+
+test('texture parameters affect only the surface, and labels can close, restore, copy and reset', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/tags')
+  const tag = page.locator('.hero-tag .texture-tag')
+  const surface = tag.locator('.texture-tag__texture')
+  await expect(tag).toBeVisible()
+  await page.getByRole('textbox', { name: '标签文字', exact: true }).fill('材质实验')
+  await expect(tag).toContainText('材质实验')
+  for (const [label, hex, property, expected] of [
+    ['底色', '#dbeafe', 'background-color', 'rgb(219, 234, 254)'],
+    ['文字颜色', '#172554', 'color', 'rgb(23, 37, 84)'],
+  ]) {
+    await page.getByRole('button', { name: label, exact: true }).click()
+    const picker = page.getByRole('dialog', { name: label, exact: true })
+    await picker.getByRole('textbox', { name: 'HEX 颜色', exact: true }).fill(hex)
+    await picker.getByRole('textbox', { name: 'HEX 颜色', exact: true }).press('Enter')
+    await expect(tag).toHaveCSS(property, expected)
+    await page.keyboard.press('Escape')
+  }
+  const opacity = page.getByRole('slider', { name: '纹理强度', exact: true })
+  await opacity.press('Home')
+  await expect(surface).toHaveCSS('opacity', '0')
+  await expect(tag).toHaveCSS('opacity', '1')
+  await opacity.press('End')
+  await expect(surface).toHaveCSS('opacity', '1')
+  await page.getByRole('slider', { name: '纹理缩放', exact: true }).press('End')
+  await expect(surface).toHaveCSS('background-size', '220px 220px')
+  await page.getByRole('slider', { name: '纹理旋转', exact: true }).press('End')
+  await expect(surface).toHaveCSS('transform', /matrix\(-1, 0, 0, -1,/)
+  await page.getByRole('slider', { name: '圆角', exact: true }).press('Home')
+  await expect(tag).toHaveCSS('border-radius', '0px')
+  await page.getByRole('combobox', { name: '混合方式', exact: true }).click()
+  await page.getByRole('option', { name: '柔光', exact: true }).click()
+  await expect(surface).toHaveCSS('mix-blend-mode', 'soft-light')
+  await tag.getByRole('button', { name: '移除材质实验', exact: true }).click()
+  await expect(tag).toHaveCount(0)
+  await page.getByRole('button', { name: '重新添加标签', exact: true }).click()
+  await expect(tag).toContainText('材质实验')
+  await page.getByRole('button', { name: '复制样式', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('mix-blend-mode: soft-light')
+  const css = await page.evaluate(() => navigator.clipboard.readText())
+  expect(css).toContain('David Sanchez')
+  expect(css).toContain('CC BY 3.0')
+  await page.getByRole('button', { name: '重置', exact: true }).click()
+  await expect(tag).toContainText('设计系统')
+  await expect(opacity).toHaveValue('35')
+  await expect(surface).toHaveCSS('background-size', '82.5px 82.5px')
+  await expect(tag).toHaveCSS('border-radius', '28px')
+})
+
+test('each texture remembers its own settings across switches, reloads and navigation; reset affects only the current texture', async ({ page }) => {
+  await page.goto('/tags')
+  const label = page.getByRole('textbox', { name: '标签文字', exact: true })
+  const opacity = page.getByRole('slider', { name: '纹理强度', exact: true })
+  const scale = page.getByRole('slider', { name: '纹理缩放', exact: true })
+  const angle = page.getByRole('slider', { name: '纹理旋转', exact: true })
+  const radius = page.getByRole('slider', { name: '圆角', exact: true })
+  const tag = page.locator('.hero-tag .texture-tag')
+  const surface = tag.locator('.texture-tag__texture')
+  const arabesque = page.getByRole('button', { name: '使用 Arabesque', exact: true })
+  const batthern = page.getByRole('button', { name: '使用 Batthern', exact: true })
+  await label.fill('纹理 A')
+  await opacity.press('End')
+  await scale.press('End')
+  await angle.press('End')
+  await radius.press('Home')
+  await page.getByRole('combobox', { name: '混合方式', exact: true }).click()
+  await page.getByRole('option', { name: '正常', exact: true }).click()
+  await page.getByRole('button', { name: '底色', exact: true }).click()
+  const picker = page.getByRole('dialog', { name: '底色', exact: true })
+  await picker.getByRole('textbox', { name: 'HEX 颜色', exact: true }).fill('#dbeafe')
+  await picker.getByRole('textbox', { name: 'HEX 颜色', exact: true }).press('Enter')
+  await page.keyboard.press('Escape')
+  await expect(arabesque.locator('.texture-choice__sample')).toHaveCSS('background-color', 'rgb(219, 234, 254)')
+  await expect(batthern.locator('.texture-choice__sample')).toHaveCSS('background-color', 'rgb(224, 233, 213)')
+
+  await batthern.click()
+  await expect(label).toHaveValue('设计系统')
+  await expect(opacity).toHaveValue('35')
+  await label.fill('纹理 B')
+  await opacity.press('Home')
+  await scale.press('Home')
+
+  async function expectArabesqueSettings() {
+    await expect(arabesque).toHaveAttribute('aria-pressed', 'true')
+    await expect(label).toHaveValue('纹理 A')
+    await expect(opacity).toHaveValue('100')
+    await expect(scale).toHaveValue('200')
+    await expect(angle).toHaveValue('180')
+    await expect(radius).toHaveValue('0')
+    await expect(surface).toHaveCSS('mix-blend-mode', 'normal')
+    await expect(tag).toHaveCSS('background-color', 'rgb(219, 234, 254)')
+  }
+  await arabesque.click()
+  await expectArabesqueSettings()
+  await page.reload()
+  await expectArabesqueSettings()
+  await batthern.click()
+  await expect(label).toHaveValue('纹理 B')
+  await expect(opacity).toHaveValue('0')
+  await expect(scale).toHaveValue('25')
+  await page.goto('/settings')
+  await page.getByRole('navigation', { name: '主导航', exact: true }).getByRole('link', { name: '材质实验室', exact: true }).click()
+  await expect(batthern).toHaveAttribute('aria-pressed', 'true')
+  await expect(label).toHaveValue('纹理 B')
+  await expect(opacity).toHaveValue('0')
+  await page.getByRole('button', { name: '重置', exact: true }).click()
+  await expect(batthern).toHaveAttribute('aria-pressed', 'true')
+  await expect(label).toHaveValue('设计系统')
+  await expect(opacity).toHaveValue('35')
+  await page.reload()
+  await expect(batthern).toHaveAttribute('aria-pressed', 'true')
+  await expect(opacity).toHaveValue('35')
+  await arabesque.click()
+  await expectArabesqueSettings()
+})
+
+for (const width of [320, 768, 1440]) {
+  test(`texture workshop fits light and dark themes at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 })
+    for (const theme of ['light', 'dark']) {
+      await page.addInitScript(theme => localStorage.setItem('apptify:preferences', JSON.stringify({ theme, motion: 'none' })), theme)
+      await page.goto('/tags')
+      await expect(page.locator('.hero-tag .texture-tag')).toBeVisible()
+      await waitForPageLayout(page)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+      await page.getByRole('textbox', { name: '标签文字', exact: true }).fill('这是一段较长的纹理标签文字，用来检查窄屏换行')
+      const bounds = await page.locator('.hero-tag .texture-tag').evaluate(element => {
+        const tag = element.getBoundingClientRect()
+        const label = element.querySelector('.texture-tag__label')!.getBoundingClientRect()
+        return { tag: tag.toJSON(), label: label.toJSON() }
+      })
+      expect(bounds.label.left).toBeGreaterThanOrEqual(bounds.tag.left)
+      expect(bounds.label.right).toBeLessThanOrEqual(bounds.tag.right)
+      expect(bounds.label.bottom).toBeLessThanOrEqual(bounds.tag.bottom)
+      await page.screenshot({ path: test.info().outputPath(`texture-tags-${theme}-${width}.png`), fullPage: true })
+    }
+  })
+}

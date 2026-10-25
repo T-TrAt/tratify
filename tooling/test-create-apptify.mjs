@@ -42,7 +42,7 @@ try {
   const run = (args, cwd = installer) => spawnSync(process.execPath, [cli, ...args], { cwd, env, encoding: 'utf8' })
   const help = run(['--help'])
   assert.equal(help.status, 0, help.stderr)
-  assert.match(help.stdout, /npm create apptify@latest/)
+  assert.match(help.stdout, /Private local template tool; this package is not published/)
   assert.equal(run([]).status, 1)
   assert.match(run([]).stderr, /Destination must be empty/)
   assert.equal(run(['--unknown']).status, 1)

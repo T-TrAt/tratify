@@ -1,0 +1,154 @@
+// src/components/dialog/config.ts
+import { 
+  createComponentConfig, 
+  createElementConfig
+} from '../../core/config/component';
+import { DialogConfig } from './types';
+import type { ApiOptions } from './api';
+import type { EventCallback } from '../../core/state/emitter';
+import { supportsTopLayer } from '../../core/dom/layer';
+
+/**
+ * Default configuration for the Dialog component
+ */
+export const defaultConfig: DialogConfig = {
+  size: 'medium',
+  animation: 'scale',
+  footerAlignment: 'right',
+  open: false,
+  closeOnOverlayClick: true,
+  closeOnEscape: true,
+  modal: true,
+  autofocus: true,
+  trapFocus: true,
+  divider: false,  // Default to no divider
+  buttons: []
+};
+
+/**
+ * Creates the base configuration for Dialog component
+ * @param {DialogConfig} config - User provided configuration
+ * @returns {DialogConfig} Complete configuration with defaults applied
+ */
+export const createBaseConfig = (config: DialogConfig = {}): DialogConfig => {
+  const merged = createComponentConfig(defaultConfig, config, 'dialog') as DialogConfig;
+  // Without showModal() the dialog keeps its overlay, so the features only
+  // ever see a top layer they can use
+  if (merged.layer === 'top' && !supportsTopLayer('modal')) merged.layer = undefined;
+  return merged;
+};
+
+/**
+ * Generates element configuration for the Dialog component
+ * @param {DialogConfig} config - Dialog configuration
+ * @returns {Object} Element configuration object for withElement
+ */
+export const getElementConfig = (config: DialogConfig) => {
+  // The dialog itself carries the semantics, not the scrim behind it. On the
+  // web a basic dialog is an alert dialog (M3 dialog accessibility,
+  // "Labeling elements"); a full-screen dialog holds a task rather than a
+  // prompt, so it stays a plain dialog.
+  const role =
+    config.role ||
+    (config.size === 'fullscreen' ? 'dialog' : 'alertdialog');
+
+  const attributes: Record<string, string | number> = {
+    role,
+    tabindex: -1
+  };
+  if (config.modal !== false) {
+    attributes['aria-modal'] = 'true';
+  }
+
+  // `title` is the headline: passed on, it became the native tooltip over
+  // the whole surface. The headline names it through aria-labelledby.
+  return createElementConfig({ ...config, title: undefined }, {
+    // In the top layer the dialog is a native <dialog>, shown with showModal()
+    tag: config.layer === 'top' ? 'dialog' : 'div',
+    attributes,
+    className: config.class
+  });
+};
+
+/**
+ * Generates element configuration for the Dialog overlay
+ * @returns {Object} Element configuration object for overlay
+ */
+export const getOverlayConfig = () => {
+  return {
+    tag: 'div',
+    // The overlay is the scrim: it is decoration, and the dialog inside it
+    // carries the role and the modal flag
+    attributes: {},
+    className: ''
+  };
+};
+
+/**
+ * What getApiConfig reads off the dialog.
+ *
+ * Every key but `events` is a sub-object one of the features installs, under
+ * the same name and with the same members withAPI consumes -- so the shape is
+ * ApiOptions minus the part this function assembles itself. The setters are
+ * typed as returning void because that is all this reads of them; a feature
+ * returning the component still satisfies it.
+ */
+type DialogFeatureHost = Omit<ApiOptions, "events"> & {
+  on: (event: string, handler: EventCallback) => unknown;
+  off: (event: string, handler: EventCallback) => unknown;
+  emit: (event: string, data: unknown) => unknown;
+};
+
+/**
+ * Creates API configuration for the Dialog component
+ * @param {DialogFeatureHost} comp - Component with dialog features
+ * @returns {ApiOptions} API configuration object
+ */
+export const getApiConfig = (comp: DialogFeatureHost): ApiOptions => ({
+  visibility: {
+    open: () => comp.visibility.open(),
+    close: () => comp.visibility.close(),
+    toggle: (visible?: boolean) => comp.visibility.toggle(visible),
+    isOpen: () => comp.visibility.isOpen(),
+    cancel: () => comp.visibility.cancel()
+  },
+  content: {
+    setTitle: (title: string) => comp.content.setTitle(title),
+    getTitle: () => comp.content.getTitle(),
+    setSubtitle: (subtitle: string) => comp.content.setSubtitle(subtitle),
+    getSubtitle: () => comp.content.getSubtitle(),
+    setContent: (content: string) => comp.content.setContent(content),
+    getContent: () => comp.content.getContent(),
+    getHeaderElement: () => comp.content.getHeaderElement(),
+    getContentElement: () => comp.content.getContentElement(),
+    getFooterElement: () => comp.content.getFooterElement()
+  },
+  buttons: {
+    addButton: (button) => comp.buttons.addButton(button),
+    removeButton: (indexOrText) => comp.buttons.removeButton(indexOrText),
+    getButtons: () => comp.buttons.getButtons(),
+    setFooterAlignment: (alignment) => comp.buttons.setFooterAlignment(alignment)
+  },
+  focus: {
+    trapFocus: () => comp.focus.trapFocus(),
+    releaseFocus: () => comp.focus.releaseFocus()
+  },
+  size: {
+    setSize: (size) => comp.size.setSize(size)
+  },
+  divider: {
+    toggleDivider: (show) => comp.divider.toggleDivider(show),
+    hasDivider: () => comp.divider.hasDivider()
+  },
+  events: {
+    // Use the direct component methods from withEvents()
+    on: (event, handler) => comp.on(event, handler),
+    off: (event, handler) => comp.off(event, handler),
+    trigger: (event, data) => comp.emit(event, data)
+  },
+  lifecycle: {
+    destroy: () => comp.lifecycle.destroy()
+  }
+});
+
+export default defaultConfig;

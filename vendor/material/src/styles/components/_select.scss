@@ -1,0 +1,194 @@
+// src/styles/components/_select.scss
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-select";
+
+.#{$component} {
+    // Base styles - building on text field base. No width of its own: unsized,
+    // a select is the text field's 280px, as <m-select> is; it took 100% of
+    // its container, which the text field never did.
+    position: relative;
+    cursor: pointer;
+
+    // Menu when it's a direct child of select (container mode)
+    // This ensures proper stacking context when select is inside dialogs/overlays
+    > .#{base.$prefix}-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        margin-top: 0;
+        // The field's width, as in the top layer (Compose
+        // exposedDropdownSize(matchAnchorWidth = true)): the menu's own 280px
+        // maximum left it short of a wider field. Its 112px minimum stays.
+        max-width: none;
+    }
+
+    // Transition
+    @include m.motion-transition(border-color, background-color, box-shadow);
+
+    // Ensure the text field input works with our select
+    .#{base.$prefix}-text-field__input {
+        cursor: pointer;
+        pointer-events: none; // Let clicks pass through to the container
+        caret-color: transparent; // Hide text cursor since it's not editable
+    }
+
+    // Trailing icon (dropdown arrow)
+    .#{base.$prefix}-text-field__trailing-icon {
+        pointer-events: auto; // Allow clicks on the icon
+        cursor: pointer;
+        transform: translateY(-50%); // Keep vertical centering
+        transition: v.motion("duration-medium1") v.motion("easing-emphasized"); // Add transition for smooth rotation and color changes
+
+        svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: inherit;
+            transition: v.motion("duration-medium1")
+                v.motion("easing-emphasized"); // Add transition for the SVG itself
+        }
+    }
+
+    // State when menu is open
+    &--open {
+        z-index: f.get-z-index("menu");
+
+        // No viewport scrim: the old `::before` one shared the root's
+        // pseudo-element with the filled indicator (height 2px), so it was a
+        // 2px strip and never blocked anything; a click outside closes the
+        // menu (the indicator moved to the field, which revived it).
+
+        // These styles handle the focused state when the menu is open
+        .#{base.$prefix}-text-field--filled {
+            .#{base.$prefix}-text-field__field::before {
+                opacity: 1; // Show the active indicator
+            }
+
+            .#{base.$prefix}-text-field__label {
+                color: t.color("primary");
+            }
+
+            // Fix for filled variant positioning
+            .#{base.$prefix}-text-field__trailing-icon {
+                top: 28px; // Match the filled text field's icon positioning
+            }
+        }
+
+        .#{base.$prefix}-text-field--outlined {
+            &::before {
+                opacity: 1;
+                border-color: t.color("primary");
+            }
+
+            .#{base.$prefix}-text-field__label {
+                color: t.color("primary");
+            }
+        }
+
+        // Apply rotation to SVG instead of the container for better positioning
+        .#{base.$prefix}-text-field__trailing-icon {
+            color: t.color("primary");
+
+            svg {
+                transform: rotate(180deg); // Rotate the SVG, not the container
+            }
+        }
+    }
+
+    // Disabled state
+    &--disabled {
+        pointer-events: none;
+        opacity: 0.38;
+        cursor: default;
+
+        .#{base.$prefix}-text-field__input,
+        .#{base.$prefix}-text-field__trailing-icon {
+            cursor: default;
+        }
+    }
+
+    // Error state
+    &--error {
+        .#{base.$prefix}-text-field__trailing-icon {
+            color: t.color("error");
+        }
+    }
+
+    // Menu styles specifically for select
+    & + .#{base.$prefix}-menu {
+        // Additional styles for the connected menu
+        max-height: 20rem;
+        overflow-y: auto;
+        max-width: initial;
+
+        .#{base.$prefix}-menu__item {
+            min-height: 3rem;
+            // The selected option is the menu's own, in every layer:
+            // secondary-container and on-secondary-container
+            // (md.comp.menu.list-item.selected.container.color and
+            // .label-text.color, m3.material.io), with the menu's mark. The
+            // rule that was here gave the top layer the primary colour at
+            // 12% and a second mark.
+        }
+    }
+
+    // Size variants
+    &--small {
+        .#{base.$prefix}-text-field {
+            height: v.text-field("height-small");
+        }
+
+        .#{base.$prefix}-text-field__input {
+            height: v.text-field("height-small");
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+    }
+
+    &--large {
+        .#{base.$prefix}-text-field {
+            height: v.text-field("height-large");
+        }
+
+        .#{base.$prefix}-text-field__input {
+            height: v.text-field("height-large");
+            padding-top: 16px;
+            padding-bottom: 16px;
+        }
+    }
+
+    // Variant adjustments
+    &--filled {
+        // Specific adjustments for filled variant
+        .#{base.$prefix}-text-field__label {
+            // Adjust label position for filled select
+        }
+    }
+
+    &--outlined {
+        // Specific adjustments for outlined variant
+        .#{base.$prefix}-text-field__label {
+            // Adjust label position for outlined select
+        }
+    }
+
+    // Focus styles
+    &:focus-within {
+        .#{base.$prefix}-text-field__trailing-icon {
+            color: t.color("primary");
+        }
+    }
+
+}
+
+// `.mtrl-select__menu` marks the select's menu (the class was unprefixed,
+// so nothing here ever applied). Its never-applied rules are gone: a 460px max
+// width fought the menu's field width, a 4px margin its top-layer placement, and
+// the fade classes were never set; the menu's own motion and size apply.

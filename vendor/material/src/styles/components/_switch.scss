@@ -1,0 +1,329 @@
+// src/components/switch/_switch.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-switch';
+
+.#{$component} {
+  // Base styles
+  display: inline-flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  padding: 4px 0;
+  user-select: none;
+
+  // Container for switch and label
+  &__container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 48px;
+    width: 100%;
+    // Between the label and the track on whichever side the label is, in either
+    // direction; it was a physical margin-right.
+    column-gap: 12px;
+  }
+
+  // A switch with neither a label nor supporting text is its own target: no
+  // gap (the 12px belongs between text and the track, and there is none), so
+  // the root is the 52px track's width and 48px tall with the 32px track
+  // centred. M3 "Switch" -> Specs -> Measurements: Track 32x52dp and "Target:
+  // Size 48dp", with no height for a label row; its Accessibility section:
+  // "Don't apply density to switches by default — this lowers their targets
+  // below our best practice of 48x48 CSS pixels." So this row is 48 tall —
+  // the root's 4px above and below leave the container 40 — while a switch
+  // with a label, and one whose only text is its supporting text (`__helper`,
+  // which stands where the label would), keeps the 56px row and the gap.
+  // `:where` keeps this rule's weight level with `--dense`, which follows and
+  // so still wins: a switch that opts into the denser row keeps it.
+  &:where(:not(:has(.#{$component}__label, .#{$component}__helper))) {
+    .#{$component}__container {
+      column-gap: 0;
+      min-height: 40px;
+    }
+  }
+
+  // Content wrapper. The gap is on the container, so it stays between the label
+  // and the track whichever side the label is on, in either direction.
+  &__content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  // labelPosition 'end' only added this class, and the label stayed first.
+  &--label-end &__container {
+    flex-direction: row-reverse;
+  }
+
+  // Label
+  // Body Large, as the checkbox and radio labels: a list item's headline.
+  &__label {
+    @include m.typography('body-large');
+    color: t.color('on-surface');
+  }
+
+  // Input (visually hidden but accessible)
+  &__input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+
+    // md.comp.focus-ring around the track (material-web's switch ring), 3dp
+    // secondary at a 2dp offset.
+    &:focus-visible ~ .#{$component}__track {
+      outline: 3px solid t.color('secondary');
+      outline-offset: 2px;
+    }
+  }
+
+  // The track (52 x 32dp, a 2dp outline). The handle and its state layer are
+  // placed with inset-inline-start, so both mirror in right-to-left layouts: a
+  // physical left plus translateX put the selected handle off the track.
+  &__track {
+    position: relative;
+    flex-shrink: 0;
+    min-width: 52px;
+    height: 32px;
+    box-sizing: border-box;
+    border-radius: v.shape('full'); // SwitchTokens track-shape
+    background-color: t.color('surface-container-highest');
+    border: 2px solid t.color('outline');
+    transition: m.spring(background-color, fast-effects), m.spring(border-color, fast-effects);
+
+    // State layer: 40dp, centred on the handle.
+    &::after {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      top: -6px;
+      inset-inline-start: -6px;
+      background-color: t.color('on-surface');
+      opacity: 0;
+      border-radius: 50%;
+      z-index: 0;
+      transition: m.spring(opacity, fast-effects), m.spring(inset-inline-start, fast-spatial);
+      pointer-events: none;
+    }
+  }
+
+  // The handle: 16dp unselected, 24dp selected or with an icon, 28dp pressed.
+  // Compose springs it on the fast spatial spring (damping 0.9, stiffness 1400).
+  &__thumb {
+    position: absolute;
+    top: 6px;
+    inset-inline-start: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: t.color('outline');
+    transition: m.spring(inset-inline-start, fast-spatial), m.spring(top, fast-spatial),
+      m.spring(width, fast-spatial), m.spring(height, fast-spatial), m.spring(background-color, fast-effects);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1; /* Ensure thumb is above ripple */
+    pointer-events: none;
+
+    // Icons: 16dp. The selected one is on-primary-container, the unselected one
+    // surface-container-highest (SwitchTokens).
+    &-icon {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0);
+      transition: m.spring(opacity, fast-effects), m.spring(transform, fast-spatial);
+      color: t.color('on-primary-container');
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      &--unselected {
+        color: t.color('surface-container-highest');
+      }
+    }
+  }
+
+  // Supporting text
+  &__helper {
+    @include m.typography('body-medium');
+    color: t.color('on-surface-variant');
+
+    &--error {
+      color: t.color('error');
+    }
+  }
+
+  // With an unselected icon, the unselected handle is 24dp and shows it.
+  &--icons:not(&--checked) {
+    .#{$component}__thumb {
+      width: 24px;
+      height: 24px;
+      top: 2px;
+      inset-inline-start: 2px;
+    }
+
+    .#{$component}__thumb-icon--unselected {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  // Checked state
+  &--checked {
+    .#{$component}__track {
+      background-color: t.color('primary');
+      border-color: t.color('primary');
+
+      &::after {
+        inset-inline-start: 14px;
+        background-color: t.color('primary');
+      }
+    }
+
+    .#{$component}__thumb {
+      background-color: t.color('on-primary');
+      width: 24px;
+      height: 24px;
+      top: 2px;
+      inset-inline-start: 22px;
+    }
+
+    .#{$component}__thumb-icon:not(.#{$component}__thumb-icon--unselected) {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &--dense {
+    .#{$component}__container {
+      min-height: initial;
+    }
+  }
+
+  // Error state
+  &--error {
+    .#{$component}__track {
+      border-color: t.color('error');
+    }
+  }
+
+  // Disabled state. SwitchTokens splits these: DisabledTrackOpacity is 0.12, while
+  // the handle carries its own alpha — DisabledUnselectedHandleOpacity 0.38 over
+  // OnSurface, and DisabledSelectedHandleOpacity 1.0 over Surface. A single opacity on
+  // the track cascaded onto the handle, so no part matched its token.
+  &--disabled {
+    pointer-events: none;
+
+    .#{$component}__track {
+      background-color: t.alpha('on-surface', 0.12);
+      border-color: t.alpha('on-surface', 0.12);
+    }
+
+    .#{$component}__thumb {
+      background-color: t.alpha('on-surface', 0.38);
+
+      &-icon--unselected {
+        color: t.alpha('surface-container-highest', 0.38);
+      }
+    }
+
+    .#{$component}__label, .#{$component}__helper {
+      color: t.alpha('on-surface', 0.38);
+      opacity: 1;
+    }
+
+    // Selected: the track keeps 0.12, and the handle is Surface at full opacity.
+    &.#{$component}--checked {
+      .#{$component}__track {
+        background-color: t.alpha('on-surface', 0.12);
+        border-color: transparent;
+      }
+
+      .#{$component}__thumb {
+        background-color: t.color('surface');
+
+        &-icon {
+          color: t.alpha('on-surface', 0.38);
+        }
+      }
+    }
+  }
+
+  // Interaction states. The handle takes on-surface-variant (unselected) or
+  // primary-container (selected) on hover, focus and press, over an on-surface or
+  // primary layer at the hover, focus and pressed opacities.
+  &:not(.#{$component}--disabled) {
+    .#{$component}__input:is(:hover, :focus-visible, :active) ~ .#{$component}__track .#{$component}__thumb {
+      background-color: t.color('on-surface-variant');
+    }
+
+    &.#{$component}--checked .#{$component}__input:is(:hover, :focus-visible, :active) ~ .#{$component}__track .#{$component}__thumb {
+      background-color: t.color('primary-container');
+    }
+
+    .#{$component}__input:hover ~ .#{$component}__track::after {
+      opacity: v.state('hover-state-layer-opacity');
+    }
+
+    .#{$component}__input:focus-visible ~ .#{$component}__track::after {
+      opacity: v.state('focus-state-layer-opacity');
+    }
+
+    .#{$component}__input:active ~ .#{$component}__track::after {
+      opacity: v.state('pressed-state-layer-opacity');
+    }
+
+    // Pressed handle: 28dp, centred where the handle sits.
+    .#{$component}__input:active ~ .#{$component}__track .#{$component}__thumb {
+      width: 28px;
+      height: 28px;
+      top: 0;
+      inset-inline-start: 0;
+    }
+
+    &.#{$component}--checked .#{$component}__input:active ~ .#{$component}__track .#{$component}__thumb {
+      inset-inline-start: 20px;
+    }
+  }
+
+  // Accessibility
+  @include m.reduced-motion {
+    .#{$component}__track,
+    .#{$component}__thumb,
+    .#{$component}__thumb-icon {
+      transition: none;
+    }
+  }
+
+  @include m.high-contrast {
+    .#{$component}__track {
+      border-width: 2px;
+    }
+
+    &--checked .#{$component}__track {
+      border-color: currentColor;
+    }
+  }
+
+  // Touch target for better mobile experience
+  // @include m.touch-target;
+}

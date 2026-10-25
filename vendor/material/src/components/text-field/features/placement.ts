@@ -1,0 +1,275 @@
+// src/components/text-field/features/placement.ts
+import {
+  BaseComponent,
+  ElementComponent,
+} from "../../../core/compose/component";
+
+/**
+ * The floated label is Body Small (12sp) drawn from Body Large (16sp)
+ * (m3.material.io text fields; Android TextInputLayout's collapsed hint).
+ */
+const FLOATED_LABEL_SCALE = 0.75;
+
+/**
+ * Gap between the floated label and each end of the notch (Android
+ * `mtrl_textinput_box_label_cutout_padding`, 4dp).
+ */
+const NOTCH_PADDING = 4;
+
+/**
+ * The fields waiting for a placement pass, each a read that returns its
+ * write. Fields scheduled in the same task are measured together, then
+ * written together: one layout for all of them, not one per field, whose
+ * reads and writes interleaved.
+ */
+const pending = new Set<() => () => void>();
+let flushing: ReturnType<typeof setTimeout> | null = null;
+
+const flush = (): void => {
+  flushing = null;
+  const reads = [...pending];
+  pending.clear();
+  const writes = reads.map((read) => read());
+  for (const write of writes) write();
+};
+
+const schedule = (read: () => () => void): void => {
+  pending.add(read);
+  flushing ??= setTimeout(flush, 0);
+};
+
+/**
+ * Extended element component with input field
+ */
+interface InputElementComponent extends ElementComponent {
+  input?: HTMLInputElement | HTMLTextAreaElement;
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
+ * Component with placement management capabilities
+ */
+export interface PlacementComponent extends BaseComponent {
+  /**
+   * Updates positions of all elements in the text field
+   * @returns The component instance for chaining
+   */
+  updateElementPositions: () => PlacementComponent;
+  /** Queue a placement update owned by this component lifecycle. */
+  schedulePositionUpdate: () => void;
+}
+
+/**
+ * Handles dynamic positioning of text field elements (label, prefix, suffix)
+ * This feature should be added last in the pipe to ensure all elements exist
+ *
+ * @returns Function that enhances a component with dynamic positioning
+ */
+export const withPlacement =
+  () =>
+  <C extends InputElementComponent>(component: C): C & PlacementComponent => {
+    const PREFIX = component.config.prefix || "mtrl";
+    const COMPONENT = component.config.componentName || "text-field";
+
+    let destroyed = false;
+    // The observers and the resize listener are installed on the first request
+    // for placement, not at construction: a field with nothing to place does not
+    // observe itself. Every setter that can give it something to place
+    // (variant, label, icons, prefix, suffix, required, density) asks.
+    let listening = false;
+    const ensureListening = (): void => {
+      if (listening || destroyed) return;
+      listening = true;
+      setupEventListeners();
+    };
+    // This field's pass in the shared batch; the Set runs it once however
+    // often it is scheduled before the flush
+    const schedulePositionUpdate = () => {
+      if (destroyed) return;
+      ensureListening();
+      schedule(measure);
+    };
+
+    const classObservers = new WeakMap<HTMLElement, MutationObserver>();
+    let labelObserver: ResizeObserver | null = null;
+
+    const outlineClass = `${PREFIX}-${COMPONENT}__outline`;
+    let outline: HTMLElement | null = null;
+    let notch: HTMLElement | null = null;
+
+    /**
+     * Builds the outline the outlined variant draws its container with: a
+     * leading corner, a notch the floating label sits in, and the trailing
+     * rest. The notch leaves a gap in the top edge instead of painting over
+     * it, so the field shows whatever is behind it. Inserted after the input
+     * so the stylesheet can open the notch from the input's own state.
+     */
+    const ensureOutline = () => {
+      if (outline) return;
+      outline = document.createElement("div");
+      outline.className = outlineClass;
+      outline.setAttribute("aria-hidden", "true");
+      for (const part of ["leading", "notch", "trailing"]) {
+        const segment = document.createElement("div");
+        segment.className = `${outlineClass}-${part}`;
+        outline.appendChild(segment);
+        if (part === "notch") notch = segment;
+      }
+      // Beside the input, in the field
+      if (component.input) component.input.after(outline);
+      else component.element.appendChild(outline);
+    };
+
+    if (
+      component.element.classList.contains(`${PREFIX}-${COMPONENT}--outlined`)
+    )
+      ensureOutline();
+
+    /**
+     * Reads what placing the notch and padding the input beside a prefix or
+     * suffix needs, and returns the write that applies it: the batch runs every
+     * field's read before any field's write.
+     */
+    const measure = (): (() => void) => {
+      if (destroyed || !component.element || !component.element.isConnected) return () => {};
+      const element = component.element;
+      const labelEl = element.querySelector<HTMLElement>(`.${PREFIX}-${COMPONENT}__label`);
+      const prefixEl = element.querySelector(`.${PREFIX}-${COMPONENT}__prefix`);
+      const suffixEl = element.querySelector(`.${PREFIX}-${COMPONENT}__suffix`);
+      const has = (modifier: string): boolean => element.classList.contains(`${PREFIX}-${COMPONENT}--${modifier}`);
+      const isOutlined = has("outlined");
+      const isFocused = has("focused");
+      const isEmpty = has("empty");
+
+      // Reads. The direction as computed, which reaches into a shadow root
+      // where the stylesheet's [dir] selectors do not (a server's DOM has no
+      // computed style: left to right there); offsetWidth is the label's
+      // untransformed width, so it holds mid-transition too.
+      const rtl = globalThis.getComputedStyle?.(element).direction === "rtl";
+      const labelWidth = isOutlined && labelEl ? labelEl.offsetWidth : 0;
+      const affixes = [prefixEl, suffixEl].map((affix) => affix?.getBoundingClientRect().width);
+
+      return () => {
+        if (destroyed) return;
+        // Size the notch to the floated label and open it while the label floats
+        if (isOutlined) ensureOutline();
+        // Both variants: the stylesheet's mirror follows --rtl where an
+        // ancestor's `dir` cannot reach, inside a shadow root
+        element.classList.toggle(`${PREFIX}-${COMPONENT}--rtl`, rtl);
+        if (outline && notch) {
+          if (labelWidth > 0) notch.style.width = `${labelWidth * FLOATED_LABEL_SCALE + NOTCH_PADDING * 2}px`;
+          outline.classList.toggle(`${outlineClass}--notched`, isOutlined && !!labelEl && (isFocused || !isEmpty));
+        }
+
+        // The prefix and suffix widths, for the stylesheet: it adds each to
+        // the inset its side has (an icon, the density, the direction) to pad
+        // the input. The label is the stylesheet's alone.
+        affixes.forEach((width, end) => {
+          if (width !== undefined) element.style.setProperty(`--${PREFIX}-${COMPONENT}-${end ? "suffix" : "prefix"}-width`, `${width}px`);
+        });
+      };
+    };
+
+    /** Places the elements now: this field's read, then its write. */
+    const updateElementPositions = () => {
+      ensureListening();
+      measure()();
+      return component;
+    };
+
+    // Set up event listeners for dynamic positioning
+    const setupEventListeners = () => {
+      // Watch for class changes on the component element
+      // This ensures we update positions when state changes (empty, focused, etc.)
+      const classObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class"
+          ) {
+            // Debounce the update to avoid excessive recalculations
+            schedulePositionUpdate();
+          }
+        });
+      });
+
+      // Observe class changes on the component element
+      classObserver.observe(component.element, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+
+      // Update positions on window resize
+      window.addEventListener("resize", updateElementPositions);
+
+      // Store the observer for cleanup
+      classObservers.set(component.element, classObserver);
+
+      // The notch follows the label's width: its text, density and fonts
+      // loading, and a field first laid out after being hidden
+      const labelEl = component.element.querySelector(
+        `.${PREFIX}-${COMPONENT}__label`
+      );
+      if (labelEl && typeof ResizeObserver !== "undefined") {
+        labelObserver = new ResizeObserver(schedulePositionUpdate);
+        labelObserver.observe(labelEl);
+      }
+    };
+
+    // A filled field with no prefix, suffix or leading icon has nothing to
+    // place: the label sits where the stylesheet puts it. Its observers and
+    // its first measure wait for a request.
+    // A filled field with only a leading icon is a no-op too, but stays on the
+    // measuring side. The rest: the first placement in the next batch with the
+    // other fields created in this task.
+    const has = (modifier: string): boolean => component.element.classList.contains(`${PREFIX}-${COMPONENT}--${modifier}`);
+    const needsPlacement =
+      has("outlined") ||
+      has("with-leading-icon") ||
+      component.element.querySelector(`.${PREFIX}-${COMPONENT}__prefix, .${PREFIX}-${COMPONENT}__suffix`) !== null;
+    // Unless it is in a shadow root, where an ancestor's `dir` does not reach
+    // the stylesheet: there one measure sets --rtl. Asked in the
+    // batch, as the field has no root yet; a root with a host is a shadow root.
+    const inShadowRoot = (): (() => void) => ((component.element.getRootNode() as ShadowRoot).host ? measure() : () => {});
+    if (needsPlacement) schedulePositionUpdate();
+    else schedule(inShadowRoot);
+
+    // Add lifecycle integration
+    if ("lifecycle" in component && component.lifecycle?.destroy) {
+      const originalDestroy = component.lifecycle.destroy;
+      component.lifecycle.destroy = () => {
+        if (destroyed) return;
+        destroyed = true;
+        pending.delete(measure);
+        pending.delete(inShadowRoot);
+        if (!pending.size && flushing !== null) {
+          clearTimeout(flushing);
+          flushing = null;
+        }
+        window.removeEventListener("resize", updateElementPositions);
+
+        // Disconnect class observer
+        const classObserver = classObservers.get(component.element);
+        if (classObserver) {
+          classObserver.disconnect();
+          classObservers.delete(component.element);
+        }
+
+        labelObserver?.disconnect();
+        labelObserver = null;
+
+        originalDestroy.call(component.lifecycle);
+      };
+    }
+
+    return {
+      ...component,
+      schedulePositionUpdate,
+      updateElementPositions: () => {
+        updateElementPositions();
+        return component as unknown as C & PlacementComponent;
+      },
+    };
+  };

@@ -1,0 +1,340 @@
+// src/components/card/content.ts
+import { PREFIX } from '../../core/config';
+import { pipe } from '../../core/compose';
+import { createBase, withElement } from '../../core/compose/component';
+import { createElement } from '../../core/dom/create';
+import { CardContentConfig, CardHeaderConfig, CardMediaConfig, CardActionsConfig } from './types';
+import { safeUrl } from '../../core/utils/url';
+
+import { setHTML } from "../../core/dom/html";
+// Constants for content padding
+export const CARD_CONTENT_PADDING = true;
+
+let headerCount = 0;
+
+/**
+ * Creates a card content component
+ * 
+ * @param {CardContentConfig} config - Content configuration
+ * @returns {HTMLElement} Card content element
+ * 
+ * @example
+ * ```typescript
+ * // Create text content
+ * const textContent = createCardContent({ text: 'Simple text content' });
+ * 
+ * // Create HTML content with no padding
+ * const htmlContent = createCardContent({
+ *   html: '<p>Formatted <strong>HTML</strong> content</p>',
+ *   padding: false
+ * });
+ * ```
+ */
+export const createCardContent = (config: CardContentConfig = {}): HTMLElement => {
+  const baseConfig = {
+    ...config,
+    componentName: 'card__content',
+    prefix: PREFIX
+  };
+
+  try {
+    // Create element with innerHTML instead of html/text properties
+    // for more reliable content rendering
+    const content = pipe(
+      createBase,
+      withElement({
+        tag: 'div',
+        componentName: 'card__content',
+        className: [
+          config.class,
+          config.padding === false ? `${PREFIX}-card__content--no-padding` : null
+        ].filter((name): name is string => Boolean(name)),
+        attributes: {
+          // No role: an unnamed region per block is a landmark with no name
+          // Add explicit style attributes to ensure visibility
+          'style': 'display: block; color: inherit;'
+        }
+      })
+    )(baseConfig);
+
+    // `html` is the explicit markup path and stays as it is. `text` is text: it was
+    // interpolated into innerHTML, so any caller binding user or CMS copy to it had an
+    // XSS sink with no way to opt out.
+    if (config.html) {
+      setHTML(content.element, config.html);
+    } else if (config.text) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = config.text;
+      content.element.appendChild(paragraph);
+    }
+
+    // Add children if provided
+    if (Array.isArray(config.children)) {
+      config.children.forEach(child => {
+        if (child instanceof HTMLElement) {
+          content.element.appendChild(child);
+        }
+      });
+    }
+
+    return content.element;
+  } catch (error) {
+    console.error('Card content creation error:', error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to create card content: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
+/**
+ * Creates a card header component
+ * 
+ * @param {CardHeaderConfig} config - Header configuration
+ * @returns {HTMLElement} Card header element
+ * 
+ * @example
+ * ```typescript
+ * // Create a header with title and subtitle
+ * const header = createCardHeader({
+ *   title: 'Card Title',
+ *   subtitle: 'Supporting text'
+ * });
+ * 
+ * // Create a header with an avatar and action
+ * const avatarHeader = createCardHeader({
+ *   title: 'User Profile',
+ *   avatar: '<img src="user.jpg" alt="User avatar">',
+ *   action: createIconButton({ icon: 'more_vert' })
+ * });
+ * ```
+ */
+export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => {
+  const baseConfig = {
+    ...config,
+    componentName: 'card__header',
+    prefix: PREFIX
+  };
+
+  try {
+    const header = pipe(
+      createBase,
+      withElement({
+        tag: 'div',
+        componentName: 'card__header',
+        className: config.class,
+        // No role: the title is the heading, its own h3; a heading role here
+        // made the h3 presentational and folded the subtitle in
+      })
+    )(baseConfig);
+
+    // Create text container for title and subtitle
+    const textContainer = createElement({
+      tag: 'div',
+      className: `${PREFIX}-card__header-text`,
+      container: header.element
+    });
+
+    // Add title if provided. The id is unique so setHeader can name the card
+    // with it.
+    if (config.title) {
+      createElement({
+        tag: 'h3',
+        className: `${PREFIX}-card__header-title`,
+        text: config.title,
+        container: textContainer,
+        attributes: {
+          id: `${header.element.id || `card-header-${++headerCount}`}-title`
+        }
+      });
+    }
+
+    // Add subtitle if provided
+    if (config.subtitle) {
+      // Supporting text for the title, not a heading of its own
+      createElement({
+        tag: 'p',
+        className: `${PREFIX}-card__header-subtitle`,
+        text: config.subtitle,
+        container: textContainer
+      });
+    }
+
+    // Add avatar if provided
+    if (config.avatar) {
+      const avatarElement = typeof config.avatar === 'string'
+        ? createElement({
+          tag: 'div',
+          className: `${PREFIX}-card__header-avatar`,
+          html: config.avatar
+        })
+        : config.avatar;
+
+      // Ensure avatar has correct ARIA attributes if it's an image
+      const avatarImg = avatarElement.querySelector('img');
+      if (avatarImg && !avatarImg.hasAttribute('alt')) {
+        avatarImg.setAttribute('alt', ''); // Decorative image
+        avatarImg.setAttribute('aria-hidden', 'true');
+      }
+
+      header.element.insertBefore(avatarElement, header.element.firstChild);
+    }
+
+    // Add action if provided
+    if (config.action) {
+      const actionElement = typeof config.action === 'string'
+        ? createElement({
+          tag: 'div',
+          className: `${PREFIX}-card__header-action`,
+          html: config.action
+        })
+        : config.action;
+
+      header.element.appendChild(actionElement);
+    }
+
+    return header.element;
+  } catch (error) {
+    console.error('Card header creation error:', error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to create card header: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
+/**
+ * Creates a card actions component
+ * 
+ * @param {CardActionsConfig} config - Actions configuration
+ * @returns {HTMLElement} Card actions element
+ * 
+ * @example
+ * ```typescript
+ * // Create simple actions container with buttons
+ * const actions = createCardActions({
+ *   actions: [
+ *     createButton({ text: 'Cancel' }),
+ *     createButton({ text: 'OK', variant: 'filled' })
+ *   ],
+ *   align: 'end'
+ * });
+ * 
+ * // Create full-bleed actions
+ * const fullBleedActions = createCardActions({
+ *   actions: [createButton({ text: 'View Details', fullWidth: true })],
+ *   fullBleed: true
+ * });
+ * ```
+ */
+export const createCardActions = (config: CardActionsConfig = {}): HTMLElement => {
+  const baseConfig = {
+    ...config,
+    componentName: 'card__actions',
+    prefix: PREFIX
+  };
+
+  try {
+    const actions = pipe(
+      createBase,
+      withElement({
+        tag: 'div',
+        componentName: 'card__actions',
+        className: [
+          config.class,
+          config.fullBleed ? `${PREFIX}-card__actions--full-bleed` : null,
+          config.vertical ? `${PREFIX}-card__actions--vertical` : null,
+          config.align ? `${PREFIX}-card__actions--${config.align}` : null
+        ].filter((name): name is string => Boolean(name)),
+        attributes: {
+          'role': 'group' // Semantically group actions together
+        }
+      })
+    )(baseConfig);
+
+    // Add action elements if provided
+    if (Array.isArray(config.actions)) {
+      config.actions.forEach((action, index) => {
+        if (action instanceof HTMLElement) {
+          // Ensure each action has accessible attributes
+          if (!action.hasAttribute('aria-label') && 
+              !action.hasAttribute('aria-labelledby') &&
+              action.textContent?.trim() === '') {
+            action.setAttribute('aria-label', `Action ${index + 1}`);
+          }
+          
+          actions.element.appendChild(action);
+        }
+      });
+    }
+
+    return actions.element;
+  } catch (error) {
+    console.error('Card actions creation error:', error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to create card actions: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
+/**
+ * Creates a card media component
+ * 
+ * @param {CardMediaConfig} config - Media configuration
+ * @returns {HTMLElement} Card media element
+ * 
+ * @example
+ * ```typescript
+ * // Create a media component with an image
+ * const media = createCardMedia({
+ *   src: 'image.jpg',
+ *   alt: 'Descriptive alt text',
+ *   aspectRatio: '16:9'
+ * });
+ * 
+ * // Create a media component with a custom element
+ * const customMedia = createCardMedia({
+ *   element: videoElement,
+ *   aspectRatio: '4:3'
+ * });
+ * ```
+ */
+export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
+  const baseConfig = {
+    ...config,
+    componentName: 'card__media',
+    prefix: PREFIX
+  };
+
+  try {
+    const media = pipe(
+      createBase,
+      withElement({
+        tag: 'div',
+        componentName: 'card__media',
+        className: [
+          config.class,
+          config.aspectRatio ? `${PREFIX}-card__media--${config.aspectRatio.replace(':', '-')}` : null,
+          config.contain ? `${PREFIX}-card__media--contain` : null
+        ].filter((name): name is string => Boolean(name))
+      })
+    )(baseConfig);
+
+    // If custom element is provided, use it
+    if (config.element instanceof HTMLElement) {
+      media.element.appendChild(config.element);
+    }
+    // Otherwise create an image if src is provided
+    else if (config.src) {
+      const img = document.createElement('img');
+      img.src = safeUrl(config.src);
+      img.className = `${PREFIX}-card__media-img`;
+      
+      // Ensure alt text is always provided for accessibility
+      img.alt = config.alt || '';
+      if (!config.alt) {
+        // If no alt text is provided, mark as decorative
+        img.setAttribute('aria-hidden', 'true');
+      }
+      
+      media.element.appendChild(img);
+    }
+
+    return media.element;
+  } catch (error) {
+    console.error('Card media creation error:', error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to create card media: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};

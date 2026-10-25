@@ -1,0 +1,611 @@
+// src/styles/components/_icon-button.scss
+@use "sass:map";
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-icon-button";
+
+// =============================================================================
+// ICON BUTTON COMPONENT STYLES
+// =============================================================================
+// Material Design 3 Icon Button implementation
+// Supports:
+// - Four variants (filled, tonal, outlined, standard)
+// - Five sizes (xs, s, m, l, xl)
+// - Two shapes (round, square)
+// - Three widths (narrow, default, wide)
+// - Toggle mode with selected/unselected states
+// - Shape morphing on press and selection
+// - State layers and ripple effects
+// - Full accessibility support
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Size configuration maps
+// -----------------------------------------------------------------------------
+$sizes: (
+    "xs": (
+        container: 32px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 16px,
+        icon: 20px,
+        square-radius: v.shape('medium'),
+        pressed-radius: v.shape('small'),
+        outline-width: 1px,
+    ),
+    "s": (
+        container: 40px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 20px,
+        icon: 24px,
+        square-radius: v.shape('medium'),
+        pressed-radius: v.shape('small'),
+        outline-width: 1px,
+    ),
+    "m": (
+        container: 56px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 28px,
+        icon: 24px,
+        square-radius: v.shape('large'),
+        pressed-radius: v.shape('medium'),
+        outline-width: 1px,
+    ),
+    "l": (
+        container: 96px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 48px,
+        icon: 32px,
+        square-radius: v.shape('extra-large'),
+        pressed-radius: v.shape('large'),
+        outline-width: 2px,
+    ),
+    "xl": (
+        container: 136px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 68px,
+        icon: 40px,
+        square-radius: v.shape('extra-large'),
+        pressed-radius: v.shape('large'),
+        outline-width: 3px,
+    ),
+);
+
+$widths: (
+    "xs": (
+        narrow: 28px,
+        default: 32px,
+        wide: 40px,
+    ),
+    "s": (
+        narrow: 32px,
+        default: 40px,
+        wide: 52px,
+    ),
+    "m": (
+        narrow: 48px,
+        default: 56px,
+        wide: 72px,
+    ),
+    "l": (
+        narrow: 64px,
+        default: 96px,
+        wide: 128px,
+    ),
+    "xl": (
+        narrow: 104px,
+        default: 136px,
+        wide: 184px,
+    ),
+);
+
+// Helper function to get size values
+@function get-size($size, $property) {
+    @return map.get(map.get($sizes, $size), $property);
+}
+
+@function get-width($size, $width-variant) {
+    @return map.get(map.get($widths, $size), $width-variant);
+}
+
+// -----------------------------------------------------------------------------
+// Base styles
+// -----------------------------------------------------------------------------
+.#{$component} {
+    // Reset and base styles
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    // The page reset's `button{padding:0}` (styles/base/_reset.scss) does not
+    // reach a shadow root, so the sheet the element adopts has to repeat it:
+    // Chrome's user-agent padding (1px 6px) leaves the narrow containers no
+    // room for the icon, a shrinkable flex item, and it is drawn under its
+    // size token.
+    padding: 0;
+    background-color: transparent;
+    color: t.color("on-surface-variant");
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    // Not clipped: the state layer and the ripple clip themselves to the
+    // shape, and the 48dp target of the xs and s sizes must reach outside
+    // the container to take a pointer
+    overflow: visible;
+    flex-shrink: 0;
+
+    // Default size (s - 40px)
+    width: get-size("s", container);
+    height: get-size("s", container);
+
+    // Default shape: round, with the real radius of half the container
+    // height. A 9999px full shape paints the same at rest, but border-radius
+    // animates on the number in the stylesheet, so a morph from 9999px to the
+    // 8dp pressed shape stays above half the height for almost the whole
+    // transition and then snaps square. Half the height interpolates, so the
+    // press reads as a morph. On narrow widths the browser scales the radius
+    // down to half the smaller side, as it did for 9999px.
+    border-radius: var(--#{base.$prefix}-button-shape, get-size("s", round-radius));
+
+    // Smooth transitions for shape morphing
+    transition:
+        background-color v.motion("duration-short2") v.motion("easing-standard"),
+        color v.motion("duration-short2") v.motion("easing-standard"),
+        border-color v.motion("duration-short2") v.motion("easing-standard"),
+        border-radius v.motion("duration-short1")
+            v.motion("easing-standard-accelerate"),
+        transform v.motion("duration-short1")
+            v.motion("easing-standard-accelerate"),
+        box-shadow v.motion("duration-short2") v.motion("easing-standard");
+
+    // Focus styles
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid t.color("outline");
+        outline-offset: 2px;
+    }
+
+    // State layer
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: currentColor;
+        opacity: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        transition: opacity v.motion("duration-short2")
+            v.motion("easing-standard");
+    }
+
+    // Hover state layer (8%)
+    &:hover::before {
+        opacity: 0.08;
+    }
+
+    // Focus state layer (10%)
+    &:focus-visible::before {
+        opacity: 0.1;
+    }
+
+    // Pressed state layer (10%), left to the ripple when there is one
+    &:active:not(:has(> .#{base.$prefix}-ripple))::before {
+        opacity: 0.1;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Icon element
+    // ---------------------------------------------------------------------------
+    &__icon,
+    .#{base.$prefix}-icon,
+    .#{$component}__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: get-size("s", icon);
+        height: get-size("s", icon);
+        pointer-events: none;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            // fill: currentColor !important;
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Size variants
+    // ---------------------------------------------------------------------------
+    &--xs {
+        width: get-size("xs", container);
+        height: get-size("xs", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}__icon {
+            width: get-size("xs", icon);
+            height: get-size("xs", icon);
+        }
+    }
+
+    // Keep a minimum 48px touch target for both smaller container sizes.
+    &--xs::after,
+    &--s::after {
+        content: "";
+        position: absolute;
+        width: 48px;
+        height: 48px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    &--m {
+        width: get-size("m", container);
+        height: get-size("m", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}__icon {
+            width: get-size("m", icon);
+            height: get-size("m", icon);
+        }
+    }
+
+    &--l {
+        width: get-size("l", container);
+        height: get-size("l", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}__icon {
+            width: get-size("l", icon);
+            height: get-size("l", icon);
+        }
+    }
+
+    &--xl {
+        width: get-size("xl", container);
+        height: get-size("xl", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}__icon {
+            width: get-size("xl", icon);
+            height: get-size("xl", icon);
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Shape variants
+    // ---------------------------------------------------------------------------
+
+    // Round is the default: half the container height per size
+    &--round {
+        border-radius: var(--#{base.$prefix}-button-shape, get-size("s", round-radius));
+
+        &.#{$component}--xs {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xs", round-radius));
+        }
+
+        &.#{$component}--m {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("m", round-radius));
+        }
+
+        &.#{$component}--l {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("l", round-radius));
+        }
+
+        &.#{$component}--xl {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xl", round-radius));
+        }
+    }
+
+    // Square shape with size-specific corner radius
+    &--square {
+        border-radius: var(--#{base.$prefix}-button-shape, get-size("s", square-radius));
+
+        &.#{$component}--xs {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xs", square-radius));
+        }
+
+        &.#{$component}--m {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("m", square-radius));
+        }
+
+        &.#{$component}--l {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("l", square-radius));
+        }
+
+        &.#{$component}--xl {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xl", square-radius));
+        }
+    }
+
+    // Shape morph on press - both round and square morph to pressed radius.
+    // A container can keep the resting shape instead (a toolbar does: see
+    // the toolbar rule in _toolbar.scss) through the icon button's own
+    // override, which an explicit --…-button-shape-pressed still beats.
+    &:active {
+        &.#{$component}--round {
+            border-radius: var(
+                --#{base.$prefix}-button-shape-pressed,
+                var(--#{base.$prefix}-icon-button-shape-pressed, get-size("s", pressed-radius))
+            );
+
+            &.#{$component}--xs {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-pressed,
+                    var(--#{base.$prefix}-icon-button-shape-pressed, get-size("xs", pressed-radius))
+                );
+            }
+
+            &.#{$component}--m {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-pressed,
+                    var(--#{base.$prefix}-icon-button-shape-pressed, get-size("m", pressed-radius))
+                );
+            }
+
+            &.#{$component}--l {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-pressed,
+                    var(--#{base.$prefix}-icon-button-shape-pressed, get-size("l", pressed-radius))
+                );
+            }
+
+            &.#{$component}--xl {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-pressed,
+                    var(--#{base.$prefix}-icon-button-shape-pressed, get-size("xl", pressed-radius))
+                );
+            }
+        }
+
+        &.#{$component}--square {
+            border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("s", pressed-radius));
+
+            &.#{$component}--xs {
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("xs", pressed-radius));
+            }
+
+            &.#{$component}--m {
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("m", pressed-radius));
+            }
+
+            &.#{$component}--l {
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("l", pressed-radius));
+            }
+
+            &.#{$component}--xl {
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("xl", pressed-radius));
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Width variants
+    // ---------------------------------------------------------------------------
+    &--narrow {
+        width: get-width("s", narrow);
+
+        &.#{$component}--xs {
+            width: get-width("xs", narrow);
+        }
+
+        &.#{$component}--m {
+            width: get-width("m", narrow);
+        }
+
+        &.#{$component}--l {
+            width: get-width("l", narrow);
+        }
+
+        &.#{$component}--xl {
+            width: get-width("xl", narrow);
+        }
+    }
+
+    &--wide {
+        width: get-width("s", wide);
+
+        &.#{$component}--xs {
+            width: get-width("xs", wide);
+        }
+
+        &.#{$component}--m {
+            width: get-width("m", wide);
+        }
+
+        &.#{$component}--l {
+            width: get-width("l", wide);
+        }
+
+        &.#{$component}--xl {
+            width: get-width("xl", wide);
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Standard (default)
+    // ---------------------------------------------------------------------------
+    // The standard colour and the selected toggle's colours read custom
+    // properties a container sets, which reach into an element's shadow root:
+    // the vibrant toolbar's items (FloatingToolbarTokens Vibrant*).
+    &--standard {
+        background-color: transparent;
+        color: var(--#{base.$prefix}-icon-button-standard-color, #{t.color("on-surface-variant")});
+
+        // Toggle selected state
+        &.#{$component}--selected {
+            background-color: var(--#{base.$prefix}-icon-button-selected-container, transparent);
+            color: var(--#{base.$prefix}-icon-button-selected-color, #{t.color("primary")});
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Filled
+    // ---------------------------------------------------------------------------
+    &--filled {
+        background-color: t.color("primary");
+        color: t.color("on-primary");
+
+        // Toggle unselected state
+        &.#{$component}--toggle:not(.#{$component}--selected) {
+            background-color: t.color("surface-container");
+            color: t.color("on-surface-variant");
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Tonal (Filled Tonal)
+    // ---------------------------------------------------------------------------
+    &--tonal {
+        background-color: t.color("secondary-container");
+        color: t.color("on-secondary-container");
+
+        // Plain and unselected toggles share the tonal container colours.
+        &.#{$component}--selected {
+            background-color: var(--#{base.$prefix}-icon-button-selected-container, #{t.color("secondary")});
+            color: var(--#{base.$prefix}-icon-button-selected-color, #{t.color("on-secondary")});
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Outlined
+    // ---------------------------------------------------------------------------
+    &--outlined {
+        background-color: transparent;
+        color: t.color("on-surface-variant");
+        border: get-size("s", outline-width) solid t.color("outline-variant");
+
+        @each $size, $config in $sizes {
+            &.#{$component}--#{$size} {
+                border-width: map.get($config, outline-width);
+            }
+        }
+
+        // Toggle selected state
+        &.#{$component}--selected {
+            background-color: t.color("inverse-surface");
+            color: t.color("inverse-on-surface");
+            border-color: transparent;
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Toggle mode
+    // ---------------------------------------------------------------------------
+    &--toggle {
+        // Toggles use aria-pressed for accessibility
+        // Shape morphs on selection (handled by selected class)
+    }
+
+    // Selected state - shape morphs (round becomes square, square becomes
+    // round). Inside a toolbar the morph stays out: the toolbar pins the
+    // round radius through the icon button's own override (see the toolbar
+    // rule in _toolbar.scss), which an explicit
+    // --…-button-shape-selected still beats.
+    &--selected {
+        // Round buttons become square when selected
+        &.#{$component}--round:not(:active) {
+            border-radius: var(
+                --#{base.$prefix}-button-shape-selected,
+                var(--#{base.$prefix}-icon-button-shape-selected, get-size("s", square-radius))
+            );
+
+            &.#{$component}--xs {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-selected,
+                    var(--#{base.$prefix}-icon-button-shape-selected, get-size("xs", square-radius))
+                );
+            }
+
+            &.#{$component}--m {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-selected,
+                    var(--#{base.$prefix}-icon-button-shape-selected, get-size("m", square-radius))
+                );
+            }
+
+            &.#{$component}--l {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-selected,
+                    var(--#{base.$prefix}-icon-button-shape-selected, get-size("l", square-radius))
+                );
+            }
+
+            &.#{$component}--xl {
+                border-radius: var(
+                    --#{base.$prefix}-button-shape-selected,
+                    var(--#{base.$prefix}-icon-button-shape-selected, get-size("xl", square-radius))
+                );
+            }
+        }
+
+        // Square buttons become round when selected, with the real radius
+        &.#{$component}--square:not(:active) {
+            border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("s", round-radius));
+
+            &.#{$component}--xs {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("xs", round-radius));
+            }
+
+            &.#{$component}--m {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("m", round-radius));
+            }
+
+            &.#{$component}--l {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("l", round-radius));
+            }
+
+            &.#{$component}--xl {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("xl", round-radius));
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Disabled state
+    // ---------------------------------------------------------------------------
+    &:disabled,
+    &.#{$component}--disabled {
+        pointer-events: none;
+        cursor: default;
+
+        // Match toggle specificity so disabled colours win in every scheme.
+        &.#{$component}--standard,
+        &.#{$component}--filled,
+        &.#{$component}--tonal,
+        &.#{$component}--outlined {
+            color: t.alpha("on-surface", 0.38);
+        }
+
+        &.#{$component}--filled,
+        &.#{$component}--tonal {
+            background-color: t.alpha("on-surface", 0.1);
+        }
+
+        &.#{$component}--outlined {
+            border-color: t.color("outline-variant");
+
+            &.#{$component}--selected {
+                background-color: t.alpha("on-surface", 0.1);
+                border-color: transparent;
+            }
+        }
+
+        &::before {
+            display: none;
+        }
+    }
+}

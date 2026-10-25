@@ -1,0 +1,350 @@
+// src/components/checkbox/types.ts
+import type { TouchEvents } from "../../core/utils/mobile";
+import type { EventCallback } from "../../core/state/emitter";
+
+/**
+ * Checkbox label position types - controls where the label appears
+ *
+ * @category Components
+ * @remarks
+ * - start: Label appears before (to the left of) the checkbox
+ * - end: Label appears after (to the right of) the checkbox (default)
+ */
+export type CheckboxLabelPosition = "start" | "end";
+
+/**
+ * Configuration interface for the Checkbox component
+ *
+ * @category Components
+ * @description
+ * Defines the appearance and behavior of a checkbox component.
+ * All properties are optional with sensible defaults.
+ */
+export interface CheckboxConfig {
+  /**
+   * Input name attribute, used for form submission
+   * @example "accept-terms"
+   */
+  name?: string;
+
+  /**
+   * Initial checked state
+   * @default false
+   */
+  checked?: boolean;
+
+  /**
+   * Initial indeterminate state (partially checked)
+   * Used when a checkbox represents a mixed selection state
+   * @default false
+   */
+  indeterminate?: boolean;
+
+  /**
+   * Whether input is required for form validation
+   * @default false
+   */
+  required?: boolean;
+
+  /**
+   * Whether checkbox is disabled (non-interactive)
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Input value attribute, used for form submission
+   * @example "true" | "selected" | "1"
+   */
+  value?: string;
+
+  /**
+   * Label text displayed next to the checkbox
+   * @example "Accept terms and conditions"
+   */
+  label?: string;
+
+  /**
+   * Label position (start/end)
+   * Controls whether the label appears before or after the checkbox
+   * @default "end"
+   */
+  labelPosition?: CheckboxLabelPosition | string;
+
+  /**
+   * Error state: the outline, the selected container and the state layers
+   * take the error role, and the input is marked `aria-invalid`.
+   * @default false
+   */
+  error?: boolean;
+
+  /**
+   * Accessible name when there is no visible label
+   */
+  ariaLabel?: string;
+
+  /**
+   * Whether Enter toggles as Space does. Off for a checkbox.
+   * @internal
+   */
+  enterToggles?: boolean;
+
+  /**
+   * Additional CSS classes to apply to the checkbox
+   * @example "terms-checkbox primary-checkbox"
+   */
+  class?: string;
+
+  /**
+   * CSS class prefix for all checkbox classes
+   * @default "mtrl"
+   */
+  prefix?: string;
+
+  /**
+   * Component name used in CSS class generation
+   * @default "checkbox"
+   * @internal
+   */
+  componentName?: string;
+}
+
+/** A checked-state change from native input activation. Public setters are silent. */
+export interface CheckboxChangePayload {
+  /** The new checked state. */
+  checked: boolean;
+  /** The checked model value, matching getValue() at dispatch. */
+  value: boolean;
+  /** The input's HTML value attribute, used for native form submission. */
+  valueAttribute: string;
+  /** The original native change event, when supplied by the emitter. */
+  nativeEvent?: Event;
+}
+
+/** Events emitted by the checkbox API. DOM clicks/focus are not forwarded. */
+export interface CheckboxEvents extends TouchEvents {
+  change: (payload: CheckboxChangePayload) => void;
+}
+
+/**
+ * Checkbox component interface
+ *
+ * Provides methods for controlling a Material Design 3 checkbox
+ *
+ * @category Components
+ */
+export interface CheckboxComponent {
+  /**
+   * The checkbox's root DOM element (container)
+   */
+  element: HTMLElement;
+
+  /**
+   * The actual input element (native checkbox)
+   */
+  input: HTMLInputElement;
+
+  /**
+   * Gets the checkbox's checked state (boolean) for form compatibility
+   * @returns Whether the checkbox is checked
+   */
+  getValue: () => boolean;
+
+  /**
+   * Sets the checkbox's checked state.
+   * Clears indeterminate, as a user click does.
+   * @param value - Boolean or string ("true"/"false"/"1"/"0") value
+   * @returns Checkbox component for method chaining
+   */
+  setValue: (value: boolean | string) => CheckboxComponent;
+
+  /**
+   * Gets the HTML value attribute (rarely needed)
+   * @returns The input's value attribute
+   */
+  getValueAttribute: () => string;
+
+  /**
+   * Sets the HTML value attribute (rarely needed)
+   * @param value - New value attribute to set
+   * @returns Checkbox component for method chaining
+   */
+  setValueAttribute: (value: string) => CheckboxComponent;
+
+  /**
+   * Checks the checkbox (sets checked=true).
+   * Clears indeterminate, as a user click does.
+   * @returns Checkbox component for method chaining
+   */
+  check: () => CheckboxComponent;
+
+  /**
+   * Unchecks the checkbox (sets checked=false).
+   * Clears indeterminate, as a user click does.
+   * @returns Checkbox component for method chaining
+   */
+  uncheck: () => CheckboxComponent;
+
+  /**
+   * Toggles the checkbox's checked state.
+   * Clears indeterminate, as a user click does.
+   * @returns Checkbox component for method chaining
+   */
+  toggle: () => CheckboxComponent;
+
+  /**
+   * Checks if the checkbox is currently checked
+   * @returns True if checkbox is checked, false otherwise
+   */
+  isChecked: () => boolean;
+
+  /**
+   * Sets the checkbox's indeterminate state
+   * An indeterminate checkbox appears partially checked
+   * and is used to represent a mixed selection state
+   *
+   * @param state - Whether to set indeterminate state
+   * @returns Checkbox component for method chaining
+   */
+  setIndeterminate: (state: boolean) => CheckboxComponent;
+
+  /**
+   * Sets or clears the error state
+   * @param error - Whether the checkbox is in error
+   * @returns Checkbox component for method chaining
+   */
+  setError: (error: boolean) => CheckboxComponent;
+
+  /**
+   * Sets the checkbox's label text
+   * @param text - New label text
+   * @returns Checkbox component for method chaining
+   */
+  setLabel: (text: string) => CheckboxComponent;
+
+  /**
+   * Gets the checkbox's current label text
+   * @returns Current label text
+   */
+  getLabel: () => string;
+
+  /**
+   * Adds an event listener to the checkbox
+   * @param event - 'change'; listen on input for native click/focus events
+   * @param handler - Receives checked state, HTML value, and an optional native event
+   * @returns Checkbox component for method chaining
+   * @example
+   * checkbox.on('change', (e) => console.log('Checkbox state:', e.checked));
+   */
+  on: <K extends keyof CheckboxEvents>(event: K, handler: CheckboxEvents[K]) => CheckboxComponent;
+
+  /**
+   * Removes an event listener from the checkbox
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns Checkbox component for method chaining
+   */
+  off: <K extends keyof CheckboxEvents>(event: K, handler: CheckboxEvents[K]) => CheckboxComponent;
+
+  /**
+   * Enables the checkbox, making it interactive
+   * @returns Checkbox component for method chaining
+   */
+  enable: () => CheckboxComponent;
+
+  /**
+   * Disables the checkbox, making it non-interactive
+   * @returns Checkbox component for method chaining
+   */
+  disable: () => CheckboxComponent;
+
+  /** Whether the checkbox is disabled */
+  isDisabled: () => boolean;
+
+  /**
+   * Destroys the checkbox component and cleans up resources
+   * Removes event listeners and DOM references
+   */
+  destroy: () => void;
+}
+
+/**
+ * API options interface for internal use
+ * @category Components
+ * @internal
+ */
+export interface ApiOptions {
+  disabled: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  lifecycle: {
+    destroy: () => void;
+  };
+  checkable: {
+    check: () => void;
+    uncheck: () => void;
+    toggle: () => void;
+    isChecked: () => boolean;
+  };
+}
+
+/**
+ * Base component interface for internal composition
+ * @category Components
+ * @internal
+ */
+export interface BaseComponent {
+  element: HTMLElement;
+  input?: HTMLInputElement;
+  getValue?: () => boolean;
+  setValue?: (value: boolean) => void;
+  setIndeterminate?: (state: boolean) => void;
+  setError?: (error: boolean) => void;
+  label?: {
+    setText: (content: string) => void;
+    getText: () => string;
+  };
+  on?: (event: string, handler: EventCallback) => this;
+  off?: (event: string, handler: EventCallback) => this;
+  disabled?: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  lifecycle?: {
+    destroy: () => void;
+  };
+  checkable?: {
+    check: () => void;
+    uncheck: () => void;
+    toggle: () => void;
+    isChecked: () => boolean;
+  };
+}
+
+/**
+ * Component as it reaches the API step of the pipeline.
+ *
+ * `BaseComponent` marks the feature controllers optional because a component
+ * part-way through the pipeline has not got them yet. By the time
+ * `getApiConfig` runs, the checkable, disabled and lifecycle features have all
+ * been applied, so they are there.
+ * @category Components
+ * @internal
+ */
+export type ApiComponent = BaseComponent &
+  Required<Pick<BaseComponent, "checkable" | "disabled" | "lifecycle">>;
+
+
+/**
+ * Registers CheckboxConfig with the global defaults map, so
+ * `setComponentDefaults("checkbox", ...)` is typed without core
+ * importing anything from this component.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    checkbox?: Partial<CheckboxConfig>;
+  }
+}

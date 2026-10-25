@@ -1,0 +1,223 @@
+// src/components/tooltip/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-tooltip';
+$arrow-size: 8px;
+
+.#{$component} {
+  // Base styles
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  max-width: 200px;
+  padding: 4px 8px;
+  border-radius: v.shape('extra-small'); // PlainTooltipTokens container-shape
+  background-color: t.color('inverse-surface');
+  color: t.color('inverse-on-surface');
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.9);
+  transform-origin: center;
+  box-sizing: border-box;
+  // M3's plain tooltip has no elevation (PlainTooltipTokens)
+  
+  // Typography
+  @include m.typography('body-small');
+  
+  // Transition
+  transition:
+    opacity 150ms cubic-bezier(0, 0, 0.2, 1),
+    transform 150ms cubic-bezier(0, 0, 0.2, 1);
+  
+  // A top-layer tooltip is a popover (`layer: "top"`). The browser's popover
+  // defaults centre it in the viewport inside a border and clip its arrow; the
+  // tooltip places itself, so they are cleared. `:where` keeps this rule under
+  // the position margins and the plain variant's border that follow.
+  &:where([popover]) {
+    inset: auto;
+    margin: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  // States
+  // Opaque: the plain tooltip is inverse-surface itself, not a tint of it
+  &--visible {
+    opacity: 1;
+    transform: scale(1);
+    // A shown tooltip can be hovered, so a pointer can rest on its content
+    // (WCAG 1.4.13); hidden, it still lets clicks through
+    pointer-events: auto;
+  }
+  
+  // Variants
+  
+  // Default variant
+  &--default {
+    // Default styles already applied in base
+  }
+  
+  // Rich (RichTooltipTokens): surface-container, on-surface-variant text,
+  // CornerMedium, elevation 2, Body Medium, 320dp wide at most
+  &--rich {
+    max-width: 320px;
+    padding: 12px 16px 8px;
+    border-radius: v.shape('medium');
+    background-color: t.color('surface-container');
+    // The arrow follows the surface (see the arrow styles below).
+    --#{base.$prefix}-tooltip-arrow-color: #{t.color('surface-container')};
+    color: t.color('on-surface-variant');
+    text-align: start;
+    @include m.typography('body-medium');
+    @include m.elevation(2);
+  }
+
+  // Plain is M3's plain tooltip, which the base already is (PlainTooltipTokens:
+  // inverse-surface, inverse-on-surface). It had its own surface-container-high
+  // with an outline, which no M3 source has; its arrows kept painting that
+  // surface after the surface itself was corrected, until they went back to the
+  // base colour with the surface.
+  &--plain {
+    background-color: t.color('inverse-surface');
+    color: t.color('inverse-on-surface');
+  }
+  
+  // Arrow styles
+  // The arrow is part of the container it grows from, so it takes the variant's
+  // surface colour: default and plain paint inverse-surface (the base value) and
+  // rich, whose surface is surface-container, overrides it there. No colour role
+  // exists for an arrow (m3.material.io tooltips specs name none), so the surface
+  // itself is the only colour it can read as.
+  &__arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: $arrow-size solid transparent;
+    pointer-events: none;
+
+    // Top position (arrow points up)
+    &--top {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-top-width: 0;
+    }
+
+    // Top-start position
+    &--top-start {
+      bottom: 100%;
+      left: $arrow-size;
+      border-bottom-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-top-width: 0;
+    }
+
+    // Top-end position
+    &--top-end {
+      bottom: 100%;
+      right: $arrow-size;
+      border-bottom-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-top-width: 0;
+    }
+
+    // Bottom position (arrow points down)
+    &--bottom {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-bottom-width: 0;
+    }
+
+    // Bottom-start position
+    &--bottom-start {
+      top: 100%;
+      left: $arrow-size;
+      border-top-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-bottom-width: 0;
+    }
+
+    // Bottom-end position
+    &--bottom-end {
+      top: 100%;
+      right: $arrow-size;
+      border-top-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-bottom-width: 0;
+    }
+
+    // Left position (arrow points left)
+    &--left {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-left-width: 0;
+    }
+
+    // Left-start position
+    &--left-start {
+      right: 100%;
+      top: $arrow-size;
+      border-right-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-left-width: 0;
+    }
+
+    // Left-end position
+    &--left-end {
+      right: 100%;
+      bottom: $arrow-size;
+      border-right-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-left-width: 0;
+    }
+
+    // Right position (arrow points right)
+    &--right {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-right-width: 0;
+    }
+
+    // Right-start position
+    &--right-start {
+      left: 100%;
+      top: $arrow-size;
+      border-left-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-right-width: 0;
+    }
+
+    // Right-end position
+    &--right-end {
+      left: 100%;
+      bottom: $arrow-size;
+      border-left-color: var(--#{base.$prefix}-tooltip-arrow-color, #{t.color('inverse-surface')});
+      border-right-width: 0;
+    }
+  }
+  
+  // Positioning classes
+  &--top {
+    margin-bottom: $arrow-size;
+  }
+  
+  &--bottom {
+    margin-top: $arrow-size;
+  }
+  
+  &--left {
+    margin-right: $arrow-size;
+  }
+  
+  &--right {
+    margin-left: $arrow-size;
+  }
+}

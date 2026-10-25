@@ -1,0 +1,287 @@
+// src/components/extended-fab/_styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-extended-fab';
+
+$sizes: (
+  small: (height: 56px, icon: 24px, label: 'title-medium', padding: 16px, gap: 8px, shape: 'large'),
+  medium: (height: 80px, icon: 28px, label: 'title-large', padding: 26px, gap: 16px, shape: 'large-increased'),
+  large: (height: 96px, icon: 32px, label: 'headline-small', padding: 28px, gap: 20px, shape: 'extra-large'),
+);
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background-color: t.color('primary-container');
+  color: t.color('on-primary-container');
+  font: inherit;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  overflow: hidden;
+  
+  // Extended FAB uses elevation in all variants
+  @include m.elevation(3);
+  
+  // Transitions for property changes (separated for performance)
+  @include m.motion-transition(
+    transform,
+    box-shadow,
+    background-color,
+    color
+  );
+  
+  // Small is the default; modifiers supply the expressive dimensions.
+  // A collapsed navigation rail supplies compact presentation across slots
+  // and shadow roots, including when an element rebuilds its inner button.
+  width: var(--#{base.$prefix}-extended-fab-compact, auto);
+  height: var(--#{base.$prefix}-extended-fab-height, 56px);
+  min-width: var(--#{base.$prefix}-extended-fab-height, 56px);
+  padding: 0 var(--#{base.$prefix}-extended-fab-compact, var(--#{base.$prefix}-extended-fab-padding, 16px));
+  gap: var(--#{base.$prefix}-extended-fab-compact, var(--#{base.$prefix}-extended-fab-gap, 8px));
+  border-radius: var(--#{base.$prefix}-extended-fab-radius, #{f.get-shape('large')});
+
+  // Transition for dimension changes
+  transition: 
+    width 0.3s v.motion('easing-standard'),
+    min-width 0.3s v.motion('easing-standard'),
+    padding 0.3s v.motion('easing-standard');
+  
+  @each $size, $tokens in $sizes {
+    &--#{$size} {
+      --#{base.$prefix}-extended-fab-height: #{map.get($tokens, height)};
+      --#{base.$prefix}-extended-fab-icon-size: #{map.get($tokens, icon)};
+      --#{base.$prefix}-extended-fab-padding: #{map.get($tokens, padding)};
+      --#{base.$prefix}-extended-fab-gap: #{map.get($tokens, gap)};
+      --#{base.$prefix}-extended-fab-radius: #{f.get-shape(map.get($tokens, shape))};
+
+      .#{$component}__text {
+        @include m.typography(map.get($tokens, label));
+      }
+    }
+  }
+
+  // Focus styles
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid t.color('outline');
+    outline-offset: 2px;
+  }
+  
+  // Icon styles
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
+    height: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
+    flex-shrink: 0;
+    padding: 0;
+    transition: 
+      transform 0.3s v.motion('easing-standard'),
+      margin 0.3s v.motion('easing-standard');
+    
+    svg {
+      width: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
+      height: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
+    }
+  }
+  
+  // Text styles
+  &__text {
+    @include m.typography('title-medium');
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: var(--#{base.$prefix}-extended-fab-compact, auto);
+    max-width: var(--#{base.$prefix}-extended-fab-compact, 280px);
+    opacity: var(--#{base.$prefix}-extended-fab-compact, 1);
+    margin: 0;
+    transition: 
+      max-width 0.3s v.motion('easing-standard'),
+      opacity 0.2s v.motion('easing-standard'),
+      width 0.3s v.motion('easing-standard'),
+      margin 0.3s v.motion('easing-standard');
+  }
+  
+  // Width variants
+  &--fixed {
+    // Default behavior (width based on content)
+  }
+  
+  &--fluid {
+    width: var(--#{base.$prefix}-extended-fab-compact, 100%);
+  }
+  
+  // Expressive container and tone styles; primary-container is the default.
+  @each $role in primary-container, secondary-container, tertiary-container,
+    primary, secondary, tertiary {
+    &--#{$role} {
+      background-color: t.color('#{$role}');
+      color: t.color('on-#{$role}');
+    }
+  }
+
+  &:hover {
+    @include m.state-layer(currentColor, 'hover');
+    @include m.elevation(4);
+  }
+
+  &:focus-visible {
+    @include m.state-layer(currentColor, 'focus');
+    @include m.elevation(3);
+  }
+
+  &:active {
+    @include m.state-layer(currentColor, 'pressed');
+    @include m.elevation(3);
+  }
+
+  // Collapsed state
+  &--collapsed {
+    // The minimum width above keeps the compact button at its size's height.
+    --#{base.$prefix}-extended-fab-compact: 0;
+    
+    .#{$component}__icon {
+      margin: 0;
+      transform: scale(1);
+    }
+    
+    .#{$component}__text {
+      margin: 0;
+      transition: 
+        opacity 0.1s v.motion('easing-disappear'),
+        max-width 0.3s v.motion('easing-collapse') 0.05s,
+        width 0.3s v.motion('easing-collapse') 0.05s,
+        margin 0.3s v.motion('easing-collapse') 0.05s;
+    }
+  }
+  
+  &:not(.#{$component}--collapsed) {
+    // Ensure the icon scales smoothly
+    .#{$component}__icon {
+      transform: scale(1);
+    }
+    
+    .#{$component}__text {
+      transition: 
+        width 0.25s v.motion('easing-expand'),
+        max-width 0.25s v.motion('easing-expand'),
+        opacity 0.2s v.motion('easing-appear') 0.05s,
+        margin 0.25s v.motion('easing-expand');
+    }
+  }
+  
+  // Long-press state
+  &--long-press {
+    @include m.state-layer(currentColor, 'dragged');
+    @include m.elevation(3);
+  }
+  
+  // Lowered FABs use their own elevation ladder.
+  &.#{$component}--lowered {
+    @include m.elevation(1);
+
+    &:hover {
+      @include m.elevation(2);
+    }
+
+    &:focus-visible,
+    &:active {
+      @include m.elevation(1);
+    }
+  }
+
+  // Compatibility state: FAB tokens do not specify disabled styling.
+  &:disabled,
+  &.#{$component}--disabled {
+    pointer-events: none;
+
+    &,
+    &:hover,
+    &:focus-visible,
+    &:active {
+      @include m.elevation(0);
+      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('on-surface', 0.12);
+    }
+
+    &::before {
+      display: none;
+    }
+  }
+
+  // Positioning utilities
+  &--top-right {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--top-left {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--bottom-right {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--bottom-left {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  // Animation effects
+  @keyframes extended-fab-enter {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  &--animate-enter {
+    animation: extended-fab-enter 0.3s v.motion('emphasized-decelerate') forwards;
+  }
+  
+  // Mobile behaviors
+  @media (max-width: v.breakpoint('sm')) {
+    &--center-mobile {
+      left: 50%;
+      transform: translateX(-50%);
+      
+    }
+  }
+  
+  // Collapsible behavior
+  &--collapsible {
+    transition-duration: 0.3s;
+    transition-timing-function: v.motion('easing-standard');
+  }
+}

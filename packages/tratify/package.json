@@ -1,0 +1,44 @@
+{
+  "name": "tratify",
+  "version": "0.1.0",
+  "description": "Material Design 3 components and themes for Vue 3, maintained by T-TrAt.",
+  "author": "T-TrAt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-TrAt/tratify.git",
+    "directory": "packages/tratify"
+  },
+  "homepage": "https://github.com/T-TrAt/tratify#readme",
+  "bugs": {
+    "url": "https://github.com/T-TrAt/tratify/issues"
+  },
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "LICENSE",
+    "THIRD_PARTY_LICENSES.txt",
+    "SOURCE.json"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "sideEffects": ["**/*.css"],
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "prepack": "node ../../tooling/build-tratify.mjs"
+  }
+}

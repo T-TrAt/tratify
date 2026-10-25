@@ -1,23 +1,16 @@
 # create-apptify
 
-Create an editable Vue app with Apptify navigation, settings, account forms, 404 and component examples. Requires Node.js 22 or later.
+Private, local-only legacy Apptify template tool. This package is not published. The only release package in this workspace is `tratify`; see `../tratify/README.md`. Requires Node.js 22 or later.
 
 ```sh
-npm create apptify@latest my-app
-cd my-app
+node tooling/create-playground.mjs ../my-app
+cd ../my-app
 npm install
 npm run dev
 ```
 
-The target must be empty. Omit `my-app` or use `.` to create in the current empty directory. Edit pages in `src/views/` and navigation in `src/App.vue`. Account forms need your own backend.
+Run the command from the workspace root after preparing the local template with `npm run prepack`. The target must be empty. Edit pages in `src/views/` and navigation in `src/App.vue`. Account forms need your own backend.
 
 Uses the generator and template shipped with `apptify`. The generated app includes a portable library archive in `vendor/`.
 
-## Release
-
-This is a separate npm package. From this directory:
-
-```sh
-npm pack
-npm publish --access public
-```
+`private: true` prevents publishing this package to npm. GitHub Actions publishing is disabled.

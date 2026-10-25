@@ -1,0 +1,250 @@
+// Compose DatePickerModalTokens: 360px container, 120px header, 40px date state
+// layers, 36x72px year state layers, extra-large corners and elevation level 3.
+@use '../abstract/base' as base;
+@use '../abstract/variables' as v;
+@use '../abstract/mixins' as m;
+@use '../abstract/theme' as t;
+
+$component: '#{base.$prefix}-datepicker';
+.#{$component} {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 360px;
+  // Where it shrinks to fit (an element's host), 280px as the text field,
+  // not its input's platform-dependent width.
+  contain: inline-size;
+  contain-intrinsic-inline-size: v.text-field('width');
+  color: t.color('on-surface');
+  // The physical range band and chevron flip: left-to-right at the root,
+  // right-to-left under the direction arm. The defaults are declared here, not
+  // only used as var() fallbacks, because a custom property inherits: a nested
+  // LTR instance must not read its RTL parent's values.
+  --#{$component}-start: 100% 0;
+  --#{$component}-end: 0 0;
+  --#{$component}-flip: none;
+  @include m.rtl($self: true) {
+    --#{$component}-start: 0 0;
+    --#{$component}-end: 100% 0;
+    --#{$component}-flip: scaleX(-1);
+  }
+  &__anchor { display: flex; position: relative; }
+  &__label { @include m.typography('body-small'); margin-block-end: 4px; }
+  &__input {
+    box-sizing: border-box;
+    width: 100%; min-width: 0; height: 56px; padding: 12px 16px;
+    border: 1px solid t.color('outline'); border-radius: v.shape('extra-small');
+    background: transparent; color: t.color('on-surface');
+    @include m.typography('body-large');
+    &:focus-visible { outline: 2px solid t.color('primary'); outline-offset: -2px; }
+    &[aria-invalid='true'] { border-color: t.color('error'); }
+    &:disabled { opacity: 0.38; }
+  }
+  &__anchor &__input { padding-inline-end: 56px; }
+  &__trigger { position: absolute; inset-inline-end: 4px; top: 4px; font-size: 24px; }
+  &__help, &__error { @include m.typography('body-small'); padding: 4px 16px 0; }
+  &__help { color: t.color('on-surface-variant'); }
+  &__error { color: t.color('error'); &:empty { display: none; } }
+  &__calendar {
+    // The day grid's inline padding, shared by the range band's bleed into it.
+    --#{$component}-grid-inset: 12px;
+    box-sizing: border-box; padding: 0; border: 0;
+    width: 360px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px);
+    overflow: auto; color: t.color('on-surface'); background: t.color('surface-container-high');
+    border-radius: v.shape('extra-large'); box-shadow: v.elevation('level-3');
+    &::backdrop { background: t.alpha('scrim', 0.32); }
+  }
+  &--modal { position: fixed; inset: 0; margin: auto; }
+  // Full screen (m3.material.io: recommended on compact screens; the range picker's
+  // form): the whole viewport, no corners, level 0 (range-selection.container tokens).
+  &--fullscreen {
+    width: 100%; max-width: none; height: 100%; max-height: none;
+    border-radius: 0; box-shadow: none; overflow: hidden;
+    .#{$component}__content { height: 100%; }
+    .#{$component}__modal-header { min-height: 128px; padding: 64px 64px 12px; }
+    .#{$component}__close { position: absolute; inset-inline-start: 4px; top: 4px; }
+    .#{$component}__save { position: absolute; inset-inline-end: 12px; top: 8px; }
+    .#{$component}__title { margin-bottom: 0; }
+    .#{$component}__headline { @include m.typography('title-large'); }
+    .#{$component}__weekdays { padding: 0 var(--#{$component}-grid-inset); }
+  }
+  &__list { flex: 1; min-height: 0; position: relative; overflow-y: auto; overscroll-behavior: contain; }
+  &__subhead { @include m.typography('title-small'); color: t.color('on-surface-variant'); padding: 20px 24px 8px; }
+  // Docked: corner-large (16dp), where the dialogs are extra-large.
+  &--docked { border-radius: v.shape('large'); }
+  &--docked { position: absolute; inset: auto; top: 100%; inset-inline-start: 0; margin: 8px 0 0; z-index: v.z-index('dropdown'); }
+  &__content { display: flex; flex-direction: column; }
+  &__modal-header {
+    position: relative; box-sizing: border-box; min-height: 120px; padding: 16px 64px 16px 24px;
+    border-bottom: 1px solid t.color('outline-variant'); color: t.color('on-surface-variant');
+  }
+  &--range &__modal-header { min-height: 128px; }
+  &--range &__headline { @include m.typography('title-large'); }
+  &__title { @include m.typography('label-large'); margin-bottom: 20px; }
+  &__headline { @include m.typography('headline-large'); overflow-wrap: anywhere; }
+  &__mode-toggle { position: absolute; inset-inline-end: 12px; bottom: 12px; font-size: 24px; }
+  // The month and year row is 56dp, as in Compose (48dp buttons, 4dp above and below).
+  &__header { display: flex; align-items: center; padding: 4px 12px; min-height: 56px; box-sizing: border-box; }
+  &__navigation { display: flex; flex: 1; }
+  &__month-selector, &__year-selector { @include m.typography('label-large'); padding: 0 8px; }
+  &__trigger, &__mode-toggle, &__prev, &__next, &__month-selector, &__year-selector,
+  &__cancel, &__confirm, &__close, &__save {
+    box-sizing: border-box; min-width: 48px; min-height: 48px; border: 0; border-radius: v.shape('full');
+    color: t.color('on-surface-variant'); background: transparent; cursor: pointer;
+    &:hover:not(:disabled) { background: t.alpha('on-surface', 0.08); }
+    &:focus-visible { outline: 2px solid t.color('primary'); outline-offset: -2px; background: t.alpha('on-surface', v.state('focus-state-layer-opacity')); }
+    &:disabled { opacity: 0.38; cursor: default; }
+  }
+  &__trigger, &__mode-toggle, &__prev, &__next, &__close { display: inline-flex; align-items: center; justify-content: center; }
+  &--animate[open]:not(.#{$component}--modal) { animation: #{$component}-appear v.motion('duration-short3') v.motion('easing-standard'); }
+  @media (prefers-reduced-motion: reduce) { &--animate[open] { animation: none; } }
+  // No bottom padding: the modal is Compose's 568dp, the footer included.
+  &__days { padding: 0 var(--#{$component}-grid-inset); }
+  // The months' scroll-snapping track: one month per page, no visible scrollbar.
+  // Swipe, trackpad and wheel paging are the browser's own.
+  &__track {
+    display: flex; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    > .#{$component}__days { flex: 0 0 100%; box-sizing: border-box; scroll-snap-align: start; scroll-snap-stop: always; }
+  }
+  &__weekdays, &__week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  &__weekday, &__cell { display: flex; align-items: center; justify-content: center; height: 48px; min-width: 0; }
+  &__weekday { @include m.typography('body-large'); }
+  // The in-range band: a 40dp secondary-container strip, starting and ending at the
+  // centre of the endpoint circles, square, under the selection (Compose's
+  // drawRangeBackground); it was rounded to the cell edge. In-range days read
+  // on-secondary-container.
+  &__cell--range {
+    position: relative;
+    background: linear-gradient(transparent 4px, t.color('secondary-container') 4px, t.color('secondary-container') 44px, transparent 44px) no-repeat;
+    .#{$component}__day:not(.#{$component}__day--selected) { color: t.color('on-secondary-container'); }
+  }
+  &__cell--range-start { background-size: 50% 100%; background-position: var(--#{$component}-start); }
+  &__cell--range-end { background-size: 50% 100%; background-position: var(--#{$component}-end); }
+  &__cell--range-start#{&}__cell--range-end { background: none; }
+  // Where the range wraps to the next week, the band runs on through the grid's inline
+  // padding to the container edge, as m3.material.io's range picker draws it: the row
+  // it leaves to the end edge, the row it continues on from the start edge. Under the
+  // day by tree order: the day's own ::before and ::after are its selection and layer.
+  &__cell--range:is(:last-child:not(&__cell--range-end), :first-child:not(&__cell--range-start))::before {
+    content: ''; position: absolute; top: 4px; width: var(--#{$component}-grid-inset); height: 40px;
+    background: t.color('secondary-container');
+  }
+  &__cell--range:last-child::before { inset-inline-start: 100%; }
+  &__cell--range:first-child::before { inset-inline-end: 100%; }
+  &__day {
+    position: relative; isolation: isolate; width: 100%; height: 48px; padding: 0; border: 0;
+    background: transparent; color: t.color('on-surface'); cursor: pointer;
+    @include m.typography('body-large');
+    // ::before is the 40dp selection (fill, today's ring); ::after is the state layer
+    // above it: on-surface-variant, on-primary on the selected day, at 0.08 hover and
+    // 0.10 focus and pressed, with md.comp.focus-ring 2dp outside it.
+    &::before, &::after { content: ''; position: absolute; z-index: -1; inset: 50% auto auto 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border-radius: 50%; box-sizing: border-box; }
+    --#{$component}-day-layer: #{t.color('on-surface-variant')};
+    &:hover:not(:disabled)::after { background: color-mix(in srgb, var(--#{$component}-day-layer) #{v.state('hover-state-layer-opacity') * 100%}, transparent); }
+    &:focus-visible { outline: none; &::after { background: color-mix(in srgb, var(--#{$component}-day-layer) #{v.state('focus-state-layer-opacity') * 100%}, transparent); outline: 3px solid t.color('secondary'); outline-offset: 2px; } }
+    &:active:not(:disabled)::after { background: color-mix(in srgb, var(--#{$component}-day-layer) #{v.state('pressed-state-layer-opacity') * 100%}, transparent); }
+    &--outside { color: t.alpha('on-surface', 0.38); }
+    &--today { color: t.color('primary'); &::before { border: 1px solid t.color('primary'); } }
+    &--highlight { text-decoration: underline; }
+    &--selected, &--selected:hover:not(:disabled) { color: t.color('on-primary'); --#{$component}-day-layer: #{t.color('on-primary')}; &::before { background: t.color('primary'); } }
+    &:disabled { opacity: 0.38; cursor: default; }
+  }
+  &__months, &__years { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 8px; padding: 16px 24px; }
+  // The year list scrolls vertically within the calendar's own height (a weekday row
+  // and six weeks), so the picker keeps its size.
+  &__years { position: relative; box-sizing: border-box; height: 336px; overflow-y: auto; overscroll-behavior: contain; }
+  &__month, &__year {
+    position: relative; isolation: isolate; min-width: 0; height: 48px; border: 0; background: transparent;
+    color: t.color('on-surface-variant'); @include m.typography('body-large'); cursor: pointer;
+    &::before { content: ''; position: absolute; z-index: -1; width: 72px; max-width: 100%; height: 36px; inset: 50% auto auto 50%; transform: translate(-50%, -50%); border-radius: v.shape('full'); }
+    &:hover::before { background: t.alpha('on-surface', 0.08); }
+    &[aria-pressed='true'] { color: t.color('on-primary'); &::before { background: t.color('primary'); } }
+    &:focus-visible { outline: none; &::before { outline: 2px solid t.color('primary'); outline-offset: 2px; } }
+  }
+  &__fields { display: grid; gap: 16px; padding: 24px; }
+  &__field { display: flex; flex-direction: column; }
+  &__footer { display: flex; justify-content: flex-end; gap: 8px; padding: 4px 12px; }
+  // The chevrons point the way the months go: mirrored right to left.
+  &__prev svg, &__next svg { transform: var(--#{$component}-flip); }
+  &__cancel, &__confirm, &__save { @include m.typography('label-large'); padding: 0 12px; color: t.color('primary'); }
+  &__sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+@keyframes #{$component}-appear { from { opacity: 0; } to { opacity: 1; } }
+
+// Modal calendars follow dialog entry and keep contents with the exiting surface.
+dialog.#{$component}__calendar.#{$component}--modal.#{$component}--animate {
+  display: none;
+  transform-origin: top center;
+  transform: translateY(-50px) scaleY(0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform v.motion('duration-short3') v.motion('easing-emphasized-accelerate'),
+    opacity v.motion('duration-short1') linear v.motion('duration-short2'),
+    display v.motion('duration-short3') allow-discrete,
+    overlay v.motion('duration-short3') allow-discrete;
+
+  &[open] { display: block; }
+
+  .#{$component}__content > * {
+    opacity: 1;
+    transition: opacity v.motion('duration-medium1') linear v.motion('duration-short1');
+  }
+
+  .#{$component}__footer {
+    transition: opacity v.motion('duration-medium2') linear v.motion('duration-short3');
+  }
+
+  // Only stage hidden contents when opening; closing fades the whole surface.
+  &[open]:not(.#{$component}--visible) .#{$component}__content > * {
+    opacity: 0;
+    transition: none;
+  }
+
+  &.#{$component}--visible {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    transition:
+      transform v.motion('duration-long2') v.motion('easing-emphasized'),
+      opacity v.motion('duration-short1') linear;
+
+    .#{$component}__content > * {
+      opacity: 1;
+      transition: opacity v.motion('duration-medium1') linear v.motion('duration-short1');
+    }
+
+    .#{$component}__footer {
+      transition: opacity v.motion('duration-medium2') linear v.motion('duration-short3');
+    }
+  }
+
+  &::backdrop {
+    background-color: transparent;
+    transition:
+      background-color v.motion('duration-short3') linear,
+      display v.motion('duration-short3') allow-discrete,
+      overlay v.motion('duration-short3') allow-discrete;
+  }
+
+  &.#{$component}--visible::backdrop {
+    background-color: t.alpha('scrim', 0.32);
+    transition: background-color v.motion('duration-long2') linear;
+  }
+
+  @media (max-width: v.breakpoint('sm')) { transform-origin: bottom center; }
+
+  @include m.reduced-motion {
+    &,
+    &.#{$component}--visible {
+      transition: none;
+
+      &::backdrop,
+      .#{$component}__content > * { transition: none; }
+    }
+  }
+}

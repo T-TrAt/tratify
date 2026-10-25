@@ -1,12 +1,14 @@
 import { defineAsyncComponent, type Component } from 'vue'
 import type { ComponentDocument } from './contract'
 import { componentMetadata } from './component-metadata'
+import { materialDocuments } from '../material/documents'
 /** Lightweight route directory. Each document is downloaded only on its own page. */
 export interface DocumentRegistration {
   name: string
   label: string
   description: string
   group: string
+  directory?: { label: string; href: string; anchor: string }
   preview?: Component
   load: () => Promise<{ default: ComponentDocument }>
 }
@@ -26,4 +28,5 @@ Object.assign(componentDocuments, {
     load: () => import('./apple-input'),
   },
 } satisfies Record<string, DocumentRegistration>)
+Object.assign(componentDocuments, materialDocuments)
 export const componentDocumentPath = (slug: string) => `/component-docs/${slug}`

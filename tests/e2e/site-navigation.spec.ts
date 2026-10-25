@@ -1,23 +1,37 @@
 import { directoryItem, waitForPageLayout } from './component-navigation'
 import { expect, test } from '@playwright/test'
-import { catalog } from '../../playground/catalog'
+import { overviewCatalog as catalog } from '../../playground/catalog'
 
-test('home, components and settings are separate routes with browser history', async ({ page }) => {
+test('home, components, tags and settings are separate routes with browser history', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: '主导航', exact: true })
-  await expect(nav.getByRole('link')).toHaveText(['首页', '组件', '设置'])
+  await expect(nav.getByRole('link')).toHaveText(['首页', '组件', 'Material', '材质实验室', '设置'])
   await expect(page.locator('.sidebar')).toHaveCount(0)
   await expect(page.locator('.specimen')).toHaveCount(6)
   await nav.getByRole('link', { name: '组件', exact: true }).click()
   await expect(page).toHaveURL(/\/components$/)
   await expect(page.locator('.sidebar')).toBeVisible()
   await expect(page.locator('.component-demo')).toHaveCount(catalog.length)
+  await expect(page.locator('#apple-tag')).toHaveCount(0)
+  await expect(page.locator('.sidebar').getByRole('treeitem', { name: '标签', exact: true })).toHaveCount(0)
+  await nav.getByRole('link', { name: '材质实验室', exact: true }).click()
+  await expect(page).toHaveURL(/\/tags$/)
+  await expect(page).toHaveTitle('材质实验室 · Apptify')
+  await expect(nav.getByRole('link', { name: '材质实验室', exact: true })).toHaveAttribute('aria-current', 'page')
+  await expect(page.locator('.component-demo')).toHaveCount(1)
+  await expect(page.locator('#apple-tag .apple-tag')).toHaveText(['默认标签', '已完成', '进行中', '待确认', '设计系统'])
+  await page.reload()
+  await expect(page.getByRole('heading', { name: '材质实验室', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: '代码与 API', exact: true })).toHaveAttribute('href', '/component-docs/apple-tag')
   await nav.getByRole('link', { name: '设置', exact: true }).click()
   await expect(page).toHaveURL(/\/settings$/)
   await expect(page.locator('.sidebar')).toHaveCount(0)
   await page.reload()
   await expect(page.getByRole('heading', { name: '设置', exact: true })).toBeVisible()
   await expect(nav.getByRole('link', { name: '设置', exact: true })).toHaveAttribute('aria-current', 'page')
+  await page.goBack()
+  await expect(page).toHaveURL(/\/tags$/)
+  await expect(page.locator('#apple-tag')).toBeVisible()
   await page.goBack()
   await expect(page.locator('.component-demo')).toHaveCount(catalog.length)
   await page.goBack()
@@ -104,11 +118,11 @@ test('theme and motion preferences persist across routes and reloads', async ({ 
 })
 
 for (const width of [320, 390, 768, 1440]) {
-  test(`all three pages fit at ${width}px and the user control stays at the right`, async ({ page }) => {
+  test(`all four pages fit at ${width}px and the user control stays at the right`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))
-    for (const route of ['/', '/components', '/settings']) {
+    for (const route of ['/', '/components', '/tags', '/settings']) {
       await page.goto(route)
       await expect(page.locator('main')).toBeVisible()
       await waitForPageLayout(page)

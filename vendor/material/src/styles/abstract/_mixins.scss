@@ -1,0 +1,519 @@
+// src/styles/abstract/_mixins.scss
+@use 'sass:map';
+@use 'sass:list';
+@use 'sass:math';
+@use 'base' as base;
+@use 'variables' as v;
+@use 'functions' as f;
+
+// Common icons map
+$icons: (
+  'chevron_right': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpolyline points="9 18 15 12 9 6"%3E%3C/polyline%3E%3C/svg%3E',
+  'chevron_down': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpolyline points="6 9 12 15 18 9"%3E%3C/polyline%3E%3C/svg%3E',
+  'check': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpolyline points="20 6 9 17 4 12"%3E%3C/polyline%3E%3C/svg%3E'
+);
+
+@mixin icon($name, $size: 24px) {
+  $icon-url: map.get($icons, $name);
+  @if $icon-url {
+    content: '';
+    display: inline-block;
+    width: $size;
+    height: $size;
+    background-image: url($icon-url);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
+
+// Typography
+@mixin typography($scale) {
+  $styles: f.get-typography($scale);
+  // The role's face as its reference token, the compiled family as the fallback
+  // An app or theme sets --{prefix}-ref-typeface-brand or -plain
+  font-family: var(--#{base.$prefix}-ref-typeface-#{f.typeface($scale)}, #{map.get($styles, 'font-family')});
+  font-size: map.get($styles, 'font-size');
+  line-height: map.get($styles, 'line-height');
+  letter-spacing: map.get($styles, 'letter-spacing');
+  font-weight: map.get($styles, 'font-weight');
+}
+
+/// A typescale role through its custom properties: the
+/// `--{prefix}-sys-typescale-{role}-*` tokens base/_tokens.scss emits from the
+/// same map, so setting `--{prefix}-ref-typeface-brand`/`-plain`, or a size
+/// token, reaches everything that uses it.
+@mixin typescale($role) {
+  $t: '--#{base.$prefix}-sys-typescale-#{$role}';
+  font-family: var(#{$t}-font);
+  font-size: var(#{$t}-font-size);
+  line-height: var(#{$t}-line-height);
+  letter-spacing: var(#{$t}-letter-spacing);
+  font-weight: var(#{$t}-font-weight);
+}
+
+// State Layers
+@mixin state-layer($color, $state: 'hover', $selector: false) {
+  // The host is the layer's containing block, so a static host needs a
+  // position. A host that already has one (a fixed corner FAB, an absolute or
+  // sticky element of the app's own) keeps it: `:where()` gives this
+  // declaration no specificity, so any other position wins, here or in the
+  // page. Written beside the state selector it was (0,2,0) and beat the
+  // corner classes' (0,1,0), which took the button out of its corner while
+  // hovered, focused or pressed.
+  @at-root :where(&) {
+    position: relative;
+  }
+
+  // The ripple is the press (as Compose draws it: one pressed indication at
+  // 0.10). An element that carries a ripple leaves its pressed layer to the wave, so
+  // the two no longer add up to about 0.18; one without a ripple keeps it.
+  @if $state == 'pressed' {
+    &:not(:has(> .#{base.$prefix}-ripple)) {
+      @include -state-layer-surface($color, $state, $selector);
+    }
+  } @else {
+    @include -state-layer-surface($color, $state, $selector);
+  }
+}
+
+@mixin -state-layer-surface($color, $state, $selector) {
+  @if $selector == false {
+    // Default behavior - create a pseudo-element for the state layer
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: $color;
+      opacity: f.get-state-opacity($state);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+  } @else {
+    // Use the provided selector
+    #{$selector} {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: $color;
+      opacity: f.get-state-opacity($state);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+  }
+}
+
+// Elevation
+@mixin elevation($level) {
+  box-shadow: f.get-elevation($level);
+}
+
+// Motion
+//
+// One transition on an M3 Expressive spring token: `spring(transform,
+// default-spatial)`. Spatial springs move position, size and shape and may
+// overshoot; effects springs change opacity and colour and never do.
+// A delay lets a property wait for another transition, such as visibility
+// flipping to hidden only once a fade has finished.
+@function spring($property, $token, $delay: null) {
+  $transition: $property v.motion('spring-#{$token}-duration') v.motion('spring-#{$token}-easing');
+  @if $delay {
+    $transition: list.append($transition, $delay);
+  }
+  @return $transition;
+}
+
+// How long a spring token takes to settle, for delays tied to it.
+@function spring-duration($token) {
+  @return v.motion('spring-#{$token}-duration');
+}
+
+// Sheets that slide in on a spatial spring overshoot their resting place, so
+// for a moment a gap would open between the sheet and the screen edge it is
+// docked to. Compose stretches the sheet over that gap; a solid shadow of the
+// sheet's own colour, extended past the docked edge, covers it without a scale.
+// The spring overshoots by about 1.5% of the distance travelled.
+$sheet-overshoot-guard: 32px;
+
+@mixin motion-transition($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short2') v.motion('easing-standard'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-exit($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short4') v.motion('easing-exit'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-enter($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short4') v.motion('easing-enter'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+// New mixins for specific animation behaviors
+@mixin motion-appear($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short3') v.motion('easing-appear'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-disappear($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short2') v.motion('easing-disappear'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-expand($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short4') v.motion('easing-expand'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-collapse($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short3') v.motion('easing-collapse'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+// Focus Ring
+@mixin focus-ring($color: var(--#{v.$prefix}-sys-color-primary), $width: 2px, $offset: 2px) {
+  &:focus-visible {
+    outline: $width solid $color;
+    outline-offset: $offset;
+    @include elevation(1);
+  }
+}
+
+// Interactive States
+@mixin interactive-states($config: ()) {
+  $default-config: (
+    base-color: var(--#{v.$prefix}-sys-color-primary),
+    hover-state: true,
+    focus-state: true,
+    active-state: true,
+    disabled-state: true,
+    disabled-opacity: 0.38
+  );
+  
+  $config: map.merge($default-config, $config);
+  
+  @if map.get($config, hover-state) {
+    &:hover {
+      @include state-layer(map.get($config, base-color), 'hover');
+    }
+  }
+  
+  @if map.get($config, focus-state) {
+    &:focus {
+      @include state-layer(map.get($config, base-color), 'focus');
+    }
+  }
+  
+  @if map.get($config, active-state) {
+    &:active {
+      @include state-layer(map.get($config, base-color), 'pressed');
+    }
+  }
+  
+  @if map.get($config, disabled-state) {
+    &:disabled {
+      opacity: map.get($config, disabled-opacity);
+      pointer-events: none;
+    }
+  }
+}
+
+// Layout
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin center-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin container($max-width: 1200px, $padding: 24px) {
+  width: 100%;
+  max-width: $max-width;
+  margin-inline: auto;
+  padding-inline: $padding;
+}
+
+// Text
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Shape
+@mixin shape($size) {
+  border-radius: f.get-shape($size);
+}
+
+// Media Queries
+@mixin breakpoint-up($size) {
+  @media (min-width: f.get-breakpoint($size)) {
+    @content;
+  }
+}
+
+@mixin breakpoint-down($size) {
+  @media (max-width: f.get-breakpoint($size) - 1) {
+    @content;
+  }
+}
+
+@mixin breakpoint-between($min, $max) {
+  @media (min-width: f.get-breakpoint($min)) and (max-width: f.get-breakpoint($max) - 1) {
+    @content;
+  }
+}
+
+// A11y
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin high-contrast {
+  @media (forced-colors: active) {
+    @content;
+  }
+}
+
+// RTL Support
+//
+// Three forms, because the rule has to reach where it is written and resolve
+// the direction the way the element does: the NEAREST `[dir]`, as `:dir()`
+// carries it. An attribute selector cannot say "nearest" — `[dir='rtl'] &`
+// matches any right-to-left ancestor, so markup in a `dir="ltr"` subtree of an
+// RTL page mirrored by the page root. The roots the library manages carry the
+// direction they resolved as a class (src/core/dom/direction.ts):
+//
+// - `:where(.mtrl-rtl) &` for a factory's markup, which is light DOM: its root
+//   carries the class, and the part is its descendant;
+// - `:where(:host(.mtrl-rtl)) &` for a part inside a shadow root, where no
+//   ancestor is `[dir='rtl']` and `:host()` is the only way in; it matches
+//   nothing in the light DOM, so it is inert there.
+//
+// `[dir='rtl'] &` stays for markup the runtime does not manage (hand-written
+// classes, server output before hydration). A root that resolved its nearest
+// direction left-to-right carries `mtrl-ltr`, and its subtree is cut from that
+// form: the page root no longer wins over a nearer boundary. `:where()` keeps
+// the classes and the cut out of the specificity, as an attribute on an
+// ancestor was: the rule replaces the physical rule it mirrors, and a state
+// rule more specific than that physical rule still wins (a drawer's open
+// transform over its closed position). `:dir()` itself stays out of the sheet:
+// consumer bundlers lower it into `:lang()` lists that match no `dir`
+// (src/styles/components/_text-field.scss).
+// A component factory rendered inside a shadow root the app owns needs the
+// direction set in the app's own stylesheet, or the class on that root.
+// A rule inside the block adds to the part with a compound (`&.x`,
+// `&:hover`), never a suffix: a suffix (`&__x`) cannot follow the guard's
+// `:not()`. A rule whose subject is a BEM element or a variant class goes
+// through `rtl-selector` instead, which writes the subject out.
+//
+// `$self: true` for a value the include site sets on itself (a factory's root):
+// its reflected class or its own `dir` matches, the nearest boundary, uncut.
+@mixin rtl($self: false) {
+  $arms: ":where(.#{base.$prefix}-rtl) &, :where(:host(.#{base.$prefix}-rtl)) &, [dir='rtl'] &:not(:where(.#{base.$prefix}-ltr, .#{base.$prefix}-ltr *))";
+  @if $self { $arms: "&:where(.#{base.$prefix}-rtl, [dir='rtl']), #{$arms}"; }
+  #{$arms} { @content; }
+}
+
+// The same three arms for a subject that is not the include site's selector
+// extended: a BEM element or a variant class, which a suffix on `&` would
+// replace the subject with and the guard sits on the wrong compound for.
+// `$subject` is the class at the call site (e.g. `".#{$component}__item"`).
+@mixin rtl-selector($subject) {
+  @at-root {
+    :where(.#{base.$prefix}-rtl) #{$subject},
+    :where(:host(.#{base.$prefix}-rtl)) #{$subject},
+    [dir='rtl'] #{$subject}:not(:where(.#{base.$prefix}-ltr, .#{base.$prefix}-ltr *)) {
+      @content;
+    }
+  }
+}
+
+@mixin touch-target($size: 48px) {
+  // Position first to avoid the deprecation warning
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    // Centred physically, as the icon button's own rule is. The
+    // translate is physical, so the offsets must be: a logical inline-start
+    // inset pinned the box's inline-start edge to the centre, and the translate
+    // then moved the whole box a further 24px past it — a full box-width off
+    // under RTL. Not `inset: 50%` either: over-constrained, and the offset CSS
+    // drops under RTL leaves the same wrong physical edge anchored.
+    top: 50%;
+    left: 50%;
+    width: $size;
+    height: $size;
+    transform: translate(-50%, -50%);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+  
+  @media (forced-colors: active) {
+    @content;
+  }
+}
+
+// Scrollbars
+@mixin custom-scrollbar($config: ()) {
+  $default-config: (
+    width: 8px,
+    track-color: transparent,
+    thumb-color: rgba(0, 0, 0, 0.2),
+    thumb-hover-color: rgba(0, 0, 0, 0.3)
+  );
+  
+  $config: map.merge($default-config, $config);
+  
+  &::-webkit-scrollbar {
+    width: map.get($config, width);
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: map.get($config, track-color);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: map.get($config, thumb-color);
+    border-radius: f.get-shape('full');
+    
+    &:hover {
+      background: map.get($config, thumb-hover-color);
+    }
+  }
+}
+
+
+// Scrollbar mixin for consistent styling across components
+@mixin scrollbar(
+  $width: 8px,
+  $track-color: rgba(0, 0, 0, 0.05),
+  $thumb-color: rgba(0, 0, 0, 0.2)
+) {
+  &::-webkit-scrollbar {
+    width: $width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: math.div($width, 2);
+  }
+  
+  // Firefox scrollbar (future compatibility)
+  scrollbar-width: thin;
+  scrollbar-color: $thumb-color $track-color;
+}
+
+
+// Flexbox layout mixins
+@mixin flex-row($align: center, $justify: flex-start, $gap: 0) {
+  display: flex;
+  flex-direction: row;
+  align-items: $align;
+  justify-content: $justify;
+  @if $gap > 0 {
+    gap: $gap;
+  }
+}
+
+@mixin flex-column($align: flex-start, $justify: flex-start, $gap: 0) {
+  display: flex;
+  flex-direction: column;
+  align-items: $align;
+  justify-content: $justify;
+  @if $gap > 0 {
+    gap: $gap;
+  }
+}
+
+// Print
+@mixin print {
+  @media print {
+    @content;
+  }
+}

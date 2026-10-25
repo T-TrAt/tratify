@@ -1,0 +1,386 @@
+// src/components/progress/types.ts
+
+/**
+ * Progress variant types
+ * @category Components
+ */
+export type ProgressVariant = "linear" | "circular";
+
+/**
+ * Progress thickness options
+ * @category Components
+ */
+export type ProgressThickness = "thin" | "thick" | number;
+
+/**
+ * Progress shape options (linear only)
+ * @category Components
+ */
+export type ProgressShape = "flat" | "wavy";
+
+/**
+ * Progress component event types
+ * @category Components
+ */
+export type ProgressEvent = "change" | "complete";
+
+/**
+ * Configuration interface for the Progress component
+ * @category Components
+ */
+export interface ProgressConfig {
+  /**
+   * Progress variant that determines visual style
+   * @default 'linear'
+   */
+  variant?: ProgressVariant;
+
+  /**
+   * Initial progress value (0-100)
+   * @default 0
+   */
+  value?: number;
+
+  /**
+   * Whether the progress indicator is initially disabled
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Maximum value
+   * @default 100
+   */
+  max?: number;
+
+  /**
+   * Buffer value for linear progress with buffer (like video loading)
+   * @default 0
+   */
+  buffer?: number;
+
+  /**
+   * Additional CSS classes to add to the progress component
+   */
+  class?: string;
+
+  /**
+   * Thickness of the progress track and indicator
+   * Can be a named preset ('thin', 'default', 'thick') or a specific number in pixels
+   * @default 'thin'
+   */
+  thickness?: ProgressThickness;
+
+  /**
+   * Shape of the linear indeterminate progress animation
+   * Only affects linear variant in indeterminate state
+   * @default 'flat'
+   */
+  shape?: ProgressShape;
+
+  /**
+   * Whether to show text label with percentage
+   * @default false
+   */
+  showLabel?: boolean;
+
+  /**
+   * Whether progress is indeterminate (shows animation without specific value)
+   * @default false
+   */
+  indeterminate?: boolean;
+
+  /**
+   * Whether to mark the end of a linear determinate track with a 4dp dot.
+   * The dot is required unless the track has at least 3:1 contrast with
+   * everything around it (M3 progress indicator accessibility), so it is on
+   * by default.
+   * @default true
+   */
+  showStopIndicator?: boolean;
+
+  /**
+   * Accessible name: what is loading, such as "Loading news article"
+   * @default 'Loading'
+   */
+  ariaLabel?: string;
+
+  /**
+   * Custom label formatter function
+   */
+  labelFormatter?: (value: number, max: number) => string;
+
+  /**
+   * Component prefix for class names
+   * @default 'mtrl'
+   */
+  prefix?: string;
+
+  /**
+   * Component name used in class generation
+   * @default 'progress'
+   */
+  componentName?: string;
+
+  /**
+   * DOM structure schema
+   * @internal
+   */
+  schema?: object;
+
+  /**
+   * Size of the circular progress indicator in dp (only for circular variant)
+   * Clamped between 24 and 240
+   * @default 40 (48 when wavy)
+   */
+  size?: number;
+}
+
+/**
+ * Progress component interface
+ * @category Components
+ */
+/** What progress events carry. */
+export interface ProgressEventPayload {
+  value: number;
+  max: number;
+}
+
+/**
+ * The progress events.
+ * @category Components
+ */
+export interface ProgressEvents {
+  /** The value was set */
+  change: (event: ProgressEventPayload) => void;
+  /** The value reached the maximum */
+  complete: (event: ProgressEventPayload) => void;
+}
+
+/**
+ * What the progress draws with. **Not part of the public contract** (3.0.0):
+ * these five were on `ProgressComponent`, which tied the public type to one
+ * way of drawing the indicator. They are still on the object the factory
+ * returns, for the library's own code and tests; how the indicator is drawn
+ * may change in any release. The canvas is the element's own:
+ * `progress.element.querySelector('canvas')`. Nothing needs to call `resize`:
+ * the component observes its own size.
+ * @internal
+ */
+export interface ProgressInternals {
+  /** The canvas the indicator is drawn on */
+  canvas: HTMLCanvasElement;
+  /** Re-measures the canvas and redraws; the component does this on resize */
+  resize: () => void;
+  /** The canvas again: these three named the parts of the SVG this replaced */
+  track: SVGElement;
+  indicator: SVGElement;
+  buffer: SVGElement;
+}
+
+export interface ProgressComponent {
+  /** The component's root DOM element */
+  element: HTMLElement;
+
+  /**
+   * Gets a class name with the component's prefix
+   * @param name - Base class name
+   * @returns Prefixed class name
+   */
+  getClass: (name: string) => string;
+
+  /**
+   * Sets the progress value
+   * @param value - Progress value between 0 and max
+   * @param animate - Whether to animate the value change (default: true)
+   * @returns The component instance for chaining
+   */
+  setValue: (value: number, animate?: boolean) => ProgressComponent;
+
+  /**
+   * Gets the current progress value
+   * @returns Current progress value
+   */
+  getValue: () => number;
+
+  /**
+   * Gets the maximum progress value
+   * @returns Maximum progress value
+   */
+  getMax: () => number;
+
+  /**
+   * Sets the buffer value (for linear variant with buffer indicators)
+   * @param value - Buffer value (between 0 and max)
+   * @returns The progress component for chaining
+   */
+  setBuffer: (value: number) => ProgressComponent;
+
+  /**
+   * Gets the current buffer value
+   * @returns Current buffer value
+   */
+  getBuffer: () => number;
+
+  /**
+   * Enables the progress component
+   * @returns The progress component for chaining
+   */
+  enable: () => ProgressComponent;
+
+  /**
+   * Disables the progress component
+   * @returns The progress component for chaining
+   */
+  disable: () => ProgressComponent;
+
+  /**
+   * Checks if the component is disabled
+   * @returns Whether the component is disabled
+   */
+  isDisabled: () => boolean;
+
+  /**
+   * Hides the progress component
+   * @returns The progress component for chaining
+   */
+  hide: () => ProgressComponent;
+
+  /**
+   * Shows the progress component
+   * @returns The progress component for chaining
+   */
+  show: () => ProgressComponent;
+
+  /**
+   * Checks if the progress component is visible
+   * @returns Whether the component is visible
+   */
+  isVisible: () => boolean;
+
+  /**
+   * Shows the label element
+   * @returns The progress component for chaining
+   */
+  showLabel: () => ProgressComponent;
+
+  /**
+   * Hides the label element
+   * @returns The progress component for chaining
+   */
+  hideLabel: () => ProgressComponent;
+
+  /**
+   * Sets a custom formatter for the label
+   * @param formatter - Function that formats the label text
+   * @returns The progress component for chaining
+   */
+  setLabelFormatter: (
+    formatter: (value: number, max: number) => string,
+  ) => ProgressComponent;
+
+  /**
+   * Sets the thickness of the progress track and indicator
+   * @param thickness - Thickness value ('thin', 'default', 'thick' or number in pixels)
+   * @returns The progress component for chaining
+   */
+  setThickness: (thickness: ProgressThickness) => ProgressComponent;
+
+  /**
+   * Gets the current thickness value in pixels
+   * @returns Current thickness in pixels
+   */
+  getThickness: () => number;
+
+  /**
+   * Sets the shape of the linear indeterminate progress animation
+   * Only affects linear variant in indeterminate state
+   * @param shape - Shape value ('flat' or 'wavy')
+   * @returns The progress component for chaining
+   */
+  setShape: (shape: ProgressShape) => ProgressComponent;
+
+  /**
+   * Gets the current shape value
+   * @returns Current shape
+   */
+  getShape: () => ProgressShape;
+
+  /**
+   * Sets the indeterminate state
+   * @param indeterminate - Whether progress is indeterminate
+   * @returns The progress component for chaining
+   */
+  setIndeterminate: (indeterminate: boolean) => ProgressComponent;
+
+  /**
+   * Checks if the component is in indeterminate state
+   * @returns Whether the component is indeterminate
+   */
+  isIndeterminate: () => boolean;
+
+  /**
+   * Sets the size of the circular progress indicator
+   * Only applies to circular variant
+   * @param size - Size in pixels (clamped between 24 and 240)
+   * @returns The progress component for chaining
+   */
+  setSize: (size: number) => ProgressComponent;
+
+  /**
+   * Gets the current size of the circular progress indicator
+   * @returns Current size in pixels, or undefined for linear variant
+   */
+  getSize: () => number | undefined;
+
+  /**
+   * Returns a Promise that resolves after the current canvas state
+   * has been painted to screen. Useful when you need to ensure a
+   * value change (e.g. 100%) is visually rendered before proceeding.
+   *
+   * @returns Promise that resolves after the next paint
+   */
+  painted: () => Promise<void>;
+
+  /**
+   * Adds an event listener: `change` when the value is set, `complete` when it
+   * reaches the maximum. Handlers get `{ value, max }` (they got a DOM
+   * CustomEvent, the payload in `event.detail`).
+   */
+  on: <K extends keyof ProgressEvents>(event: K, handler: ProgressEvents[K]) => ProgressComponent;
+
+  /** Removes an event listener */
+  off: <K extends keyof ProgressEvents>(event: K, handler: ProgressEvents[K]) => ProgressComponent;
+
+  /**
+   * Destroys the progress component and cleans up resources
+   */
+  destroy: () => void;
+
+  /**
+   * Adds CSS classes to the progress element
+   * @param classes - One or more class names to add
+   * @returns The progress component for chaining
+   */
+  addClass: (...classes: string[]) => ProgressComponent;
+
+  /**
+   * API for managing disabled state
+   */
+  disabled: {
+    /** Enables the progress */
+    enable: () => void;
+    /** Disables the progress */
+    disable: () => void;
+    /** Checks if the progress is disabled */
+    isDisabled: () => boolean;
+  };
+
+  /**
+   * API for managing component lifecycle
+   */
+  lifecycle: {
+    /** Destroys the component and cleans up resources */
+    destroy: () => void;
+  };
+}

@@ -62,6 +62,8 @@ onBeforeUnmount(cancelEntrance)
 const navigation = [
   { label: '首页', value: '/', href: '/' },
   { label: '组件', value: '/components', href: '/components' },
+  { label: 'Material', value: '/material', href: '/material' },
+  { label: '材质实验室', value: '/tags', href: '/tags' },
   { label: '设置', value: '/settings', href: '/settings' },
 ]
 

@@ -30,6 +30,9 @@ for (const path of ['package.json', 'vite.config.ts', 'tsconfig.json', 'README.m
 assert(contents.has('tooling/create-playground.mjs'))
 assert(contents.has('dist/apptify.js'))
 assert(contents.has('dist/apptify.css'))
+assert(contents.has('vendor/glass-ui-kit/LICENSE'))
+assert(contents.has('vendor/glass-ui-kit/palettes.json'))
+assert(contents.has('vendor/material/generated/GLASS-UI-KIT-LICENSE'))
 console.log('Pack manifest includes every playground source and public resource (' + Object.keys(snapshot.files).length + ' files).')
 
 const installer = join(scratch, 'installer')
@@ -101,9 +104,13 @@ async function serve() {
 
 const browser = await chromium.launch({ channel: 'chrome' })
 const errors = []
-async function settledScreenshot(page, name) {
-  await page.evaluate(async () => { await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame) })
+async function settledLayout(page) {
+  await page.waitForLoadState('networkidle')
+  await page.evaluate(async () => { await document.fonts.ready; await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame) })
   await page.waitForFunction(() => !document.getAnimations().some(animation => animation.playState === 'running' && Number.isFinite(Number(animation.effect?.getComputedTiming().endTime))))
+}
+async function settledScreenshot(page, name) {
+  await settledLayout(page)
   await page.screenshot({ path: join(scratch, name) })
 }
 async function checkPage(baseURL, path, check) {
@@ -111,6 +118,7 @@ async function checkPage(baseURL, path, check) {
   page.on('pageerror', error => errors.push(error.message))
   await page.goto(new URL(path, baseURL).href)
   await check(page)
+  await settledLayout(page)
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Page overflow: ' + path)
   await page.close()
 }
@@ -147,6 +155,29 @@ try {
     await expect(frame.locator('.apple-input-wrap input').first()).toHaveValue('Template src preview')
   })
   await checkPage(server.url, '/component-docs/apple-table', checkTableHandbook)
+  await checkPage(server.url, '/material', async page => {
+    await expect(page.locator('.material-card')).toHaveCount(37)
+    const button = page.locator('#material-button')
+    await button.getByRole('button', { name: '主要操作', exact: true }).click()
+    await expect(button.locator('output')).toHaveText('已点击主要操作')
+    for (const slider of await page.locator('#material-slider m-slider').all()) {
+      assert((await slider.locator('[part="track"]').boundingBox()).width > 200, 'Material slider must fill its preview')
+    }
+    await page.locator('.material-heading').getByRole('link', { name: '主题色', exact: true }).click()
+    await page.getByRole('group', { name: 'Material 主题色', exact: true }).getByRole('button', { name: '海洋蓝', exact: true }).click()
+    await page.locator('.site-nav').getByRole('link', { name: 'Material', exact: true }).click()
+    await expect(page.locator('.material-content > .apptify-material')).toHaveAttribute('data-theme', 'ocean')
+    await expect(button.getByRole('button', { name: '主要操作', exact: true })).toHaveCSS('background-color', 'rgb(0, 100, 147)')
+    await page.reload()
+    await expect(page.locator('.material-content > .apptify-material')).toHaveAttribute('data-theme', 'ocean')
+    await page.locator('.material-heading').getByRole('link', { name: '主题色', exact: true }).click()
+    await page.getByRole('radiogroup', { name: '配色系列', exact: true }).getByText('Glass UI Kit', { exact: true }).click()
+    await page.getByRole('group', { name: 'Material 主题色', exact: true }).getByRole('button', { name: 'Mauve', exact: true }).click()
+    await page.locator('.site-nav').getByRole('link', { name: 'Material', exact: true }).click()
+    await expect(page.locator('.material-content > .apptify-material')).toHaveAttribute('data-theme', 'mauve')
+    await page.reload()
+    await expect(page.locator('.material-content > .apptify-material')).toHaveAttribute('data-theme', 'mauve')
+  })
   await checkPage(server.url, '/settings', async page => {
     await page.setViewportSize({ width: 320, height: 900 })
     await page.getByRole('button', { name: '深色', exact: true }).click()
@@ -176,7 +207,9 @@ try {
 
   await rm(join(app, 'src/views/index.vue'))
   await rm(join(app, 'src/views/components.vue'))
-  // These files only served the removed overview page. Deleting them must be optional.
+  await rm(join(app, 'src/views/tags.vue'))
+  await rm(join(app, 'src/views/material.vue'))
+  // Remove demo routes before deleting their shared catalog and previews.
   await rm(join(app, 'src/ComponentDemo.vue'))
   await rm(join(app, 'src/catalog.ts'))
   await rm(join(app, 'src/components/ComponentIndex.vue'))

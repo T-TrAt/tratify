@@ -1,0 +1,697 @@
+// src/styles/components/_drawer.scss
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-drawer";
+
+// Must match DRAWER_DEFAULTS.WIDTH in constants.ts
+// Only used as a CSS fallback if --#{base.$prefix}-drawer-width is not set by JS
+$default-width: 360px;
+
+// ==========================================================================
+// ROOT CONTAINER
+// ==========================================================================
+
+.#{$component} {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    z-index: 1200;
+    pointer-events: none;
+
+    // --open modifier enables interaction
+    &--open {
+        pointer-events: auto;
+
+        // Use the same spatial motion for entry and exit. Opacity past 1 is
+        // clamped, so the scrim follows the sheet without overshooting.
+        .#{$component}__sheet {
+            transform: translateX(0);
+            visibility: visible;
+            transition: m.spring(transform, default-spatial);
+        }
+
+        .#{$component}__scrim {
+            pointer-events: auto;
+        }
+
+        .#{$component}__scrim--visible {
+            opacity: 1;
+            transition: m.spring(opacity, default-spatial);
+        }
+    }
+
+    // ========================================================================
+    // POSITION VARIANTS
+    // ========================================================================
+
+    &--start {
+        .#{$component}__sheet {
+            left: 0;
+            right: auto;
+            border-top-right-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+            border-bottom-right-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            transform: translateX(-100%);
+        }
+
+        @include m.rtl {
+            .#{$component}__sheet {
+                left: auto;
+                right: 0;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+                border-top-left-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+                border-bottom-left-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+                transform: translateX(100%);
+            }
+        }
+
+        &.#{$component}--open {
+            .#{$component}__sheet {
+                transform: translateX(0);
+            }
+        }
+    }
+
+    &--end {
+        .#{$component}__sheet {
+            left: auto;
+            right: 0;
+            border-top-left-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+            border-bottom-left-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            transform: translateX(100%);
+        }
+
+        @include m.rtl {
+            .#{$component}__sheet {
+                left: 0;
+                right: auto;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+                border-top-right-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+                border-bottom-right-radius: v.shape('large'); // NavigationDrawerTokens container-shape: corner-large-end
+                transform: translateX(-100%);
+            }
+        }
+
+        &.#{$component}--open {
+            .#{$component}__sheet {
+                transform: translateX(0);
+            }
+        }
+    }
+
+    // ========================================================================
+    // VARIANT: STANDARD
+    // ========================================================================
+
+    &--standard {
+        position: relative;
+        z-index: auto;
+        pointer-events: auto;
+        flex-shrink: 0;
+        overflow: hidden;
+        // Closed: collapse to 0. --#{base.$prefix}-drawer-width is set inline by the JS component.
+        width: 0;
+        // Compose's DismissibleNavigationDrawer: open on the default spatial
+        // spring, close on fast effects
+        transition: m.spring(width, fast-effects);
+
+        .#{$component}__sheet {
+            position: relative;
+            background-color: t.color("surface");
+            @include m.elevation(0);
+            // While the width overshoots, the sheet stretches with it rather
+            // than leaving a strip between its edge and the page
+            min-width: 100%;
+        }
+
+        // The growing width is the slide: the sheet hangs from the edge facing
+        // the page, so it follows that edge without a transform of its own. A
+        // transform on the same spring would carry the sheet off the screen
+        // edge while it overshoots, where the root clips anything covering the gap.
+        &.#{$component}--start .#{$component}__sheet {
+            align-self: flex-end;
+        }
+
+        &.#{$component}--end .#{$component}__sheet {
+            align-self: flex-start;
+        }
+
+        &.#{$component} .#{$component}__sheet,
+        &.#{$component}--open .#{$component}__sheet {
+            transform: none;
+        }
+
+        // Open — expand to the concrete width value via custom property
+        &.#{$component}--open {
+            width: var(--#{base.$prefix}-drawer-width, $default-width);
+            transition: m.spring(width, default-spatial);
+        }
+
+        // Border on the end edge (standard variant visual separator)
+        &.#{$component}--start {
+            .#{$component}__sheet {
+                border-right: 1px solid t.color("outline-variant");
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            @include m.rtl {
+                .#{$component}__sheet {
+                    border-right: none;
+                    border-left: 1px solid t.color("outline-variant");
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                }
+            }
+        }
+
+        &.#{$component}--end {
+            .#{$component}__sheet {
+                border-left: 1px solid t.color("outline-variant");
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            @include m.rtl {
+                .#{$component}__sheet {
+                    border-left: none;
+                    border-right: 1px solid t.color("outline-variant");
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+            }
+        }
+    }
+
+    // ========================================================================
+    // VARIANT: MODAL
+    // ========================================================================
+
+    &--modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1200;
+
+        .#{$component}__sheet {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background-color: t.color("surface-container-low");
+            @include m.elevation(1);
+        }
+
+        // Cover the gap the spring's overshoot opens at the docked edge
+        &.#{$component}--start .#{$component}__sheet {
+            box-shadow: f.get-elevation(1), (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface-container-low");
+        }
+
+        &.#{$component}--end .#{$component}__sheet {
+            box-shadow: f.get-elevation(1), m.$sheet-overshoot-guard 0 0 0 t.color("surface-container-low");
+        }
+
+        @include m.rtl {
+            &.#{$component}--start .#{$component}__sheet {
+                box-shadow: f.get-elevation(1), m.$sheet-overshoot-guard 0 0 0 t.color("surface-container-low");
+            }
+
+            &.#{$component}--end .#{$component}__sheet {
+                box-shadow: f.get-elevation(1), (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface-container-low");
+            }
+        }
+    }
+
+    // ========================================================================
+    // SHEET (inner panel)
+    // ========================================================================
+
+    &__sheet {
+        display: flex;
+        flex-direction: column;
+        width: var(--#{base.$prefix}-drawer-width, $default-width);
+        max-width: calc(100vw - 56px);
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        padding: 12px 0;
+        transition: m.spring(transform, default-spatial);
+
+        // Smooth scrollbar
+        scrollbar-width: thin;
+        scrollbar-color: t.color("outline-variant") transparent;
+    }
+
+    // ========================================================================
+    // SCRIM (modal overlay)
+    // ========================================================================
+
+    &__scrim {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+        transition: m.spring(opacity, default-spatial);
+    }
+
+    // ========================================================================
+    // HEADLINE
+    // ========================================================================
+
+    &__headline {
+        @include m.typography("title-small");
+        color: t.color("on-surface-variant");
+        padding: 16px 28px 0;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // ========================================================================
+    // ITEMS CONTAINER
+    // ========================================================================
+
+    &__items {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding: 0;
+        margin: 0;
+    }
+
+    // ========================================================================
+    // NAVIGATION ITEM
+    // ========================================================================
+
+    &__item {
+        display: flex;
+        align-items: center;
+        position: relative;
+        width: calc(100% - 24px);
+        min-height: 56px;
+        flex-shrink: 0;
+        height: 56px;
+        margin: 0 12px;
+        padding: 0 24px 0 16px;
+        gap: 12px;
+        border: none;
+        border-radius: v.shape('full'); // NavigationDrawerTokens active-indicator-shape
+        background: none;
+        cursor: pointer;
+        color: t.color("on-surface-variant");
+        text-decoration: none;
+        box-sizing: border-box;
+        outline: none;
+        // Clip the indicator, the state layer and the ripple to the pill
+        overflow: hidden;
+        isolation: isolate;
+        -webkit-tap-highlight-color: transparent;
+        @include m.typography("label-large");
+        transition: color v.motion("spring-default-effects-duration")
+            v.motion("spring-default-effects-easing");
+
+        // Active indicator: a secondary-container pill that scales in from
+        // the middle of the item when it becomes active and scales back out
+        // when it stops being active (m3.material.io navigation, Android
+        // NavigationBarItemView.ActiveIndicatorTransform: scaleX from 0.4).
+        // The scale takes the spatial spring and the opacity the effects
+        // spring (Compose NavigationBarItem). Leaving the active state, the
+        // fade is stretched over the shrink so the pill is seen shrinking
+        // rather than vanishing; a transition takes the timing of the state
+        // it moves to, so the base rule holds the outgoing timing.
+        .#{$component}__active-indicator {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-color: t.color("secondary-container");
+            opacity: 0;
+            transform: scaleX(0.32);
+            transform-origin: center;
+            pointer-events: none;
+            z-index: 0;
+            transition:
+                transform v.motion("spring-default-spatial-duration")
+                    v.motion("spring-default-spatial-easing"),
+                opacity v.motion("spring-default-spatial-duration")
+                    v.motion("spring-default-effects-easing");
+        }
+
+        // State layer for hover, focus and press, drawn above the indicator
+        // in the item's current content colour
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-color: currentColor;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+            transition: opacity v.motion("spring-default-effects-duration")
+                v.motion("spring-default-effects-easing");
+        }
+
+        // Press ripple, between the indicator and the content
+        .#{base.$prefix}-ripple {
+            z-index: 1;
+        }
+
+        // ======================================================================
+        // HOVER / FOCUS / PRESSED STATES
+        // ======================================================================
+
+        &:hover:not([disabled]) {
+            color: t.color("on-surface");
+
+            &::before {
+                opacity: v.state("hover-state-layer-opacity");
+            }
+        }
+
+        &:focus-visible {
+            color: t.color("on-surface");
+
+            &::before {
+                opacity: v.state("focus-state-layer-opacity");
+            }
+        }
+
+        &:active:not([disabled]) {
+            color: t.color("on-surface");
+
+            // A rippled item leaves the press to its ripple.
+            &:not(:has(> .#{base.$prefix}-ripple))::before {
+                opacity: v.state("pressed-state-layer-opacity");
+            }
+        }
+
+        // ======================================================================
+        // ACTIVE / SELECTED STATE
+        // ======================================================================
+
+        &--active,
+        &--active:hover:not([disabled]),
+        &--active:focus-visible,
+        &--active:active:not([disabled]) {
+            color: t.color("on-secondary-container");
+        }
+
+        &--active {
+            .#{$component}__active-indicator {
+                opacity: 1;
+                transform: scaleX(1);
+                transition:
+                    transform v.motion("spring-default-spatial-duration")
+                        v.motion("spring-default-spatial-easing"),
+                    opacity v.motion("spring-default-effects-duration")
+                        v.motion("spring-default-effects-easing");
+            }
+
+            .#{$component}__item-label {
+                font-weight: 700;
+            }
+        }
+
+        // ======================================================================
+        // DISABLED STATE
+        // ======================================================================
+
+        &[disabled] {
+            cursor: default;
+            opacity: 0.38;
+            pointer-events: none;
+        }
+    }
+
+    // ========================================================================
+    // ITEM ICON
+    // ========================================================================
+
+    &__item-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        color: inherit;
+        position: relative;
+        z-index: 2;
+
+        svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+    }
+
+    // ========================================================================
+    // ITEM LABEL
+    // ========================================================================
+
+    &__item-label {
+        flex: 1;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        z-index: 2;
+        color: inherit;
+
+        @include m.rtl {
+            text-align: right;
+        }
+    }
+
+    // ========================================================================
+    // ITEM BADGE
+    // ========================================================================
+
+    &__item-badge {
+        @include m.typography("label-large");
+        color: t.color("on-surface-variant");
+        margin-left: auto;
+        position: relative;
+        z-index: 2;
+        flex-shrink: 0;
+
+        @include m.rtl {
+            margin-left: 0;
+            margin-right: auto;
+        }
+    }
+
+    // ========================================================================
+    // DIVIDER
+    // ========================================================================
+
+    &__divider {
+        width: calc(100% - 56px);
+        height: 1px;
+        margin: 8px 28px;
+        border: none;
+        background-color: t.color("outline-variant");
+    }
+
+    // ========================================================================
+    // SECTION LABEL
+    // ========================================================================
+
+    &__section-label {
+        @include m.typography("title-small");
+        color: t.color("on-surface-variant");
+        padding: 18px 28px 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // ========================================================================
+    // DENSE VARIANT — compact items for admin UIs
+    // ========================================================================
+
+    &--dense {
+        .#{$component}__sheet {
+            padding: 8px 0;
+        }
+
+        .#{$component}__headline {
+            @include m.typography("label-large");
+            padding: 10px 20px 0;
+            margin-bottom: 2px;
+        }
+
+        .#{$component}__item {
+            min-height: 36px;
+            height: 36px;
+            margin: 0 8px;
+            padding: 0 16px 0 12px;
+            width: calc(100% - 16px);
+            gap: 8px;
+            border-radius: v.shape('full');
+            @include m.typography("body-medium");
+
+            .#{$component}__active-indicator {
+                border-radius: v.shape('full');
+            }
+        }
+
+        .#{$component}__item-icon {
+            width: 20px;
+            height: 20px;
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .#{$component}__item-badge {
+            @include m.typography("label-medium");
+        }
+
+        .#{$component}__divider {
+            width: calc(100% - 40px);
+            margin: 4px 20px;
+        }
+
+        .#{$component}__section-label {
+            @include m.typography("label-large");
+            padding: 10px 20px 2px;
+        }
+    }
+
+    // ========================================================================
+    // RTL — item padding direction
+    // ========================================================================
+
+    @include m.rtl-selector('.#{$component}__item') {
+        padding: 0 16px 0 24px;
+    }
+
+    @include m.rtl-selector('.#{$component}--dense .#{$component}__item') {
+        padding: 0 12px 0 16px;
+    }
+
+    // ========================================================================
+    // REDUCED MOTION
+    // ========================================================================
+
+    @include m.reduced-motion {
+        &--standard,
+        &--standard.#{$component}--open {
+            transition: none;
+        }
+
+        &__sheet,
+        &--open .#{$component}__sheet {
+            transition: none;
+        }
+
+        &__scrim,
+        &--open .#{$component}__scrim--visible {
+            transition: none;
+        }
+
+        &__item,
+        &__item::before,
+        &__active-indicator {
+            transition: none;
+        }
+    }
+
+    // ========================================================================
+    // HIGH CONTRAST (forced-colors)
+    // ========================================================================
+
+    @include m.high-contrast {
+        &__sheet {
+            border: 1px solid currentColor;
+        }
+
+        &__item {
+            &--active {
+                .#{$component}__active-indicator {
+                    outline: 2px solid currentColor;
+                    outline-offset: -2px;
+                }
+            }
+
+            &:focus-visible {
+                outline: 2px solid currentColor;
+                outline-offset: -2px;
+            }
+        }
+
+        &__divider {
+            background-color: currentColor;
+        }
+    }
+}
+
+// ==========================================================================
+// layer: "top": a modal drawer's root is a <dialog> the browser shows in the
+// top layer with showModal(). It stays the fixed layer over the page it is
+// without it, so this undoes the user agent's dialog box, and the scrim is its
+// ::backdrop, faded as the scrim was. Keep display and the top-layer overlay
+// until the drawer finishes sliding out.
+// ==========================================================================
+
+dialog.#{$component} {
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+    transition:
+        display m.spring-duration(default-spatial) allow-discrete,
+        overlay m.spring-duration(default-spatial) allow-discrete;
+
+    &:not([open]) {
+        display: none;
+    }
+
+    &::backdrop {
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        transition: m.spring(opacity, default-spatial);
+    }
+
+    // Opacity past 1 is clamped, so the backdrop takes the sheet's timing
+    // without overshooting
+    &.#{$component}--open::backdrop {
+        opacity: 1;
+        transition: m.spring(opacity, default-spatial);
+    }
+
+    @include m.reduced-motion {
+        &,
+        &::backdrop {
+            transition: none;
+        }
+    }
+}

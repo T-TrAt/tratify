@@ -8,6 +8,7 @@ test('mobile menu animates height, dims the page, and reverses cleanly', async (
   const navibar = page.locator('.apple-navibar').first()
   const panel = navibar.locator('.apple-navibar__menu')
   const backdrop = navibar.locator('.apple-navibar__backdrop')
+  await expect(navibar).toHaveClass(/is-collapsed/)
   const sample = await navibar.evaluate(async element => {
     const panel = element.querySelector<HTMLElement>('.apple-navibar__menu')!
     const backdrop = element.querySelector<HTMLElement>('.apple-navibar__backdrop')!
@@ -75,9 +76,10 @@ test('mobile disclosure selects routes, handles Escape and outside clicks, and r
   await toggle.press('ArrowDown')
   await expect(nav.getByRole('link', { name: '首页', exact: true })).toBeFocused()
   await page.screenshot({ path: '/tmp/apptify-checks/navibar-mobile-open.png', animations: 'disabled' })
-  await nav.getByRole('link', { name: '设置', exact: true }).click()
+  await nav.getByRole('link', { name: '材质实验室', exact: true }).click()
   await expect(nav).toBeHidden()
-  await expect(page.getByRole('heading', { name: '设置', exact: true })).toBeVisible()
+  await expect(page).toHaveURL(/\/tags$/)
+  await expect(page.getByRole('heading', { name: '材质实验室', exact: true })).toBeVisible()
   await toggle.focus()
   await page.keyboard.press('ArrowDown')
   await expect(nav.getByRole('link', { name: '首页', exact: true })).toBeFocused()

@@ -1,16 +1,17 @@
-# Apptify
+# Tratify
 
-面向桌面与移动端的 Vue 3 组件库，采用 Apple 风格设计，统一使用 `<apple-*>` 标签。
+T-TrAt 的本地组件开发与展示工作区。保留 Apptify 的 Apple 风格组件，Material 组件以独立包 `tratify` 准备发布。
 
-[npm](https://www.npmjs.com/package/apptify) · [组件 API](docs/COMPONENTS.md) · [应用模板](docs/PLAYGROUND-TEMPLATE.md)
+[GitHub 仓库](https://github.com/T-TrAt/tratify) · [tratify](packages/tratify/README.md) · [Apple 组件 API](docs/COMPONENTS.md) · [本地应用模板](docs/PLAYGROUND-TEMPLATE.md)
 
 ## 快速开始
 
 ```sh
-npm create apptify
+npm ci
+npm run dev
 ```
 
-安装后会自带所有组件说明的样例站。Bundle 包含以下组件之外的内容：
+本地样例站包含所有组件说明。原 Apptify 工具还包括：
 - 自动根据 src/views 生成 routes
 - lucide icons
 - 竖屏、触屏布尔状态
@@ -37,11 +38,11 @@ const confirmed = await dialog.result // 确认 true，取消 false，关闭 und
 
 Props、事件、插槽、自定义主题与弹层消息回传见[组件 API](docs/COMPONENTS.md)。
 
-## 自动发布
+## 发布
 
-推送到 `main` 后，GitHub Actions 会将尚未发布的 `apptify` 和 `create-apptify` 版本发布到 npm。发布前更新对应的 `package.json` 版本；已发布版本自动跳过，预发布版本使用 `next` 标签。
+仅 `packages/tratify` 作为发布包，包名 `tratify`，作者 `T-TrAt`，初始版本 `0.1.0`。仓库为 [T-TrAt/tratify](https://github.com/T-TrAt/tratify)，反馈问题请使用该仓库的 Issues。根包保留 `apptify` 名称以兼容内部导入；它和脚手架 `create-apptify` 均为 `private: true`，不发布到 npm。
 
-在两个 npm 包的 Settings → Trusted Publisher 中选择 GitHub Actions，填写用户 `GARBAGELINUXGRAPHIC`、仓库 `apptify`、工作流文件 `npm-publish.yml`，允许 `npm publish`，环境名留空。使用 OIDC，无需配置或保存 npm token。
+`npm run build:tratify` 只准备 Material 运行时、主题、类型与许可，不生成安装包，也不上传。安装、打包和手动发布命令见 [tratify 说明](packages/tratify/README.md)。原 npm 自动发布工作流与脚本已移除，其余 Actions 工作流移至 `.github/disabled-workflows/`，不会运行。
 
 ## LICENSE
 

@@ -53,6 +53,17 @@ export default function playgroundEditor({ appDir = 'playground', libraryDir = '
       plugins: [vueComponents],
     })
     resources = new Map(bundle.outputFiles.map(file => [file.path.endsWith('.css') ? 'runtime.css' : 'runtime.js', file.contents]))
+    const materialEntry = resolve(config.root, appDir, 'editor/material-runtime.ts')
+    if (existsSync(materialEntry)) {
+      const material = await build({
+        absWorkingDir: config.root, entryPoints: [materialEntry], bundle: true,
+        format: 'esm', platform: 'browser', external: ['vue'], outfile: 'material.js', write: false, minify: true,
+        define: { 'process.env.NODE_ENV': '"production"' },
+      })
+      for (const file of material.outputFiles) resources.set(file.path.endsWith('.css') ? 'material.css' : 'material.js', file.contents)
+      // CSS is linked in the sandbox head; retain a valid side-effect import in copied Vue files.
+      resources.set('material-style.js', Buffer.from('export {}'))
+    }
     resources.set('vue.js', await readFile(require.resolve('vue/dist/vue.runtime.esm-browser.prod.js')))
     resources.set('shims.js', await readFile(require.resolve('es-module-shims')))
   }
@@ -76,7 +87,7 @@ export default function playgroundEditor({ appDir = 'playground', libraryDir = '
     async handleHotUpdate(ctx) {
       const source = libraryDir ? resolve(config.root, libraryDir) + sep : undefined
       const changedFile = resolve(ctx.file)
-      if (!(source && changedFile.startsWith(source)) && changedFile !== resolve(config.root, appDir, 'editor/runtime.ts')) return
+      if (!(source && changedFile.startsWith(source)) && !['runtime.ts', 'material-runtime.ts'].some(name => changedFile === resolve(config.root, appDir, 'editor', name))) return
       // Preview resources are an in-memory bundle, separate from Vite's normal CSS HMR.
       // Rebuild it when library files change, then recreate the preview realm.
       await rebuild()

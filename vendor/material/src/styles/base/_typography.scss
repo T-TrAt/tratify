@@ -1,0 +1,99 @@
+// src/styles/base/_typography.scss
+@use '../abstract/base' as base;
+@use '../abstract/variables' as v;
+@use '../abstract/mixins' as m;
+
+// Typography scale classes
+$prefix: base.$prefix;
+
+// The typescale classes, one per role of the same map the tokens come from,
+// each reading its role's custom properties rather than fixed values, so a
+// typeface or size set on the tokens reaches them
+@each $role, $spec in v.$typescale {
+  .#{$prefix}-#{$role} {
+    @include m.typescale($role);
+  }
+}
+
+// Convenience modifiers
+.#{$prefix}-text-center {
+  text-align: center;
+}
+
+.#{$prefix}-text-left {
+  text-align: left;
+}
+
+.#{$prefix}-text-right {
+  text-align: right;
+}
+
+// Font weight modifiers
+.#{$prefix}-font-thin {
+  font-weight: 100;
+}
+
+.#{$prefix}-font-light {
+  font-weight: 300;
+}
+
+.#{$prefix}-font-regular {
+  font-weight: 400;
+}
+
+.#{$prefix}-font-medium {
+  font-weight: 500;
+}
+
+.#{$prefix}-font-bold {
+  font-weight: 700;
+}
+
+// Text truncation with ellipsis
+.#{$prefix}-truncate {
+  @include m.truncate;
+}
+
+.#{$prefix}-truncate-2 {
+  @include m.truncate(2);
+}
+
+.#{$prefix}-truncate-3 {
+  @include m.truncate(3);
+}
+
+// Set base styles for heading elements
+h1 {
+  @include m.typescale('headline-large');
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  @include m.typescale('headline-medium');
+  margin-bottom: 0.5em;
+}
+
+h3 {
+  @include m.typescale('headline-small');
+  margin-bottom: 0.5em;
+}
+
+h4 {
+  @include m.typescale('title-large');
+  margin-bottom: 0.5em;
+}
+
+h5 {
+  @include m.typescale('title-medium');
+  margin-bottom: 0.5em;
+}
+
+h6 {
+  @include m.typescale('title-small');
+  margin-bottom: 0.5em;
+}
+
+p {
+  @include m.typescale('body-medium');
+  margin-bottom: 1em;
+}

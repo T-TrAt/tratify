@@ -1,0 +1,96 @@
+// src/core/index.ts
+/**
+ * @module core
+ * @description Core utilities and building blocks for the component system
+ *
+ * This module provides the foundational elements used to build components
+ * in a functional, composable way.
+ *
+ * @packageDocumentation
+ */
+
+// Re-export core modules by category
+// This makes imports cleaner for library users while maintaining an organized codebase
+
+// 1. Component composition system
+export * from "./compose";
+
+// 2. DOM manipulation utilities
+export * from "./dom";
+
+// Colour roles to theme tokens
+export { schemeToTokens, THEME_ROLES } from "./theme";
+export type { ThemeRole, SchemeRoles, SchemeToTokensOptions, ThemeTokens } from "./theme";
+
+// 3. State management
+// Explicit re-exports to avoid ambiguity
+export { createEmitter } from "./state/emitter";
+export type { Emitter, EventCallback } from "./state/emitter";
+
+export { createComponentConfig, createElementConfig } from "./config/component";
+
+export { createStore, loggingMiddleware, deriveFiltered } from "./state/store";
+export type {
+  Store,
+  StoreOptions,
+  Selector,
+  Computation,
+  Updater,
+} from "./state/store";
+
+
+
+// Renamed to avoid conflict with DOM's createEventManager
+export { createEventManager as createStateEventManager } from './state/events';
+export type { EventManagerState } from './state/events';
+
+// Canvas utilities
+export * from "./canvas";
+
+// Canvas utilities
+export * from "./canvas";
+
+// Config and constants
+export {
+  PREFIX,
+  classNames,
+  getComponentClass,
+  getModifierClass,
+  getElementClass,
+} from "./config";
+
+// Export global configuration system
+export {
+  setComponentDefaults,
+  getComponentDefaults,
+  setGlobalDefaults,
+  clearGlobalDefaults,
+  type ComponentConfigMap,
+} from "./config/global";
+
+// Utility functions
+export {
+  when,
+  classNames as joinClasses,
+  isObject,
+  byString,
+  hasTouchSupport,
+  normalizeEvent,
+  throttle,
+  debounce,
+  once,
+  getInheritedBackground,
+} from "./utils";
+
+// Type re-exports for better developer experience
+export type {
+  ThemeConfig,
+  ComponentConfig,
+  ThemedComponentConfig,
+  VariantComponentConfig,
+  StateComponentConfig,
+} from "./config";
+
+export type { NormalizedEvent } from "./utils/mobile";
+
+// Re-export useful TypeScript types

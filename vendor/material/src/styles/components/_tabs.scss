@@ -1,0 +1,565 @@
+// src/components/tabs/_styles.scss
+@use "sass:string";
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-button.#{base.$prefix}-tab";
+$container: "#{base.$prefix}-tabs";
+
+// Tabs Container Styles (1. Container)
+.#{$container} {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    // background-color: t.color('surface'); // MD3: Surface color
+    box-sizing: border-box;
+
+    // Basic container sizing
+    &--primary {
+        min-height: 48px;
+
+        // Tab container with icons and text needs more space
+        &:has(.#{$component}--icon-and-text) {
+            min-height: 64px;
+        }
+
+        // Primary indicator: m3.material.io tabs specs, shape "3, 3, 0, 0" (the top
+        // corners only; Compose rounds all four) at 3dp, set by indicator.ts.
+        .#{$container}__indicator {
+            border-radius: 3px 3px 0 0;
+            background-color: t.color("primary");
+        }
+    }
+
+    &--secondary {
+        min-height: 48px;
+        // Tab indicator styling for secondary variant
+        .#{$container}__indicator {
+            // 2dp, set by indicator.ts: the site's secondary indicator height (Compose's
+            // SecondaryIndicator takes the primary 3dp; the site wins).
+            border-radius: 0;
+            background-color: t.color("primary");
+        }
+    }
+
+    // A tab is built on a text button, which paints its own ::before state layer in
+    // currentColor. The tab paints its own per-variant layer below, so the button's
+    // would stack a second one over it. Keep the tab's.
+    .#{$component}::before {
+        content: none;
+    }
+
+    // Fixed form: Compose divides the row evenly (tabRowWidth / tabCount,
+    // TabRow.kt:443-447). Without `scrollable` the component never builds a scroll
+    // container, so the tabs are direct children of the root.
+    //
+    // Which is why the direction has to be row here. The container is column
+    // so that a scroll container sits above the divider, and with no scroll
+    // container the tabs inherited that and stacked vertically -- `flex: 1`
+    // below was dividing the height rather than the row the comment above
+    // describes. The divider and the indicator are both absolutely
+    // positioned, so neither depends on the container's direction.
+    &:not(&--scrollable) {
+        flex-direction: row;
+    }
+
+    &:not(&--scrollable) > .#{$component} {
+        flex: 1;
+    }
+
+    // Scrollable container
+    &--scrollable {
+        overflow: hidden;
+
+        .#{$container}__scroll {
+            display: flex;
+            // ScrollableTabRowEdgeStartPadding, applied at both edges: TabRow.kt:239
+            // documents it as the padding between the starting and ending edge and the
+            // tabs inside the row.
+            padding-inline: 52px;
+            overflow-x: auto;
+            // The scroll buttons name no behaviour, so that reduced motion can stop it
+            scroll-behavior: smooth;
+            scrollbar-width: none; // Firefox
+            -ms-overflow-style: none; // IE and Edge
+
+            &::-webkit-scrollbar {
+                display: none; // Chrome, Safari, and Opera
+            }
+        }
+    }
+
+    // Container divider (5. Divider)
+    &__divider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: t.color(
+            "outline-variant"
+        ); // MD3: Outline variant color
+    }
+
+    // Tab indicator styling - base styles
+    &__indicator {
+        position: absolute;
+        // On the row's bottom edge, over the divider, as the site draws it.
+        bottom: 0;
+        // indicator.ts measures from the scroll container's left edge and moves the
+        // indicator with translateX, so it has to start there. Without `left` an
+        // absolute box sits at its static position: 0 in the fixed row, but past the
+        // 52px padding-inline of the scrollable row, which offset every tab by that.
+        left: 0;
+        // Compose springs the indicator's offset and width (damping 0.9, stiffness
+        // 700): the default spatial spring. indicator.ts moves it without motion on
+        // the first render and on resize.
+        transition: m.spring(transform, default-spatial), m.spring(width, default-spatial);
+        z-index: 1; // Ensure indicator appears above divider
+    }
+
+    // Resting position where anchor positioning exists (Baseline 2026). `left: 0`
+    // above stays the fallback, and older browsers keep the transform spring.
+    // The name is scoped to this component. The active tab carries it; a primary
+    // label replaces it so the indicator insets that text.
+    @supports (#{string.unquote("anchor-name: --a")}) {
+        anchor-scope: string.unquote("--#{base.$prefix}-tabs-indicator");
+        $anchor: string.unquote("--#{base.$prefix}-tabs-indicator");
+
+        &__indicator {
+            position-anchor: $anchor;
+        }
+
+        .#{base.$prefix}-tab--active {
+            anchor-name: $anchor;
+        }
+
+        &--primary:not(:has(#{&}__indicator--fixed)):not(:has(#{&}__indicator--dynamic)) {
+            .#{base.$prefix}-tab--active:has(.#{base.$prefix}-button__text) {
+                anchor-name: none;
+            }
+
+            .#{base.$prefix}-tab--active .#{base.$prefix}-button__text {
+                anchor-name: $anchor;
+            }
+        }
+
+        &--primary &__indicator,
+        &--secondary &__indicator {
+            transition: m.spring(left, default-spatial), m.spring(width, default-spatial);
+        }
+
+        &--primary &__indicator {
+            width: string.unquote("max(24px, calc(anchor-size(width) - 4px))");
+            left: string.unquote("calc(anchor(center) - 0.5 * max(24px, anchor-size(width) - 4px))");
+        }
+
+        &--secondary &__indicator {
+            left: anchor(left);
+            width: anchor-size(width);
+            min-width: 0;
+        }
+
+        // Same specificity as the variant rules above, and later, so a strategy wins.
+        // A primary tab with no label uses the dynamic half, centred on the tab.
+        &--primary:has(.#{base.$prefix}-tab--active:not(:has(.#{base.$prefix}-button__text))) &__indicator:not(#{&}__indicator--fixed):not(#{&}__indicator--content),
+        &--primary &__indicator--dynamic,
+        &--secondary &__indicator--dynamic {
+            width: string.unquote("max(30px, calc(anchor-size(width) / 2))");
+            left: string.unquote("calc(anchor(center) - 0.5 * max(30px, calc(anchor-size(width) / 2)))");
+        }
+
+        &--primary &__indicator--content,
+        &--secondary &__indicator--content {
+            width: string.unquote("max(30px, anchor-size(width))");
+            left: string.unquote("calc(anchor(center) - 0.5 * max(30px, anchor-size(width)))");
+        }
+
+        &:has(.#{base.$prefix}-tab--active:not(:has(.#{base.$prefix}-button__text))) &__indicator--content,
+        &--primary &__indicator--fixed,
+        &--secondary &__indicator--fixed {
+            width: var(--#{base.$prefix}-tabs-indicator-width, 40px);
+            left: string.unquote("calc(anchor(center) - 0.5 * var(--#{base.$prefix}-tabs-indicator-width, 40px))");
+        }
+    }
+}
+
+// Individual Tab Styles
+.#{$component} {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+    max-width: 360px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    color: t.color("on-surface-variant");
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+
+    // Typography for label text (4. Label): LabelTextFont = TitleSmall
+    @include m.typography("title-small");
+
+    // Transition for state changes
+    transition:
+        background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Container heights based on layout
+    &--text-only {
+        height: 48px;
+    }
+
+    &--icon-only {
+        height: 48px;
+    }
+
+    &--icon-and-text {
+        height: 64px;
+        flex-direction: column;
+    }
+
+    // A tab with an icon is a button with an icon, whose text-button padding is
+    // 12dp on the icon side: the stacked icon sat 2px off-centre.
+    &.#{base.$prefix}-button--icon {
+        padding: 0 16px;
+    }
+
+    // Focus styles (3/7. Focused state)
+    &:focus {
+        outline: none;
+    }
+
+    // md.comp.focus-ring: 3dp in secondary, drawn inward because a tab sits at the
+    // row's edge and inside a scroll container that would clip it.
+    &:focus-visible {
+        outline: 3px solid t.color("secondary");
+        outline-offset: -3px;
+        z-index: 1;
+    }
+
+    // Disabled state
+    &--disabled,
+    &:disabled {
+        pointer-events: none;
+        opacity: 0.38;
+    }
+
+    // Tab Icon (3. Icon - optional)
+    // The icon element the button builds carries mtrl-icon + mtrl-button__icon; a
+    // nested &__icon would concatenate onto the compound root and match nothing.
+    .#{base.$prefix}-button__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+    }
+
+    // Ensure proper vertical spacing for icon and text
+    &--icon-and-text {
+        .#{base.$prefix}-button__icon {
+            margin-bottom: 4px;
+        }
+    }
+
+    // Tab Text (4. Label)
+    .#{base.$prefix}-button__text {
+        @include m.truncate;
+        max-width: 100%;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    // The modifier is on the tab root, so the label is a descendant of &, not of a
+    // second tab.
+    &--icon-only .#{base.$prefix}-button__text {
+        @include m.visually-hidden;
+    }
+
+    // Badge on the icon, else the label (tab.ts): 6dp over the icon, 4dp after the
+    // label, mirrored in RTL (m3.material.io/components/{tabs/specs,badges/guidelines}).
+    &--icon-only .#{base.$prefix}-badge__wrapper .#{base.$prefix}-badge--top-right,
+    &--icon-and-text .#{base.$prefix}-badge__wrapper .#{base.$prefix}-badge--top-right {
+        top: 0;
+        right: auto;
+        left: calc(100% - 6px);
+
+        @include m.rtl {
+            right: calc(100% - 6px);
+            left: auto;
+        }
+    }
+
+    &--text-only .#{base.$prefix}-badge__wrapper .#{base.$prefix}-badge--top-right {
+        top: 50%;
+        right: auto;
+        left: calc(100% + 4px);
+        transform: translateY(-50%);
+
+        @include m.rtl {
+            right: calc(100% + 4px);
+            left: auto;
+        }
+    }
+
+    // ACTIVE TAB STATES - PRIMARY VARIANT
+    .#{$container}--primary & {
+        // Active Tab Base State - Apply to primary variant
+        &--active {
+            color: t.color("primary");
+            border-radius: 0;
+            .#{base.$prefix}-button__icon {
+                color: t.color("primary");
+            }
+
+            // Hover state for active tabs
+            &:hover,
+            &.#{$component}--hover {
+                background-color: t.alpha("primary", v.state("hover-state-layer-opacity"));
+            }
+
+            // Focused state for active tabs
+            &:focus-visible,
+            &.#{$component}--focus {
+                background-color: t.alpha("primary", v.state("focus-state-layer-opacity"));
+            }
+
+            // Pressed state for active tabs
+            // A rippled tab leaves the press to its ripple.
+            &:active:not(:has(> .#{base.$prefix}-ripple)),
+            &.#{$component}--pressed {
+                background-color: t.alpha("primary", v.state("pressed-state-layer-opacity"));
+            }
+        }
+
+        // Inactive Tabs - Primary variant
+        &:not(.#{$component}--active):not(.#{$component}--disabled):not(
+                :disabled
+            ) {
+            color: t.color("on-surface-variant");
+
+            // An inactive tab's label and icon turn on-surface in every interaction
+            // state (InactiveHover/Focus/PressedLabelTextColor = OnSurface), over an
+            // on-surface layer;
+            &:hover,
+            &.#{$component}--hover {
+                color: t.color("on-surface");
+                background-color: t.alpha("on-surface", v.state("hover-state-layer-opacity"));
+            }
+
+            &:focus-visible,
+            &.#{$component}--focus {
+                color: t.color("on-surface");
+                background-color: t.alpha("on-surface", v.state("focus-state-layer-opacity"));
+            }
+
+            // The press is primary: "tapping a non-selected tab will select it"
+            // (MDC inactive_pressed_state_layer_color). The ripple draws it.
+            &:active,
+            &.#{$component}--pressed {
+                color: t.color("on-surface");
+            }
+
+            &:active:not(:has(> .#{base.$prefix}-ripple)),
+            &.#{$component}--pressed {
+                background-color: t.alpha("primary", v.state("pressed-state-layer-opacity"));
+            }
+
+            .#{base.$prefix}-ripple-wave {
+                background-color: t.color("primary");
+            }
+        }
+    }
+
+    // ACTIVE TAB STATES - SECONDARY VARIANT
+    .#{$container}--secondary & {
+        // Active Tab - Secondary variant
+        &--active {
+            color: t.color("on-surface");
+            border-radius: 0;
+            .#{base.$prefix}-button__icon {
+                color: t.color("on-surface");
+            }
+
+            // Hover state for active tabs - secondary
+            &:hover,
+            &.#{$component}--hover {
+                background-color: t.alpha("on-surface", v.state("hover-state-layer-opacity"));
+            }
+
+            // Focused state for active tabs - secondary
+            &:focus-visible,
+            &.#{$component}--focus {
+                background-color: t.alpha("on-surface", v.state("focus-state-layer-opacity"));
+            }
+
+            // Pressed state for active tabs - secondary
+            // A rippled tab leaves the press to its ripple.
+            &:active:not(:has(> .#{base.$prefix}-ripple)),
+            &.#{$component}--pressed {
+                background-color: t.alpha("on-surface", v.state("pressed-state-layer-opacity"));
+            }
+        }
+
+        // Inactive Tabs - Secondary variant
+        &:not(.#{$component}--active):not(.#{$component}--disabled):not(
+                :disabled
+            ) {
+            color: t.color("on-surface-variant");
+
+            // Secondary tabs: label, icon and layer on-surface in every interaction
+            // state, active or not (SecondaryNavigationTabTokens).
+            &:hover,
+            &.#{$component}--hover {
+                color: t.color("on-surface");
+                background-color: t.alpha("on-surface", v.state("hover-state-layer-opacity"));
+            }
+
+            &:focus-visible,
+            &.#{$component}--focus {
+                color: t.color("on-surface");
+                background-color: t.alpha("on-surface", v.state("focus-state-layer-opacity"));
+            }
+
+            &:active,
+            &.#{$component}--pressed {
+                color: t.color("on-surface");
+            }
+
+            // A rippled tab leaves the press to its ripple.
+            &:active:not(:has(> .#{base.$prefix}-ripple)),
+            &.#{$component}--pressed {
+                background-color: t.alpha("on-surface", v.state("pressed-state-layer-opacity"));
+            }
+        }
+    }
+
+    // No ripple rules here: the ripple feature appends .mtrl-ripple with
+    // .mtrl-ripple-wave children, both styled by the ripple utility in the base
+    // bundle. What stood here addressed .mtrl-button.mtrl-tab-ripple and a bare
+    // .ripple, neither of which is ever emitted, and duplicated the utility besides.
+}
+
+// Tab panel styles
+.#{base.$prefix}-tab-panel {
+    padding: 16px;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+// Scroll indicators
+.#{$container} {
+    &__scroll-indicator {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 24px;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        &.visible {
+            opacity: 1;
+        }
+
+        &--left {
+            left: 0;
+            background: linear-gradient(
+                to right,
+                t.color("surface"),
+                transparent
+            );
+        }
+
+        &--right {
+            right: 0;
+            background: linear-gradient(
+                to left,
+                t.color("surface"),
+                transparent
+            );
+        }
+
+        &--shadow {
+            &.#{$container}__scroll-indicator--left {
+                box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
+                background: none;
+            }
+
+            &.#{$container}__scroll-indicator--right {
+                box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.2);
+                background: none;
+            }
+        }
+    }
+
+    &__scroll-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: t.color("surface-container-high");
+        border: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+
+        &:disabled {
+            opacity: 0.38;
+            cursor: default;
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+            fill: t.color("on-surface");
+        }
+
+        &--left {
+            left: 4px;
+        }
+
+        &--right {
+            right: 4px;
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid t.color("primary");
+        }
+    }
+}
+
+// Responsive styles for small screens
+.#{$container}--responsive-small {
+    .#{$component} {
+        padding: 0 12px;
+        min-width: 72px;
+    }
+}

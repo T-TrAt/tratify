@@ -1,0 +1,164 @@
+// src/components/slider/constants.ts
+
+/**
+ * Available slider color variants
+ * @category Components
+ */
+export const SLIDER_COLORS = {
+  /** Primary color variant */
+  PRIMARY: 'primary',
+  /** Secondary color variant */
+  SECONDARY: 'secondary',
+  /** Tertiary color variant */
+  TERTIARY: 'tertiary',
+  /** Error color variant */
+  ERROR: 'error'
+} as const;
+
+/**
+ * Available slider size variants
+ * @category Components
+ */
+export const SLIDER_SIZES = {
+  /** Extra small size (default) - 16px track height */
+  XS: 16,
+  /** Small size - 24px track height */
+  S: 24,
+  /** Medium size - 40px track height */
+  M: 40,
+  /** Large size - 56px track height */
+  L: 56,
+  /** Extra large size - 96px track height */
+  XL: 96
+} as const;
+
+/**
+ * Slider component size type
+ * @category Components
+ */
+export type SliderSize = keyof typeof SLIDER_SIZES | number;
+
+/**
+ * Slider component measurements
+ * @category Components
+ */
+export const SLIDER_MEASUREMENTS = {
+  /** Handle size in pixels */
+  HANDLE_SIZE: 16,
+  /** Handle height for XS and S sizes in pixels (M3: 44dp) */
+  SMALL_HANDLE_HEIGHT: 44,
+  /** Handle height offset for M, L, XL sizes (added to track height: 52, 68, 108dp) */
+  HANDLE_HEIGHT_OFFSET: 12,
+  /** Minimum container height in pixels (M3 minimum touch target) */
+  MIN_HEIGHT: 48,
+  /** Tick size in pixels */
+  TICK_SIZE: 4,
+  /** Dot size in pixels */
+  DOT_SIZE: 4,
+  /** Handle gap pixels */
+  HANDLE_GAP: 6, // M3: 6dp between the handle's edge and the track
+} as const;
+
+/**
+ * Available slider events
+ * @category Components
+ */
+export const SLIDER_EVENTS = {
+  /** Fired when slider value changes and interaction completes */
+  CHANGE: 'change',
+  /** Fired during dragging as value changes */
+  INPUT: 'input',
+  /** Fired when slider receives focus */
+  FOCUS: 'focus',
+  /** Fired when slider loses focus */
+  BLUR: 'blur',
+  /** Fired when interaction starts */
+  START: 'start',
+  /** Fired when interaction ends */
+  END: 'end'
+} as const;
+
+/**
+ * Position options for slider label and icon
+ * @category Components
+ */
+export const SLIDER_POSITIONS = {
+  /** Position at the start */
+  START: 'start',
+  /** Position at the end */
+  END: 'end'
+} as const;
+
+/**
+ * Default slider configuration values
+ * @category Components
+ */
+export const SLIDER_DEFAULTS = {
+  /** Minimum value */
+  MIN: 0,
+  /** Maximum value */
+  MAX: 100,
+  /** Starting value */
+  VALUE: 0,
+  /** Step increment size */
+  STEP: 1,
+  /** Whether slider is disabled */
+  DISABLED: false,
+  /** Default color variant */
+  COLOR: SLIDER_COLORS.PRIMARY,
+  /** Default size variant */
+  SIZE: 'XS',
+  /** Whether to show tick marks */
+  TICKS: false,
+  /** Whether to show value while dragging */
+  SHOW_VALUE: true,
+  /** Whether to snap to steps during dragging */
+  SNAP_TO_STEPS: true,
+  /** Whether slider is a range slider (two handles) */
+  RANGE: false,
+  /** Whether slider is a centered slider (active track from center) */
+  CENTERED: false,
+  /** Default icon position */
+  ICON_POSITION: SLIDER_POSITIONS.START,
+  /** Default label position */
+  LABEL_POSITION: SLIDER_POSITIONS.START
+} as const;
+
+/**
+ * CSS class names used by the slider component
+ * @category Components
+ */
+export const SLIDER_CLASSES = {
+  /** Root element class */
+  ROOT: 'slider',
+  /** Container for slider track and handles */
+  CONTAINER: 'slider__container',
+  /** Filled track portion class */
+  FILL: 'slider__fill',
+  /** Handle element class */
+  HANDLE: 'slider__handle',
+  /** Second handle element class (for range slider) */
+  HANDLE_SECOND: 'slider__handle--second',
+  /** Tick marks container class */
+  LABEL: 'slider__label',
+  /** Value display class */
+  VALUE: 'slider__value',
+  /** Icon container class */
+  ICON: 'slider__icon',
+  /** Disabled state class */
+  DISABLED: 'slider--disabled',
+  /** Focused state class */
+  FOCUSED: 'slider--focused',
+  /** Dragging state class */
+  DRAGGING: 'slider--dragging',
+  /** Range slider variant class */
+  RANGE: 'slider--range',
+  /** Primary color variant class */
+  PRIMARY: 'slider--primary',
+  /** Secondary color variant class */
+  SECONDARY: 'slider--secondary',
+  /** Tertiary color variant class */
+  TERTIARY: 'slider--tertiary',
+  /** Error color variant class */
+  ERROR: 'slider--error'
+} as const;

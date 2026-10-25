@@ -1,0 +1,179 @@
+// src/components/fab/api.ts
+import { FabComponent, FabEvents } from './types';
+import type { EventCallback } from '../../core/state/emitter';
+import type { IconManager } from '../../core/compose/features/icon';
+
+/**
+ * API configuration options for the FAB component
+ * 
+ * @category Components
+ * @internal
+ */
+interface ApiOptions {
+  /**
+   * Disabled state management API
+   */
+  disabled: {
+    /** Enables the component */
+    enable: () => void;
+    /** Disables the component */
+    disable: () => void;
+    /** Whether the component is disabled */
+    isDisabled: () => boolean;
+  };
+  
+  /**
+   * Lifecycle management API
+   */
+  lifecycle: {
+    /** Destroys the component */
+    destroy: () => void;
+  };
+  
+  /**
+   * Base class name for the FAB
+   */
+  className: string;
+}
+
+/**
+ * Base component with element properties
+ * 
+ * @category Components
+ * @internal
+ */
+interface ComponentWithElements
+  extends Pick<FabComponent, 'disabled' | 'lifecycle'> {
+  // `EventCallback`, not `Function`. This host is handed the component the
+  // pipe has built, whose `on` takes an EventCallback, and `Function` is a
+  // supertype of that -- so under strictFunctionTypes a host promising to
+  // call a handler with anything cannot accept one taking a typed payload.
+  // That is what stopped the pipe in fab.ts:71 resolving.
+  /** Subscribes to an event; the API returns the component itself */
+  on: (event: string, handler: EventCallback) => unknown;
+  
+  /** Unsubscribes from an event; the API returns the component itself */
+  off: (event: string, handler: EventCallback) => unknown;
+  
+  /** Adds CSS classes; the API returns the component itself */
+  addClass: (...classes: string[]) => unknown;
+  
+  /** The DOM element */
+  element: HTMLElement;
+  
+  /** Icon management */
+  icon: {
+    /** Sets icon HTML content */
+    setIcon: (html: string) => IconManager;
+    /** Gets icon HTML content */
+    getIcon: () => string;
+    /** Gets icon DOM element */
+    getElement: () => HTMLElement | null;
+  };
+  
+  /** Gets a class name with component's prefix */
+  getClass: (name: string) => string;
+}
+
+/**
+ * Enhances a FAB component with public API methods
+ * 
+ * Higher-order function that adds the full public API to the FAB component,
+ * exposing methods for changing appearance, handling state, and managing position.
+ * 
+ * @param {ApiOptions} options - API configuration options
+ * @returns {Function} Higher-order function that adds API methods to component
+ * 
+ * @category Components
+ * @internal
+ */
+export const withAPI = ({ disabled, lifecycle, className }: ApiOptions) => 
+  (component: ComponentWithElements): FabComponent => ({
+    ...component,
+    element: component.element as HTMLButtonElement,
+    
+    getValue: () => (component.element as HTMLButtonElement).value,
+    
+    setValue(value: string) {
+      (component.element as HTMLButtonElement).value = value;
+      return this;
+    },
+    
+    enable() {
+      disabled.enable();
+      return this;
+    },
+    
+    isDisabled() {
+    
+      return disabled.isDisabled();
+    
+    },
+
+    
+    disable() {
+      disabled.disable();
+      return this;
+    },
+    
+    setIcon(icon: string) {
+      component.icon.setIcon(icon);
+      return this;
+    },
+    
+    getIcon() {
+      return component.icon.getIcon();
+    },
+    
+    setPosition(position: string) {
+      // First remove any existing position classes
+      const positions = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
+      positions.forEach(pos => {
+        component.element.classList.remove(`${className}--${pos}`);
+      });
+      
+      // Add new position class
+      component.element.classList.add(`${className}--${position}`);
+      return this;
+    },
+    
+    getPosition() {
+      const positions = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
+      for (const pos of positions) {
+        if (component.element.classList.contains(`${className}--${pos}`)) {
+          return pos;
+        }
+      }
+      return null;
+    },
+    
+    lower() {
+      component.element.classList.add(`${className}--lowered`);
+      return this;
+    },
+    
+    raise() {
+      component.element.classList.remove(`${className}--lowered`);
+      return this;
+    },
+    
+    // Event methods
+    on<K extends keyof FabEvents>(event: K, handler: FabEvents[K]) {
+      component.on(event, handler);
+      return this;
+    },
+    
+    off<K extends keyof FabEvents>(event: K, handler: FabEvents[K]) {
+      component.off(event, handler);
+      return this;
+    },
+    
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
+      return this;
+    },
+    
+    destroy() {
+      lifecycle.destroy();
+    }
+  });

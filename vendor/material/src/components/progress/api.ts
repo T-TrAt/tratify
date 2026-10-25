@@ -1,0 +1,386 @@
+// src/components/progress/api.ts - Canvas-based API
+
+import { PREFIX } from "../../core";
+import { ProgressComponent, ProgressInternals, ProgressThickness, ProgressShape, ProgressEvents, ProgressEventPayload } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
+import {
+  PROGRESS_CLASSES,
+  PROGRESS_EVENTS,
+  PROGRESS_THICKNESS,
+  PROGRESS_SHAPES,
+} from "./constants";
+import { addClass, removeClass } from "../../core/dom";
+
+/**
+ * Canvas component interface for API
+ */
+interface CanvasComponent {
+  element: HTMLElement;
+  // The component's emitter (withEvents), which `on()` now subscribes to.
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
+  emit?: (event: string, data?: unknown) => unknown;
+  canvas: HTMLCanvasElement;
+  getClass: (name: string) => string;
+  label?: HTMLElement;
+  state?: {
+    label?: HTMLElement;
+    showLabel?: boolean;
+    value?: number;
+    max?: number;
+    buffer?: number;
+    indeterminate?: boolean;
+    thickness?: number | string;
+    shape?: ProgressShape;
+    labelFormatter?: (value: number, max: number) => string;
+  };
+  draw?: () => void;
+  setThickness?: (thickness: ProgressThickness) => void;
+  setShape?: (shape: ProgressShape) => void;
+  setValue?: (value: number, animate: boolean) => void;
+  setSize?: (size: number) => void;
+  getSize?: () => number | undefined;
+  hide?: () => void;
+  show?: () => void;
+  isVisible?: () => boolean;
+  setIndeterminate?: (indeterminate: boolean) => void;
+  resize?: () => void;
+}
+
+/**
+ * API configuration options for canvas-based progress component
+ */
+interface ApiOptions {
+  value: {
+    getValue: () => number;
+    setValue: (value: number) => void;
+    getMax: () => number;
+  };
+  buffer: {
+    getBuffer: () => number;
+    setBuffer: (value: number) => void;
+  };
+  disabled: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  label: {
+    show?: () => void;
+    hide?: () => void;
+    format?: (formatter: (value: number, max: number) => string) => void;
+    formatter?: (value: number, max: number) => string;
+  };
+  thickness?: {
+    getThickness: () => number;
+    setThickness: (thickness: ProgressThickness) => void;
+  };
+  shape?: {
+    getShape: () => ProgressShape;
+    setShape: (shape: ProgressShape) => void;
+  };
+  state: {
+    setIndeterminate: (indeterminate: boolean) => void;
+    isIndeterminate: () => boolean;
+  };
+  lifecycle: {
+    destroy: () => void;
+  };
+}
+
+/**
+ * Enhances a canvas-based progress component with a streamlined API
+ */
+export const withAPI =
+  (options: ApiOptions) =>
+  (comp: CanvasComponent): ProgressComponent => {
+    // Get element references
+    const { element, getClass, canvas } = comp;
+
+    // The emitter, as every component's: handlers get `{ value, max }`. These
+    // were DOM CustomEvents on the element, so handlers got `event.detail`
+    const emitEvent = (name: string, payload: ProgressEventPayload): void => {
+      comp.emit?.(name, payload);
+    };
+
+    // One disabled state, however it is set: the manager writes
+    // aria-disabled on the bar, as on any root that is not a form control
+    const setDisabled = (disabled: boolean): void => {
+      if (disabled) options.disabled.disable();
+      else options.disabled.enable();
+    };
+
+    // Update progress and redraw canvas
+    const updateProgress = (value: number, max: number): void => {
+      // Update ARIA attribute
+      element.setAttribute("aria-valuenow", value.toString());
+
+      // Update label if present
+      const label = comp.label;
+      if (label) {
+        const formatter =
+          options.label?.formatter ||
+          ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
+        label.textContent = formatter(value, max);
+      }
+
+      // Redraw canvas using component's draw function
+      if (typeof comp.draw === "function") {
+        comp.draw();
+      }
+    };
+
+    // Handle indeterminate state: the class and the aria value here, the
+    // animation in the canvas feature
+    const handleIndeterminateState = (indeterminate: boolean): void => {
+      if (indeterminate) {
+        addClass(element, `${PREFIX}-${PROGRESS_CLASSES.INDETERMINATE}`);
+        element.removeAttribute("aria-valuenow");
+      } else {
+        removeClass(element, `${PREFIX}-${PROGRESS_CLASSES.INDETERMINATE}`);
+        element.setAttribute(
+          "aria-valuenow",
+          options.value.getValue().toString(),
+        );
+      }
+      comp.setIndeterminate?.(indeterminate);
+    };
+
+    // Initialize indeterminate state if needed
+    if (options.state.isIndeterminate()) {
+      handleIndeterminateState(true);
+    }
+
+    // Build the API
+    // The drawing members are on the object, off the public type
+    const api: ProgressComponent & ProgressInternals = {
+      // Element references
+      element,
+      canvas: canvas as HTMLCanvasElement,
+      // The indicator is drawn on one canvas; these three named the elements
+      // of the SVG implementation this replaced
+      track: canvas as unknown as SVGElement,
+      indicator: canvas as unknown as SVGElement,
+      buffer: canvas as unknown as SVGElement,
+      getClass,
+      resize: () => comp.resize?.(),
+
+      // Value management
+      getValue() {
+        return options.value.getValue();
+      },
+
+      setValue(requested: number, animate: boolean = true): ProgressComponent {
+        const prevValue = options.value.getValue();
+        const max = options.value.getMax();
+        options.value.setValue(requested);
+        // The state clamps to 0…max; aria, the label and change report that
+        // value, as the bar draws it. setValue(150) drew 100 and said 150
+        // everywhere else.
+        const value = options.value.getValue();
+        if (prevValue !== value) {
+          // Don't call updateProgress here as comp.setValue will handle the drawing
+          // Only update ARIA and label here
+          element.setAttribute("aria-valuenow", value.toString());
+
+          // Update label if present
+          const label = comp.label;
+          if (label) {
+            const formatter =
+              options.label?.formatter ||
+              ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
+            label.textContent = formatter(value, max);
+          }
+
+          const detail = { value, max };
+          emitEvent(PROGRESS_EVENTS.CHANGE, detail);
+
+          // Call the component's setValue to handle animation and completion
+          if (comp.setValue && typeof comp.setValue === "function") {
+            comp.setValue(value, animate);
+          } else {
+            // Fallback: update progress immediately
+            updateProgress(value, max);
+          }
+        }
+
+        return api;
+      },
+
+      getMax() {
+        return options.value.getMax();
+      },
+
+      // Buffer management
+      getBuffer: () => options.buffer.getBuffer(),
+      setBuffer(value: number): ProgressComponent {
+        options.buffer.setBuffer(value);
+        if (
+          !options.state.isIndeterminate() &&
+          typeof comp.draw === "function"
+        ) {
+          comp.draw();
+        }
+        return api;
+      },
+
+      // Indeterminate state
+      setIndeterminate(indeterminate: boolean): ProgressComponent {
+        const wasIndeterminate = options.state.isIndeterminate();
+        if (wasIndeterminate === indeterminate) return api;
+
+        options.state.setIndeterminate(indeterminate);
+        handleIndeterminateState(indeterminate);
+
+        return api;
+      },
+      isIndeterminate: () => options.state.isIndeterminate(),
+
+      // Label management
+      showLabel(): ProgressComponent {
+        if (options.label?.show) options.label.show();
+        return api;
+      },
+      hideLabel(): ProgressComponent {
+        if (options.label?.hide) options.label.hide();
+        return api;
+      },
+      setLabelFormatter(
+        formatter: (value: number, max: number) => string,
+      ): ProgressComponent {
+        if (options.label?.format) options.label.format(formatter);
+        const label = comp.label || comp.state?.label;
+        if (label) {
+          label.textContent = formatter(
+            options.value.getValue(),
+            options.value.getMax(),
+          );
+        }
+        return api;
+      },
+
+      // Thickness and shape management
+      getThickness(): number {
+        return options.thickness?.getThickness() || PROGRESS_THICKNESS.THIN;
+      },
+      setThickness(thickness: ProgressThickness): ProgressComponent {
+        // Update internal state
+        if (options.thickness) {
+          options.thickness.setThickness(thickness);
+        }
+
+        // Call component's setThickness to update canvas
+        if (comp.setThickness) {
+          comp.setThickness(thickness);
+        }
+
+        return api;
+      },
+      getShape(): ProgressShape {
+        if (options.shape && typeof options.shape.getShape === "function") {
+          return options.shape.getShape();
+        }
+        return PROGRESS_SHAPES.FLAT;
+      },
+      setShape(shape: ProgressShape): ProgressComponent {
+        comp.setShape?.(shape);
+        return api;
+      },
+
+      // Size management (circular only)
+      setSize(size: number): ProgressComponent {
+        if (comp.setSize) {
+          comp.setSize(size);
+        }
+        return api;
+      },
+      getSize(): number | undefined {
+        return comp.getSize ? comp.getSize() : undefined;
+      },
+
+      // State management
+      enable(): ProgressComponent {
+        setDisabled(false);
+        return api;
+      },
+      disable(): ProgressComponent {
+        setDisabled(true);
+        return api;
+      },
+      isDisabled: options.disabled.isDisabled,
+
+      // Visibility management
+      hide(): ProgressComponent {
+        if (comp.hide) {
+          comp.hide();
+        }
+        return api;
+      },
+      show(): ProgressComponent {
+        if (comp.show) {
+          comp.show();
+        }
+        return api;
+      },
+      isVisible(): boolean {
+        return comp.isVisible
+          ? comp.isVisible()
+          : element.style.display !== "none";
+      },
+
+      // Event handling
+      on<K extends keyof ProgressEvents>(event: K, handler: ProgressEvents[K]): ProgressComponent {
+        comp.on?.(event, handler);
+        return api;
+      },
+      off<K extends keyof ProgressEvents>(event: K, handler: ProgressEvents[K]): ProgressComponent {
+        comp.off?.(event, handler);
+        return api;
+      },
+
+      // Extension methods
+      addClass(...classes: string[]): ProgressComponent {
+        classes.forEach((className) => element.classList.add(className));
+        return api;
+      },
+
+      // Paint synchronization
+      painted(): Promise<void> {
+        return new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        );
+      },
+
+      // Cleanup
+      destroy(): void {
+        options.lifecycle.destroy();
+      },
+
+      // Required property objects
+      disabled: {
+        enable(): void {
+          setDisabled(false);
+        },
+        disable(): void {
+          setDisabled(true);
+        },
+        isDisabled: options.disabled.isDisabled,
+      },
+
+      lifecycle: {
+        destroy(): void {
+          options.lifecycle.destroy();
+        },
+      },
+    };
+
+    // Initialize label if showLabel is true in config
+    if (comp.state?.showLabel === true) {
+      // Call the show method to create and display the label
+      if (options.label?.show) {
+        options.label.show();
+      }
+    }
+
+    return api;
+  };

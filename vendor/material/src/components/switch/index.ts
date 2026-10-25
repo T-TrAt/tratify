@@ -1,0 +1,19 @@
+// src/components/switch/index.ts
+export { default, default as createSwitch } from './switch'
+
+// Export constants
+export { 
+  SWITCH_LABEL_POSITIONS,
+  SWITCH_STATES,
+  SWITCH_EVENTS,
+  SWITCH_DEFAULTS,
+  SWITCH_CLASSES
+} from './constants'
+
+// Export types
+export type { 
+  SwitchConfig, 
+  SwitchComponent,
+  SwitchEvents,
+  SwitchChangePayload
+} from './types'

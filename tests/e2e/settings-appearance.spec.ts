@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('appearance has four navigable settings with responsive columns and live demonstrations', async ({ page }) => {
+test('appearance has five navigable settings with responsive columns and live demonstrations', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/settings')
@@ -8,7 +8,7 @@ test('appearance has four navigable settings with responsive columns and live de
   const appearance = tree.getByRole('treeitem', { name: '外观设置', exact: true })
   await expect(appearance).toHaveAttribute('aria-level', '2')
   await expect(appearance).toHaveAttribute('aria-expanded', 'true')
-  for (const label of ['主题', '动效', '点击波纹', '玻璃效果']) {
+  for (const label of ['主题', 'Material 主题色', '动效', '点击波纹', '玻璃效果']) {
     await expect(tree.getByRole('treeitem', { name: label, exact: true })).toHaveAttribute('aria-level', '3')
   }
   await tree.getByRole('treeitem', { name: '玻璃效果', exact: true }).click()
@@ -23,7 +23,7 @@ test('appearance has four navigable settings with responsive columns and live de
   expect(panel!.width).toBeGreaterThan(840)
   expect(await page.locator('.settings-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(2)
   expect(sidebar!.x + sidebar!.width).toBeLessThan(panel!.x)
-  await expect(page.locator('.settings-grid > .apple-card')).toHaveCount(4)
+  await expect(page.locator('.settings-grid > .apple-card')).toHaveCount(5)
   const motion = page.getByRole('radiogroup', { name: '全局动效', exact: true })
   await motion.getByText('完整', { exact: true }).click()
   const accordion = page.locator('.motion-sample').getByRole('button', { name: '预览效果', exact: true })

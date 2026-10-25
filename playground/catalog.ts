@@ -74,6 +74,7 @@ export const catalog: CatalogItem[] = [
 export const groups = ['全部组件', '基础', '表单', '导航', '数据展示', '反馈', '移动交互']
 
 export const componentId = (name: string) => name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+export const overviewCatalog = catalog.filter(item => item.name !== 'AppleTag')
 export const sections = [
   { id: 'basics', label: '基础' },
   { id: 'forms', label: '表单' },
@@ -81,4 +82,4 @@ export const sections = [
   { id: 'data', label: '数据展示' },
   { id: 'feedback', label: '反馈' },
   { id: 'mobile', label: '移动交互' },
-].map(section => ({ ...section, items: catalog.filter(item => item.group === section.label) }))
+].map(section => ({ ...section, items: overviewCatalog.filter(item => item.group === section.label) }))

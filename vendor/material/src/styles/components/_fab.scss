@@ -1,0 +1,206 @@
+// src/components/fab/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-fab';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: t.color('primary-container');
+  color: t.color('on-primary-container');
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  overflow: hidden;
+  
+  // FAB uses elevation in all variants
+  @include m.elevation(3);
+  
+  // Transitions
+  @include m.motion-transition(
+    transform,
+    box-shadow,
+    background-color,
+    color
+  );
+  
+  // Focus styles
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid t.color('outline');
+    outline-offset: 2px;
+  }
+  
+  // Default FAB size (56dp)
+  width: 56px;
+  height: 56px;
+  border-radius: f.get-shape('large');
+  
+  // Icon sizing
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  
+  // Size variants
+  
+  &--default {
+    // Default is already defined in base styles
+  }
+  
+  &--medium {
+    width: 80px;
+    height: 80px;
+    border-radius: f.get-shape('large-increased');
+
+    .#{$component}__icon {
+      width: 28px;
+      height: 28px;
+
+      svg {
+        width: 28px;
+        height: 28px;
+      }
+    }
+  }
+
+  &--large {
+    width: 96px;
+    height: 96px;
+    border-radius: f.get-shape('extra-large');
+    
+    .#{$component}__icon {
+      width: 32px;
+      height: 32px;
+      
+      svg {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  }
+  
+  // Expressive container and tone styles; primary-container is the default.
+  @each $role in primary-container, secondary-container, tertiary-container,
+    primary, secondary, tertiary {
+    &--#{$role} {
+      background-color: t.color('#{$role}');
+      color: t.color('on-#{$role}');
+    }
+  }
+
+  &:hover {
+    @include m.state-layer(currentColor, 'hover');
+    @include m.elevation(4);
+  }
+
+  &:focus-visible {
+    @include m.state-layer(currentColor, 'focus');
+    @include m.elevation(3);
+  }
+
+  &:active {
+    @include m.state-layer(currentColor, 'pressed');
+    @include m.elevation(3);
+  }
+
+  // Lowered FABs use their own elevation ladder.
+  &.#{$component}--lowered {
+    @include m.elevation(1);
+
+    &:hover {
+      @include m.elevation(2);
+    }
+
+    &:focus-visible,
+    &:active {
+      @include m.elevation(1);
+    }
+  }
+
+  // Compatibility state: FAB tokens do not specify disabled styling.
+  &:disabled,
+  &.#{$component}--disabled {
+    pointer-events: none;
+
+    &,
+    &:hover,
+    &:focus-visible,
+    &:active {
+      @include m.elevation(0);
+      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('on-surface', 0.12);
+    }
+
+    &::before {
+      display: none;
+    }
+  }
+
+  // Positioning utilities
+  &--top-right {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--top-left {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--bottom-right {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--bottom-left {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  // Optional animations
+  @keyframes fab-enter {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  &--animate-enter {
+    animation: fab-enter 0.3s f.get-motion-easing('emphasized-decelerate') forwards;
+  }
+}

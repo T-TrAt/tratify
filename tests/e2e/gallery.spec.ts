@@ -1,4 +1,4 @@
-import { catalog } from '../../playground/catalog'
+import { overviewCatalog as catalog } from '../../playground/catalog'
 import { activeCard, openComponent } from './component-navigation'
 import { expect, test, webkit, type Page } from '@playwright/test'
 import { swipeImage } from './image-gestures'

@@ -1,0 +1,209 @@
+// src/styles/components/_snackbar.scss
+//
+// Snackbar, after the Material 3 tokens (Compose SnackbarTokens.kt): an
+// inverse-surface container at elevation level 3 with the extra-small corner,
+// 48dp for one line of body-medium and 68dp for two, an inverse-primary text
+// button for the action and an inverse-on-surface icon for the close
+// affordance. Spacing follows Compose Snackbar.kt: 16dp at the start, 8dp
+// between the text and the action, 8dp after the action, none after the
+// close icon, and 14dp above and below the text. The action moves below the
+// text when it is wider than 128dp (Android `maxActionInlineWidth`).
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-snackbar';
+$button: '#{base.$prefix}-button';
+$icon-button: '#{base.$prefix}-icon-button';
+
+// Distance from the edges of the window. Neither source makes it a token:
+// the Android snackbar keeps 8dp, the Compose host 12dp.
+$margin: 16px;
+
+.#{$component} {
+  @include m.typography('body-medium');
+  box-sizing: border-box;
+  position: fixed;
+  bottom: $margin;
+  z-index: f.get-z-index('snackbar');
+  display: flex;
+  align-items: center;
+  min-width: 320px;
+  max-width: 600px;
+  min-height: 48px;
+  padding: 0 16px;
+  background-color: t.color('inverse-surface');
+  color: t.color('inverse-on-surface');
+  border-radius: f.get-shape('extra-small');
+  @include m.elevation(3);
+
+  // Enter and exit: a fade on the fast effects spring and a scale from 0.8 on
+  // the fast spatial spring (Compose SnackbarHost FadeInFadeOutWithScale)
+  opacity: 0;
+  scale: 0.8;
+  transition:
+    opacity v.motion('spring-fast-effects-duration') v.motion('spring-fast-effects-easing'),
+    scale v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
+  pointer-events: none;
+
+  &--visible {
+    opacity: 1;
+    scale: 1;
+    pointer-events: auto;
+  }
+
+  // A top-layer snackbar is a popover (`layer: "top"`). The browser's popover
+  // defaults centre it in the viewport inside a border; the snackbar keeps its
+  // place at the bottom. `:where` keeps this rule under the positions and the
+  // high-contrast border that follow.
+  &:where([popover]) {
+    inset: auto;
+    bottom: $margin;
+    margin: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Position along the bottom edge
+  // ---------------------------------------------------------------------------
+  &--center {
+    left: 50%;
+    translate: -50% 0;
+  }
+
+  &--start {
+    inset-inline-start: $margin;
+  }
+
+  &--end {
+    inset-inline-end: $margin;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Supporting text: up to two lines
+  // ---------------------------------------------------------------------------
+  // Vertical spacing is margin, not padding: the two-line clamp clips at the
+  // padding box, so a third line would show through padding.
+  &__text {
+    @include m.truncate(2);
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 14px 0;
+    overflow-wrap: anywhere;
+  }
+
+  &--with-action &__text,
+  &--dismissible &__text {
+    padding-inline-end: 8px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Action: the library's text button in the inverse colours
+  // ---------------------------------------------------------------------------
+  &--with-action {
+    padding-inline-end: 8px;
+  }
+
+  &--dismissible {
+    padding-inline-end: 0;
+  }
+
+  .#{$button}.#{$component}__action {
+    flex: 0 0 auto;
+    color: t.color('inverse-primary');
+
+    &:hover {
+      @include m.state-layer(t.color('inverse-primary'), 'hover');
+    }
+
+    &:focus-visible {
+      @include m.state-layer(t.color('inverse-primary'), 'focus');
+      // The focus ring keeps the button's 3dp and 2dp offset, in the action's
+      // own colour: secondary does not reach 3:1 against inverse-surface
+      // (WCAG 2.4.13 focus appearance).
+      outline-color: t.color('inverse-primary');
+    }
+
+    &:active,
+    &.#{$button}--active {
+      @include m.state-layer(t.color('inverse-primary'), 'pressed');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Close affordance: a standard icon button in inverse-on-surface
+  // ---------------------------------------------------------------------------
+  .#{$icon-button}.#{$component}__close {
+    flex: 0 0 auto;
+    color: t.color('inverse-on-surface');
+
+    &:hover {
+      color: t.color('inverse-on-surface');
+    }
+
+    &:focus-visible {
+      outline-color: t.color('inverse-on-surface');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // A long action sits below the text, aligned to the end
+  // (Compose NewLineButtonSnackbar: 4dp under the action row)
+  // ---------------------------------------------------------------------------
+  &--action-below {
+    flex-wrap: wrap;
+    padding-bottom: 4px;
+
+    .#{$component}__text {
+      flex-basis: 100%;
+      padding-inline-end: 16px;
+    }
+
+    .#{$component}__action {
+      margin-inline-start: auto;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Compact windows: a fixed distance from the leading, trailing and bottom
+  // edges, whatever the position (M3 snackbar guidelines, responsive layout)
+  // ---------------------------------------------------------------------------
+  @include m.breakpoint-down('sm') {
+    min-width: 0;
+    max-width: none;
+    width: calc(100% - #{2 * $margin});
+
+    &--center {
+      left: $margin;
+      translate: none;
+    }
+
+    &--start,
+    &--end {
+      inset-inline: $margin;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reduced motion: the fade stays, the scale goes
+  // ---------------------------------------------------------------------------
+  @include m.reduced-motion {
+    scale: none;
+    transition: opacity v.motion('spring-fast-effects-duration') v.motion('spring-fast-effects-easing');
+
+    &--visible {
+      scale: none;
+    }
+  }
+
+  @include m.high-contrast {
+    border: 1px solid CanvasText;
+  }
+
+  @include m.print {
+    display: none;
+  }
+}

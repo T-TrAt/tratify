@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process'
 
 const args = process.argv.slice(2)
 if (args.includes('--help') || args.includes('-h')) {
-  console.log('Usage: npm create apptify@latest [empty-directory]\nDefaults to the current directory, which must be empty.\nCreates an editable Vue app with navigation, settings and component examples.\nThen run npm install and npm run dev in that directory.')
+  console.log('Usage: node packages/create-apptify/bin/create-apptify.mjs [empty-directory]\nPrivate local template tool; this package is not published.\nDefaults to the current directory, which must be empty.\nCreates an editable Vue app with navigation, settings and component examples.\nThen run npm install and npm run dev in that directory.')
   process.exit(0)
 }
 if (args.length > 1 || args[0]?.startsWith('-')) {

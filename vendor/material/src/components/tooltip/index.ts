@@ -1,0 +1,18 @@
+// src/components/tooltip/index.ts
+export { default, default as createTooltip } from './tooltip';
+
+// Export constants
+export { 
+  TOOLTIP_POSITIONS,
+  TOOLTIP_VARIANTS,
+  TOOLTIP_EVENTS,
+  TOOLTIP_DEFAULTS,
+  TOOLTIP_CLASSES
+} from './constants';
+
+// Export types
+export type { 
+  TooltipConfig, 
+  TooltipVariant,
+  TooltipComponent
+} from './types';

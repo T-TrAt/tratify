@@ -20,8 +20,9 @@ async function sourceHashes() {
       else await record(child)
     }
   }
-  for (const name of ['src', 'playground', 'public', 'docs']) await directory(join(root, name))
+  for (const name of ['src', 'playground', 'public', 'docs', 'vendor/material/src', 'vendor/glass-ui-kit']) await directory(join(root, name))
   for (const name of ['README.md', 'package.json', 'index.html', 'vite.config.ts', 'vite.lib.config.ts', 'tsconfig.json', 'tsconfig.lib.json', 'tooling/create-playground.mjs', 'tooling/npm-command.mjs', 'tooling/prepare-playground.mjs', 'tooling/prepare-package.mjs']) await record(join(root, name))
+  for (const name of ['vendor/material/style-manifest.ts', 'vendor/material/SOURCE.json', 'vendor/material/LICENSE', 'tooling/build-material.mjs', 'tooling/material-glass-themes.mjs']) await record(join(root, name))
   return files
 }
 const before = await sourceHashes()

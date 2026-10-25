@@ -1,0 +1,19 @@
+// src/components/carousel/index.ts
+export { default, createCarousel } from "./carousel";
+
+export {
+  CAROUSEL_VARIANTS,
+  CAROUSEL_EVENTS,
+  CAROUSEL_DEFAULTS,
+} from "./constants";
+
+export type {
+  CarouselConfig,
+  CarouselComponent,
+  CarouselEvents,
+  CarouselChangePayload,
+  CarouselSlide,
+  CarouselVariant,
+  // Public and kept: CarouselComponent.slides is typed with it
+  SlidesAPI,
+} from "./types";

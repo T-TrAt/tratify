@@ -4,6 +4,7 @@ import { components } from '../src'
 import { catalog, componentId } from '../playground/catalog'
 import { componentDocuments } from '../playground/editor/documents'
 import { componentMetadata } from '../playground/editor/component-metadata'
+import materialApi from '../playground/material/api.json'
 import { createPlaygroundConfig, generateComponentCode, propControl } from '../playground/editor/component-playground'
 import type { ComponentDocument } from '../playground/editor/contract'
 
@@ -17,9 +18,20 @@ function compile(code: string) {
 describe('component handbooks', () => {
   it('covers the complete public registry and every gallery entry', () => {
     expect(catalog.map(item => item.name).sort()).toEqual(Object.keys(components).sort())
-    expect(Object.values(componentDocuments).map(item => item.name).sort()).toEqual(Object.keys(components).sort())
+    expect(Object.entries(componentDocuments).filter(([slug]) => slug.startsWith('apple-')).map(([, item]) => item.name).sort()).toEqual(Object.keys(components).sort())
     expect(Object.keys(componentMetadata).sort()).toEqual(Object.keys(components).sort())
     for (const item of catalog) expect(componentDocuments[componentId(item.name)].load).toBeTypeOf('function')
+  })
+
+  it('registers every Material API separately from the Apple components', async () => {
+    const registrations = Object.entries(componentDocuments).filter(([slug]) => slug.startsWith('material-'))
+    expect(registrations).toHaveLength(Object.keys(materialApi).length)
+    for (const [slug, expected] of Object.entries(materialApi)) {
+      const registration = componentDocuments[`material-${slug}`]
+      expect(registration.name).toBe(expected.name)
+      expect(registration.directory?.href).toBe('/material')
+      expect((await registration.load()).default).toEqual(expected)
+    }
   })
 
   for (const [name, component] of Object.entries(components)) {

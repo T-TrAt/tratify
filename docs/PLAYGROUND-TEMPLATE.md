@@ -1,21 +1,22 @@
 # 应用模板
 
-npm 包包含完整可编辑的 Vue 应用：导航、账号表单、主题/动效/玻璃设置、404、组件示例与图片资源。
+此页保留 Apptify 本地模板工具的说明。本分支的 `apptify` 与 `create-apptify` 都是私有包，不会发布；唯一发布包 `tratify` 只包含 Material 组件，不包含应用模板，见 [tratify](../packages/tratify/README.md)。
+
+本地模板包含完整可编辑的 Vue 应用：导航、账号表单、主题/动效/玻璃设置、404、组件示例与图片资源。
 
 ## 创建与运行
 
 ```sh
-npm create apptify@latest ./my-app
-cd my-app
+npm run prepack
+node tooling/create-playground.mjs ../my-app
+cd ../my-app
 npm install
 npm run dev
 ```
 
-也可运行 `npx --package=apptify apptify-playground ./my-app`。
-
 使用 Node.js 22 或 24 LTS。目标目录必须不存在或为空；复制命令不会安装依赖。
 
-项目的 `vendor/` 保存组件库 tgz，`package.json` 使用相对 `file:` 依赖，移动整个项目后仍可独立安装。改用 npm 更新库时，在新项目执行 `npm install apptify@latest`。
+项目的 `vendor/` 保存本地组件库 tgz，`package.json` 使用相对 `file:` 依赖，移动整个项目后仍可独立安装。重新生成模板可获得本工作区的更新；不要用上游 npm 包覆盖本地修改。
 
 ## 开始开发
 
@@ -30,11 +31,13 @@ npm run dev
 | `src/style.css` | 应用样式 |
 | `public/images/` | 示例图片与来源说明 |
 
-可删除 `views/index.vue` 和 `views/components.vue`，再创建业务页面。删除后重启开发服务；导航会隐藏不存在的页面。删除组件总览后，可一并删除 `ComponentDemo.vue`、`catalog.ts` 和 `components/ComponentIndex.vue`。
+可按需删除 `views/index.vue`、`views/components.vue`、`views/tags.vue` 和 `views/material.vue`，再创建业务页面。删除后重启开发服务；导航会隐藏不存在的页面。同时移除这些示例页面后，可一并删除 `ComponentDemo.vue`、`catalog.ts` 和 `components/ComponentIndex.vue`。
 
 例如 `src/views/orders.vue` 自动对应 `/orders`；在 `App.vue` 的 `navigation` 数组添加入口即可显示导航。`index.vue` 对应首页。
 
 组件通过 `apptify` 导入，样式通过 `apptify/style.css` 导入；`apptify/vite` 提供文件路由插件。已有项目接入时需安装 `vue-router` 和 `vite-plugin-pages`，模板已配置这些依赖。
+
+Material 示例使用 `apptify/material` 与 `apptify/material/style.css` 独立入口，使用方式见 [Material 组件](MATERIAL.md)。
 
 账号表单需要接入自己的后端。部署使用 history 路由，服务器需将页面请求回退到 `index.html`，保留 API 与静态资源路由。图片来源说明位于 `public/images/SOURCES.md`。
 

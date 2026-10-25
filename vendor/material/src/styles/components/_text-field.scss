@@ -1,0 +1,998 @@
+// src/styles/components/_text-field.scss
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+// Define the component once
+$component: "#{base.$prefix}-text-field";
+
+// Right to left. Every horizontal inset is a custom property, set
+// once whatever the direction, and the rules in this mixin, at the end of the
+// component's block, are the whole mirror. Two selectors: an ancestor's `dir`,
+// which needs no script, and --rtl, which placement.ts sets from the computed
+// direction, for a field in a shadow root, where a `dir` outside it does not
+// reach. Physical sides, as bundlers lower logical insets, corners and :dir()
+// into :lang() lists that miss dir="rtl".
+@mixin mirrored {
+    [dir='rtl'] &,
+    &.#{$component}--rtl {
+        @content;
+    }
+}
+
+// Autofill detection animations
+@keyframes onAutoFillStart {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes onAutoFillCancel {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+// ===== BASE STYLES =====
+.#{$component} {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    // Unsized, the field is 280px wide (TextFieldDefaults.MinWidth), not as
+    // wide as its input's 20 average characters, which Chrome measures
+    // differently per platform for the same font: 167px on macOS, 220px on
+    // Linux. A width from the page still applies.
+    contain: inline-size;
+    contain-intrinsic-inline-size: v.text-field('width');
+    // align-self: flex-start; // Prevents growing to fill the container's height
+    flex: 0 0 auto; // Don't grow or shrink; keep natural size
+    // The container: the label, input, outline, icons and affixes are placed
+    // against it, so the supporting text row under it never moves them
+    &__field {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Label
+    &__label {
+        @include m.typography("body-large");
+        user-select: none;
+        position: absolute;
+        left: var(--#{$component}-start, 16px);
+        top: 50%;
+        transform: translateY(-50%);
+        transform-origin: left top;
+        pointer-events: none;
+        color: t.color("on-surface-variant");
+        transition:
+            transform v.motion("duration-short4") v.motion("easing-emphasized"),
+            color v.motion("duration-short2") v.motion("easing-standard"),
+            left v.motion("duration-short4") v.motion("easing-emphasized");
+    }
+
+    // Input element
+    &__input {
+        @include m.typography("body-large");
+        @include m.shape("extra-small");
+        padding: 13px 16px;
+        width: 100%;
+        height: 56px;
+        color: t.color("on-surface");
+        caret-color: t.color("primary");
+        border: 0;
+        appearance: none;
+        outline: none;
+
+        // Animation to detect autofill
+        animation-name: onAutoFillCancel;
+        animation-duration: 10ms;
+
+        // Transition to help detect autofill changes
+        transition: background-color 0s ease-out 50000000s;
+
+        // InputPlaceholderColor, shown while the field is focused or has no
+        // label: under a resting label it would collide with it
+        &::placeholder {
+            color: t.color("on-surface-variant");
+            opacity: 1;
+        }
+
+        // Autofill styles
+        &:-webkit-autofill {
+            animation-name: onAutoFillStart;
+            animation-duration: 10ms;
+            -webkit-text-fill-color: t.color("on-surface");
+            transition: background-color 5000s ease-in-out 0s; // Long transition to keep the background
+        }
+
+        // Firefox autofill; the animation reports it as on WebKit
+        &:autofill {
+            animation-name: onAutoFillStart;
+            animation-duration: 10ms;
+            color: t.color("on-surface");
+        }
+    }
+
+    // The disabled input's -webkit-text-fill-color is inherited by its
+    // placeholder and paints over color, so both are cleared
+    &:has(> .#{$component}__field > .#{$component}__label):not(.#{$component}--focused) .#{$component}__input::placeholder {
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+    }
+
+    // While the label rests in the input area it is all that area shows: the
+    // prefix and suffix appear as it floats, like the placeholder.
+    // Resting is the float rules' complement: empty to the script and to the
+    // input itself, and not focused.
+    &--empty:has(> .#{$component}__field > .#{$component}__label):not(.#{$component}--focused):not(:has(.#{$component}__input:is(:not(:placeholder-shown), :autofill, :-webkit-autofill))) {
+        :is(.#{$component}__prefix, .#{$component}__suffix) {
+            opacity: 0;
+        }
+    }
+
+    // Prefix text
+    &__prefix {
+        @include m.typography("body-large");
+        position: absolute;
+        left: var(--#{$component}-start, 16px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: t.color("on-surface-variant");
+        pointer-events: none;
+        z-index: 2; // Increased to ensure it stays above input
+        white-space: nowrap; // Prevent text wrapping
+        max-width: 40%; // Prevent extreme overflow
+        overflow: hidden;
+        text-overflow: ellipsis;
+        // opacity as the label floats; top where a label is added
+        // or removed
+        transition:
+            top v.motion("duration-short4") v.motion("easing-emphasized"),
+            opacity v.motion("duration-short4") v.motion("easing-emphasized");
+    }
+
+    // Suffix text
+    &__suffix {
+        @include m.typography("body-large");
+        position: absolute;
+        right: var(--#{$component}-end, 16px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: t.color("on-surface-variant");
+        pointer-events: none;
+        z-index: 2; // Increased to ensure it stays above input
+        white-space: nowrap; // Prevent text wrapping
+        max-width: 40%; // Prevent extreme overflow
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition:
+            top v.motion("duration-short4") v.motion("easing-emphasized"),
+            opacity v.motion("duration-short4") v.motion("easing-emphasized");
+    }
+
+    // Leading icon
+    &__leading-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        pointer-events: none;
+        color: t.color("on-surface-variant");
+        z-index: 1;
+        transition: top v.motion("duration-short4")
+            v.motion("easing-emphasized"); // Add transition for top position
+
+        // LeadingIconSize / TrailingIconSize: 24dp, the whole box
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    // Trailing icon
+    &__trailing-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        color: t.color("on-surface-variant");
+        z-index: 1;
+        transition: top v.motion("duration-short4")
+            v.motion("easing-emphasized"); // Add transition for top position
+
+        // LeadingIconSize / TrailingIconSize: 24dp, the whole box
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    // A hidden icon is hidden (#60): an author rule beats the user agent's
+    // `[hidden] { display: none }`, so the parts' `display: flex` above must
+    // yield to their own hidden state. Scoped to the two parts, not a global
+    // `[hidden]` rule. The padding an icon's presence reserved stays: M3 has
+    // no hidden-icon state ("Left/right padding with icons 12dp", "Padding
+    // between icons and text 16dp"), and Compose's icon slot keeps its room
+    // whatever it draws.
+    &__leading-icon[hidden],
+    &__trailing-icon[hidden] {
+        display: none;
+    }
+
+    // Where the content starts and ends: 16dp in (TextFieldPadding), or after
+    // an icon, which is 12dp in with 16dp after it ("Left/right padding with
+    // icons 12dp", "Padding between icons and text 16dp", m3.material.io text
+    // fields): 52dp with the 24dp icon, 48dp with compact's 20dp one. The
+    // label, a prefix and a suffix stand there; the label is not moved by a
+    // prefix (Compose TextFieldImpl, "Prefix/suffix does not get applied to
+    // label").
+    &--with-leading-icon {
+        --#{$component}-start: 52px;
+    }
+
+    &--with-trailing-icon {
+        --#{$component}-end: 52px;
+
+        // A search input with a trailing icon of its own must not also show the
+        // browser's clear button. WebKit and Blink draw it into the input — the
+        // `::-webkit-search-cancel-button` user-agent shadow part — beside ours
+        // (two clears), and `appearance: none` on the input does not remove it.
+        // A search field with no icon of its own keeps the browser's button,
+        // its only clear affordance. `type` is enumerated, so the `i` flag
+        // follows an uppercase `type="SEARCH"` too.
+        .#{$component}__input[type="search" i]::-webkit-search-cancel-button {
+            display: none;
+        }
+    }
+
+    // What a prefix or a suffix adds before the text: its width, which
+    // placement.ts measures into a custom property (32px until it has), and
+    // the 2dp to the text (PrefixSuffixTextPadding)
+    &--with-prefix {
+        --#{$component}-prefix-space: calc(var(--#{$component}-prefix-width, 32px) + 2px);
+    }
+
+    &--with-suffix {
+        --#{$component}-suffix-space: calc(var(--#{$component}-suffix-width, 32px) + 2px);
+    }
+
+    // Error state
+    // Only the label, the trailing icon and the caret take the error colour:
+    // ErrorLeadingIconColor is on-surface-variant, and the affixes keep theirs
+    &--error {
+        .#{$component}__label,
+        .#{$component}__trailing-icon {
+            color: t.color("error");
+        }
+
+        .#{$component}__input {
+            caret-color: t.color("error");
+        }
+    }
+
+    // Disabled state
+    // Disabled: the roles at 38%, not the element faded, which also faded
+    // the filled container's 4%. The fill is the filled variant's.
+    &--disabled {
+        .#{$component}__input {
+            color: t.alpha("on-surface", 0.38);
+            -webkit-text-fill-color: t.alpha("on-surface", 0.38);
+            pointer-events: none;
+        }
+
+        .#{$component}__supporting {
+            color: t.color("on-surface");
+            opacity: 0.38;
+        }
+
+        .#{$component}__label {
+            color: t.color("on-surface");
+            opacity: 0.38;
+        }
+
+        .#{$component}__leading-icon,
+        .#{$component}__trailing-icon,
+        .#{$component}__prefix,
+        .#{$component}__suffix {
+            color: t.color("on-surface");
+            opacity: 0.38;
+        }
+    }
+
+    // The label comes before the input, so no sibling selector reaches it:
+    // the root reads the input's state instead.
+    &:has(.#{$component}__input:disabled) {
+        .#{$component}__label,
+        .#{$component}__supporting {
+            color: t.color("on-surface");
+            opacity: 0.38;
+        }
+    }
+
+    // Disabled state - legacy support for direct input disabled
+    &__input:disabled {
+        color: t.alpha("on-surface", 0.38);
+        -webkit-text-fill-color: t.alpha("on-surface", 0.38);
+        pointer-events: none;
+
+        & ~ .#{$component}__leading-icon,
+        & ~ .#{$component}__trailing-icon,
+        & ~ .#{$component}__prefix,
+        & ~ .#{$component}__suffix {
+            color: t.color("on-surface");
+            opacity: 0.38;
+        }
+    }
+
+    // The supporting text row, in the flow under the container: the helper at
+    // the start, the counter at the end, 4dp below the field and 16dp in from
+    // each side (TextFieldDefaults.supportingTextPadding). It was absolute,
+    // 18px under the field, so it overlapped what followed and never wrapped
+    &__supporting {
+        @include m.typography("body-small");
+        display: flex;
+        gap: 16px;
+        padding: 4px 16px 0;
+        color: t.color("on-surface-variant");
+    }
+
+    &__helper {
+        flex: 1 1 auto;
+        min-width: 0;
+
+        &--error {
+            color: t.color("error");
+        }
+    }
+
+    &__counter {
+        flex: none;
+        margin-inline-start: auto;
+    }
+
+    // The counter is supporting text: in error it takes the error colour, as
+    // the helper does (Material Web)
+    &--error .#{$component}__counter {
+        color: t.color("error");
+    }
+
+    // The required asterisk: part of the label, in its colour and
+    // straight after its text, as Material Web appends it. It was the error
+    // colour with a 4px gap, a style no element carried until now.
+    &__required {
+        color: inherit;
+    }
+
+    // Accessibility
+    @include m.reduced-motion {
+        &__label,
+        &__outline-leading,
+        &__outline-notch,
+        &__outline-trailing {
+            transition: none;
+        }
+
+        &__prefix,
+        &__suffix,
+        &__leading-icon,
+        &__trailing-icon {
+            transition: none;
+        }
+    }
+
+    // ===== FILLED VARIANT =====
+    &--filled {
+        // the label at rest is on-surface-variant at full strength: faded to
+        // 0.6 it fell to a 2.85:1 contrast on the field's fill, under the
+        // 4.5:1 a 16 px label needs
+        .#{$component}__label {
+            opacity: 1;
+        }
+        .#{$component}__input {
+            background-color: t.color("surface-container-highest");
+            // Under the label: 8dp, its 16dp line, the 24dp text, then 8dp with
+            // the 1dp indicator (m3.material.io: "Top/bottom padding 8dp")
+            padding: 24px 16px 7px;
+            border-bottom: 1px solid t.color("on-surface-variant");
+            border-radius: f.get-shape("extra-small") f.get-shape("extra-small")
+                0 0;
+            @include m.motion-transition(background-color, border-color);
+
+            // Autofill styles for filled variant
+            &:-webkit-autofill {
+                border-radius: f.get-shape("extra-small")
+                    f.get-shape("extra-small") 0 0;
+            }
+        }
+
+        // The 2dp focus indicator, at the container's bottom edge
+        .#{$component}__field::before {
+            content: "";
+            position: absolute;
+            opacity: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            background-color: t.color("primary");
+            border-radius: 0;
+            pointer-events: none;
+            transition: opacity v.motion("duration-short4") v.motion("easing-standard");
+
+            // Here, not in the block above with the label and the outline:
+            // this rule comes later and would win over it
+            @include m.reduced-motion {
+                transition: none;
+            }
+        }
+
+        // Populated field (not empty) or focused field label position
+        &:not(.#{$component}--empty) .#{$component}__label,
+        &.#{$component}--focused .#{$component}__label {
+            // Its line centred 16dp down, 8dp and half the 16dp line: from the
+            // field's centre, 12px up and half its own scaled height
+            transform: translateY(calc(-12px - 37.5%)) scale(0.75);
+        }
+
+        // Floated from the input's own state too: a value, or autofill before
+        // the script has seen it. The label precedes the input, so the root
+        // reads it.
+        &:has(.#{$component}__input:is(:not(:placeholder-shown), :autofill, :-webkit-autofill)) .#{$component}__label {
+            transform: translateY(calc(-12px - 37.5%)) scale(0.75);
+        }
+
+        // A prefix or suffix is on the text's line: under a label, 24dp down
+        // (its centre 36dp); without one it is centred, as the base places it.
+        // It shows only once the label has floated, so the state is not in
+        // the selector.
+        &:has(> .#{$component}__field > .#{$component}__label) {
+            .#{$component}__prefix,
+            .#{$component}__suffix {
+                top: 36px;
+            }
+        }
+
+        // Without a label the text is centred: 16dp above and below it
+        // (contentPaddingWithoutLabel), the indicator in the last of them
+        &:not(:has(> .#{$component}__field > .#{$component}__label)) .#{$component}__input {
+            padding-top: 16px;
+            padding-bottom: 15px;
+        }
+
+        // Focus state
+        &.#{$component}--focused {
+            .#{$component}__label {
+                color: t.color("primary");
+            }
+
+            .#{$component}__field::before {
+                opacity: 1;
+            }
+        }
+
+        // Hover: the on-surface state layer over the container, and the
+        // indicator in on-surface (HoverActiveIndicatorColor)
+        // (the layer in error too; there the indicator is on-error-container, below)
+        &:hover:not(.#{$component}--focused):not(.#{$component}--disabled):not(:has(.#{$component}__input:disabled)) .#{$component}__input {
+            background-image: linear-gradient(#{t.alpha("on-surface", 0.08)}, #{t.alpha("on-surface", 0.08)});
+        }
+
+        &:hover:not(.#{$component}--focused):not(.#{$component}--disabled):not(.#{$component}--error):not(:has(.#{$component}__input:disabled)) .#{$component}__input {
+            border-bottom-color: t.color("on-surface");
+        }
+
+        // Error: 1dp at rest, the 2dp bar only when focused
+        &.#{$component}--error {
+            .#{$component}__input {
+                border-bottom-color: t.color("error");
+            }
+
+            .#{$component}__field::before {
+                background-color: t.color("error");
+            }
+
+            .#{$component}__label {
+                color: t.color("error");
+            }
+
+            &:hover:not(.#{$component}--focused) {
+                .#{$component}__input {
+                    border-bottom-color: t.color("on-error-container");
+                }
+
+                .#{$component}__label,
+                .#{$component}__trailing-icon {
+                    color: t.color("on-error-container");
+                }
+            }
+        }
+
+        // Disabled: the 4% container and the indicator at 38%
+        &.#{$component}--disabled .#{$component}__input,
+        & .#{$component}__input:disabled {
+            background-color: t.alpha("on-surface", 0.04);
+            border-bottom-color: t.alpha("on-surface", 0.38);
+        }
+
+        &.#{$component}--disabled {
+            pointer-events: none;
+        }
+
+        // Icon adjustments for filled variant
+        &.#{$component}--with-leading-icon .#{$component}__leading-icon,
+        &.#{$component}--with-trailing-icon .#{$component}__trailing-icon {
+            top: 28px;
+        }
+    }
+
+    // ===== OUTLINED VARIANT =====
+    // The container is drawn by __outline in three segments: the leading
+    // corner, the notch the floated label sits in, and the trailing rest.
+    // While the label floats the notch drops its top edge, leaving a gap
+    // around the label, so nothing is painted behind the label and the field
+    // shows whatever surface it is on. placement.ts sizes the notch to the
+    // floated label plus the 4dp cutout padding on each side.
+    &__outline {
+        display: none;
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+
+        &-leading,
+        &-notch,
+        &-trailing {
+            border: var(--#{$component}-outline-width, 1px) solid
+                var(--#{$component}-outline-color, #{t.color("outline")});
+            @include m.motion-transition(border-color);
+        }
+
+        // 12dp: the label starts 16dp in, less the 4dp cutout padding
+        &-leading {
+            flex: 0 0 12px;
+            border-inline-end: 0;
+            border-radius: f.get-shape("extra-small") 0 0
+                f.get-shape("extra-small");
+        }
+
+        &-notch {
+            flex: 0 0 auto;
+            width: 0;
+            max-width: calc(100% - 24px);
+            border-inline: 0;
+        }
+
+        &-trailing {
+            flex: 1 1 auto;
+            border-inline-start: 0;
+            border-radius: 0 f.get-shape("extra-small")
+                f.get-shape("extra-small") 0;
+        }
+
+        &--notched .#{$component}__outline-notch {
+            border-top-color: transparent;
+        }
+
+        // Forced colours paints a declared-`transparent` border in the
+        // line's own colour, so the open notch's gap was drawn as part of the
+        // top line, across the floated label. In the mode the open notch has no
+        // top edge at all, whether placement.ts has opened it (--notched) or
+        // the input's own state has and the script has not caught up: a value
+        // set without an event, an autofilled field. The leading and trailing
+        // segments still draw theirs.
+        @include m.high-contrast {
+            &--notched .#{$component}__outline-notch {
+                border-top-style: none;
+            }
+
+            .#{$component}__input:not(:placeholder-shown) ~ & .#{$component}__outline-notch,
+            .#{$component}__input:-webkit-autofill ~ & .#{$component}__outline-notch,
+            .#{$component}__input:autofill ~ & .#{$component}__outline-notch {
+                border-top-style: none;
+            }
+        }
+    }
+
+    &--outlined {
+        --#{$component}-outline-color: #{t.color("outline")};
+        --#{$component}-outline-width: 1px;
+        border-radius: f.get-shape("extra-small");
+
+        .#{$component}__outline {
+            display: flex;
+        }
+
+        // Before placement.ts has run, the notch opens from the input's own state
+        .#{$component}__input:not(:placeholder-shown)
+            ~ .#{$component}__outline
+            .#{$component}__outline-notch,
+        .#{$component}__input:-webkit-autofill
+            ~ .#{$component}__outline
+            .#{$component}__outline-notch,
+        .#{$component}__input:autofill
+            ~ .#{$component}__outline
+            .#{$component}__outline-notch {
+            border-top-color: transparent;
+        }
+
+        .#{$component}__input {
+            background-color: transparent;
+            // 16dp all round (contentPaddingWithoutLabel), 1px of it the border
+            padding: 15px 16px;
+            // transparent: the outline draws the edge, this keeps the text
+            // where the old input border put it. Top and bottom only: the
+            // horizontal insets are the filled field's, to the pixel
+            border: solid transparent;
+            border-width: 1px 0;
+            @include m.motion-transition(padding);
+
+            // Autofill styles for outlined variant
+            &:-webkit-autofill {
+                border-radius: f.get-shape("extra-small");
+            }
+        }
+
+        // LabelColor at full strength: faded to 0.5 it failed 4.5:1
+        .#{$component}__label {
+            top: 50%;
+        }
+
+        // Populated field (not empty) or focused field label position
+        &:not(.#{$component}--empty) .#{$component}__label,
+        &.#{$component}--focused .#{$component}__label {
+            // Centred on the top edge (`endY = -(it.height / 2)`), whatever
+            // its height: up the 28px to the edge, and half its scaled box
+            transform: translateY(calc(-28px - 37.5%)) scale(0.75);
+            // The floated label starts 16dp in, inside the notch, whatever
+            // the icon at rest: the label's own inset, either direction
+            --#{$component}-start: 16px;
+        }
+
+        // Floated from the input's own state too, as the filled variant is
+        &:has(.#{$component}__input:is(:not(:placeholder-shown), :autofill, :-webkit-autofill)) .#{$component}__label {
+            // Centred on the top edge (`endY = -(it.height / 2)`), whatever
+            // its height: up the 28px to the edge, and half its scaled box
+            transform: translateY(calc(-28px - 37.5%)) scale(0.75);
+            --#{$component}-start: 16px;
+        }
+
+        // Hover state
+        // Hover: the outline and the label in on-surface (HoverLabelColor,
+        // where the filled label stays on-surface-variant)
+        &:hover:not(.#{$component}--focused):not(.#{$component}--disabled):not(.#{$component}--error):not(:has(.#{$component}__input:disabled)) {
+            --#{$component}-outline-color: #{t.color("on-surface")};
+
+            .#{$component}__label {
+                color: t.color("on-surface");
+            }
+        }
+
+        // Focus state
+        &.#{$component}--focused {
+            --#{$component}-outline-color: #{t.color("primary")};
+            --#{$component}-outline-width: 2px;
+
+            .#{$component}__label {
+                color: t.color("primary");
+            }
+        }
+
+        // Error state
+        &.#{$component}--error {
+            --#{$component}-outline-color: #{t.color("error")};
+
+            &:hover:not(.#{$component}--focused) {
+                --#{$component}-outline-color: #{t.color("on-error-container")};
+
+                .#{$component}__label,
+                .#{$component}__trailing-icon {
+                    color: t.color("on-error-container");
+                }
+            }
+
+            .#{$component}__label {
+                color: t.color("error");
+            }
+        }
+
+        // Disabled state
+        &.#{$component}--disabled {
+            --#{$component}-outline-color: #{t.alpha("on-surface", 0.12)};
+            pointer-events: none;
+        }
+
+    }
+
+    // Multiline styles
+    // The first line and the label are where a single-line field has them
+    // Compose places the text with no singleLine branch,
+    // `textPosition = topPaddingValue + labelPlaceable.height`. The textarea's
+    // own 12px put the first line under the filled field's floated label.
+    &--multiline {
+        .#{$component}__input {
+            min-height: v.text-field('height-multiline');
+            height: auto;
+            resize: vertical;
+            padding-top: v.text-field('padding-top-multiline');
+        }
+
+        // Under the floated label: 8dp, then its 16dp line
+        // (TextFieldWithLabelVerticalPadding, MinFocusedLabelLineHeight)
+        &.#{$component}--filled:has(> .#{$component}__field > .#{$component}__label) .#{$component}__input {
+            padding-top: v.text-field('padding-top-multiline-label');
+        }
+
+        // The input's own border is the rest of the 16dp
+        &.#{$component}--outlined .#{$component}__input {
+            padding-top: calc(#{v.text-field('padding-top-multiline')} - #{v.text-field('border-width')});
+        }
+
+        .#{$component}__prefix,
+        .#{$component}__suffix {
+            top: 28px;
+        }
+
+        // The single-line field's centre: its 56px box, halved
+        .#{$component}__label {
+            top: 28px;
+        }
+    }
+
+    // Support for multiline inputs
+    &__input[type="multiline"] {
+        min-height: v.text-field('height-multiline');
+        height: auto; // Allow height to adjust based on content
+        max-height: none; // Remove max-height constraint from regular inputs
+        flex-shrink: 1; // Allow some shrinking for multiline
+
+        & ~ .#{$component}__leading-icon,
+        & ~ .#{$component}__trailing-icon,
+        & ~ .#{$component}__prefix,
+        & ~ .#{$component}__suffix {
+            top: 20px;
+            transform: none;
+        }
+    }
+
+    // ===== DENSITY VARIANTS =====
+    // Compact density (40px height)
+    &--density-compact {
+        .#{$component}__input {
+            height: 40px;
+            padding: 8px 16px;
+            @include m.typography("body-medium"); // Slightly smaller text
+        }
+
+        // Adjust label position for compact
+        .#{$component}__label {
+            @include m.typography("body-medium");
+        }
+
+        // Adjust icon positions for compact height
+        .#{$component}__leading-icon,
+        .#{$component}__trailing-icon {
+            width: 20px;
+            height: 20px;
+
+            svg {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        // Adjust prefix/suffix position for compact
+        .#{$component}__prefix,
+        .#{$component}__suffix {
+            @include m.typography("body-medium");
+        }
+
+        // Filled variant with compact density
+        &.#{$component}--filled {
+            .#{$component}__input {
+                padding: 12px 16px 4px; // Adjusted for filled variant
+            }
+
+            // Populated/focused label position
+            &:not(.#{$component}--empty) .#{$component}__label,
+            &.#{$component}--focused .#{$component}__label {
+                transform: translateY(-90%) scale(0.75); // Adjusted for compact height
+            }
+
+            // A prefix or suffix on the compact text's line, under a label
+            &:has(> .#{$component}__field > .#{$component}__label) {
+                .#{$component}__prefix,
+                .#{$component}__suffix {
+                    top: 23.5px;
+                }
+            }
+
+            // Without a label, the 20px line centred in the 40px box
+            &:not(:has(> .#{$component}__field > .#{$component}__label)) .#{$component}__input {
+                padding-top: 10px;
+                padding-bottom: 9px;
+            }
+
+            // Adjust icons for filled compact
+            .#{$component}__leading-icon,
+            .#{$component}__trailing-icon {
+                top: 20px; // Adjusted for compact filled
+            }
+        }
+
+        // Outlined variant with compact density
+        &.#{$component}--outlined {
+            .#{$component}__input {
+                padding: 9px 16px;
+            }
+
+            // Focused/populated position
+            &:not(.#{$component}--empty) .#{$component}__label,
+            &.#{$component}--focused .#{$component}__label {
+                // On the edge of the 40px box: 20px up, and half its scaled box
+                transform: translateY(calc(-20px - 37.5%)) scale(0.75);
+            }
+        }
+
+        // Multiline with compact density: no M3 measure, so the first line
+        // and the label are the compact single-line field's
+        &.#{$component}--multiline {
+            .#{$component}__input {
+                min-height: 40px;
+                padding: v.text-field('padding-top-multiline-compact') v.text-field('padding-horizontal') 8px;
+            }
+
+            &.#{$component}--filled:has(> .#{$component}__field > .#{$component}__label) .#{$component}__input {
+                padding-top: v.text-field('padding-top-multiline-compact-label');
+            }
+
+            &.#{$component}--outlined .#{$component}__input {
+                padding-top: calc(#{v.text-field('padding-top-multiline-compact')} - #{v.text-field('border-width')});
+            }
+
+            .#{$component}__label,
+            .#{$component}__prefix,
+            .#{$component}__suffix {
+                top: 20px;
+            }
+        }
+
+        // The compact icon box is 20dp: the content starts 48dp in
+        &.#{$component}--with-leading-icon {
+            --#{$component}-start: 48px;
+        }
+
+        &.#{$component}--with-trailing-icon {
+            --#{$component}-end: 48px;
+        }
+    }
+
+    // ===== THE INPUT'S SIDES, AND THE MIRROR =====
+    // The text starts where the content does, after a prefix if there is one,
+    // and ends before a suffix. Last, and one class heavier (the field), so it
+    // holds over the variants' and the densities' padding shorthands.
+    .#{$component}__field .#{$component}__input {
+        padding-left: calc(var(--#{$component}-start, 16px) + var(--#{$component}-prefix-space, 0px));
+        padding-right: calc(var(--#{$component}-end, 16px) + var(--#{$component}-suffix-space, 0px));
+    }
+
+    @include mirrored {
+        .#{$component}__label {
+            left: auto;
+            right: var(--#{$component}-start, 16px);
+            transform-origin: right top;
+        }
+
+        .#{$component}__prefix {
+            left: auto;
+            right: var(--#{$component}-start, 16px);
+        }
+
+        .#{$component}__suffix {
+            right: auto;
+            left: var(--#{$component}-end, 16px);
+        }
+
+        .#{$component}__leading-icon {
+            left: auto;
+            right: 12px;
+        }
+
+        .#{$component}__trailing-icon {
+            right: auto;
+            left: 12px;
+        }
+
+        .#{$component}__field .#{$component}__input {
+            padding-left: calc(var(--#{$component}-end, 16px) + var(--#{$component}-suffix-space, 0px));
+            padding-right: calc(var(--#{$component}-start, 16px) + var(--#{$component}-prefix-space, 0px));
+        }
+
+        // The outline's corners follow its segments
+        .#{$component}__outline-leading {
+            border-radius: 0 f.get-shape("extra-small")
+                f.get-shape("extra-small") 0;
+        }
+
+        .#{$component}__outline-trailing {
+            border-radius: f.get-shape("extra-small") 0 0
+                f.get-shape("extra-small");
+        }
+    }
+}
+
+// ============================================================================
+// An interactive trailing icon
+// ============================================================================
+// With `trailingIconLabel` the trailing icon is a button: M3 draws an
+// interactive trailing icon as an icon button, as Compose's trailing slot holds
+// an IconButton, so a 40dp round state layer centred on the 24dp icon and a 48dp
+// target. Last in the file, and two classes, so the variant and density rules
+// that place the decorative icon keep its centre but not its size.
+.#{$component}__trailing-icon.#{$component}__trailing-icon--button {
+    right: 4px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    @include m.touch-target(48px);
+    // The mixin makes its host relative; the icon stays placed in the field
+    position: absolute;
+
+    // One state layer whose opacity the states set, as the icon button draws it
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background-color: currentColor;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &:hover:not(:disabled)::before {
+        opacity: 0.08;
+    }
+
+    &:focus-visible {
+        outline: 2px solid t.color("secondary");
+        outline-offset: 2px;
+    }
+
+    &:focus-visible::before,
+    &:active:not(:disabled)::before {
+        opacity: 0.1;
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+
+    // The field's mirror, for the button: an ancestor's `dir`, or the
+    // field's --rtl inside a shadow root
+    [dir='rtl'] &,
+    .#{$component}--rtl & {
+        right: auto;
+        left: 4px;
+    }
+}

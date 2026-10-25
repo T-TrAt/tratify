@@ -1,0 +1,578 @@
+// src/styles/components/_search.scss
+// Material Design 3 Search Component Styles
+// Implements MD3 Search Bar and Search View specifications
+
+@use "../abstract/base" as base;
+@use "../abstract/variables" as v;
+@use "../abstract/mixins" as m;
+@use "../abstract/theme" as t;
+
+$component: "#{base.$prefix}-search";
+
+// ============================================================================
+// MD3 Design Tokens
+// ============================================================================
+
+$bar-height: 56px;
+// SearchBarTokens.ContainerShape is CornerFull. Half the height, so the
+// radius animates to the view's corners; min() keeps a theme's full corner
+// in charge when it is smaller.
+$bar-shape: min(var(--#{base.$prefix}-sys-shape-corner-full, 9999px), calc(#{$bar-height} / 2));
+$bar-min-width: 360px;
+$bar-max-width: 720px;
+
+$view-docked-header-height: 56px;
+$view-docked-min-width: 360px;
+$view-docked-max-width: 720px;
+$view-docked-min-height: 240px;
+
+$view-fullscreen-header-height: 72px;
+
+$icon-size: 24px;
+$avatar-size: 30px;
+
+$transition-duration: 200ms;
+$transition-easing: cubic-bezier(0.2, 0, 0, 1);
+
+// ============================================================================
+// Root Element
+// ============================================================================
+
+// The surface is a <dialog>: the browser's dialog box is reset, and closed it
+// still shows, as the bar.
+.#{$component} .#{$component}__surface {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    overflow: visible;
+}
+
+// The root keeps the bar's place in the page. While the view is open, the bar
+// and its results show in the top layer as one surface, placed over it
+// A docked view no longer pushes the page down, and a full-screen
+// search no longer covers the page while it is a bar.
+.#{$component} {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: var(--#{$component}-min-width, #{$bar-min-width});
+    max-width: var(--#{$component}-max-width, #{$bar-max-width});
+    background-color: transparent;
+
+    // ========================================================================
+    // State Modifiers
+    // ========================================================================
+
+    // Bar state (collapsed) - default
+    &--bar {
+        .#{$component}__container {
+            border-radius: $bar-shape;
+            height: $bar-height;
+        }
+
+        // Hide content area in bar state
+        .#{$component}__divider,
+        .#{$component}__content {
+            display: none;
+        }
+    }
+
+    // View state (expanded): the bar's height stays in the page.
+    &--view {
+        height: $bar-height;
+
+        .#{$component}__container {
+            border-radius: v.shape("extra-large") v.shape("extra-large") 0 0;
+        }
+
+        .#{$component}__divider,
+        .#{$component}__content {
+            display: block;
+        }
+
+        // Out of the page: in the top layer where there is one, fixed above the
+        // page where there is not.
+        .#{$component}__surface {
+            position: fixed;
+            z-index: 1000;
+        }
+    }
+
+    // ========================================================================
+    // View Mode Modifiers
+    // ========================================================================
+
+    // Docked: under the bar, its width, over a scrim.
+    &--docked.#{$component}--view {
+        .#{$component}__surface {
+            inset: var(--#{$component}-top) auto auto var(--#{$component}-left);
+            width: var(--#{$component}-width);
+            height: auto;
+
+            &::backdrop {
+                background: t.alpha("scrim", 0.32);
+            }
+        }
+
+        .#{$component}__container {
+            height: $view-docked-header-height;
+        }
+
+        .#{$component}__content {
+            min-height: $view-docked-min-height;
+            max-height: calc(66.67vh - #{$view-docked-header-height});
+            border-radius: 0 0 v.shape("extra-large") v.shape("extra-large");
+        }
+    }
+
+    // Full screen: the viewport, only while the view is open.
+    &--fullscreen {
+        &.#{$component}--view {
+            .#{$component}__surface {
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                max-height: none;
+                display: flex;
+                flex-direction: column;
+                background-color: t.color("surface-container-high");
+
+                &::backdrop {
+                    background: transparent;
+                }
+            }
+
+            .#{$component}__container {
+                height: $view-fullscreen-header-height;
+                border-radius: 0;
+            }
+
+            .#{$component}__content {
+                flex: 1;
+                max-height: none;
+                border-radius: 0;
+            }
+        }
+    }
+
+    // ========================================================================
+    // Interactive State Modifiers
+    // ========================================================================
+
+    &--disabled {
+        pointer-events: none;
+
+        .#{$component}__container {
+            opacity: 0.38;
+        }
+    }
+
+    &--full-width {
+        min-width: 0;
+        max-width: none;
+    }
+}
+
+
+// ============================================================================
+// Styles
+// ============================================================================
+
+// The rules above draw the divided style, the baseline: the bar squares off
+// when focused and a divider separates the results. Contained, M3 Expressive's
+// recommended style and the default, keeps the bar's pill and filled container,
+// and gives the results their own container: docked 2dp below the bar with
+// 12dp corners (Compose dockedDropdownShape, dockedDropdownGapSize), full
+// screen on surface-container-low with the bar inset 12dp.
+@mixin contained-fullscreen {
+    .#{$component}__surface {
+        box-sizing: border-box;
+        padding: 12px;
+        background-color: t.color("surface-container-low");
+    }
+
+    .#{$component}__container {
+        height: $bar-height;
+        border-radius: $bar-shape;
+    }
+
+    .#{$component}__content {
+        margin-top: 8px;
+        background-color: transparent;
+        border-radius: 0;
+    }
+}
+
+.#{$component}--contained.#{$component}--view {
+    .#{$component}__container {
+        border-radius: $bar-shape;
+    }
+
+    .#{$component}__divider {
+        display: none;
+    }
+}
+
+.#{$component}--contained.#{$component}--docked.#{$component}--view {
+    .#{$component}__content {
+        margin-top: 2px;
+        // On the scale; no token names the contained docked view's content corner
+        border-radius: v.shape('medium');
+    }
+}
+
+.#{$component}--contained.#{$component}--fullscreen.#{$component}--view {
+    @include contained-fullscreen;
+}
+
+// The results reveal on the emphasized decelerate curve (the
+// --expanding and --collapsing classes were never driven, and are gone).
+.#{$component}--view .#{$component}__content {
+    animation: #{$component}-reveal v.motion("duration-medium2") v.motion("easing-emphasized-decelerate");
+}
+
+@keyframes #{$component}-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .#{$component}--view .#{$component}__content {
+        animation: none;
+    }
+}
+
+// ============================================================================
+// Container (Header/Bar area)
+// ============================================================================
+
+// Icons sit in 48dp tap targets 4dp from the ends, so an icon's centre is 28dp
+// in and the text starts 4dp after the leading target: 56dp, as M3 measures.
+.#{$component}__container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: $bar-height;
+    padding: 0 4px;
+    background-color: t.color("surface-container-high");
+    transition:
+        background-color $transition-duration $transition-easing,
+        border-radius $transition-duration $transition-easing,
+        height $transition-duration $transition-easing;
+}
+
+// The bar's hover state layer: on-surface at 8%.
+.#{$component}--bar:not(.#{$component}--disabled) .#{$component}__container:hover {
+    background-color: color-mix(in srgb, #{t.color("on-surface")} 8%, #{t.color("surface-container-high")});
+}
+
+// ============================================================================
+// Icon buttons: leading, clear, trailing
+// ============================================================================
+
+// 48dp tap targets around 24dp icons (they were 24dp buttons), with
+// state layers in their icon colour and md.comp.focus-ring.
+.#{$component}__leading-icon,
+.#{$component}__clear-button,
+.#{$component}__trailing-icon {
+    --#{$component}-layer: 0%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    // A shadow root does not get the page's font reset.
+    font: inherit;
+    background-color: color-mix(in srgb, currentColor var(--#{$component}-layer), transparent);
+    cursor: pointer;
+    transition: background-color $transition-duration $transition-easing;
+
+    svg {
+        width: $icon-size;
+        height: $icon-size;
+        fill: currentColor;
+    }
+
+    &:hover { --#{$component}-layer: 8%; }
+    &:focus-visible, &:active { --#{$component}-layer: 10%; }
+    &:focus { outline: none; }
+    &:focus-visible { outline: 3px solid t.color("secondary"); outline-offset: 2px; }
+
+    &[aria-disabled="true"] {
+        cursor: not-allowed;
+        opacity: 0.38;
+        --#{$component}-layer: 0%;
+    }
+}
+
+.#{$component}__leading-icon {
+    color: t.color("on-surface");
+}
+
+.#{$component}__clear-button,
+.#{$component}__trailing-icon {
+    color: t.color("on-surface-variant");
+}
+
+.#{$component}__clear-button {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity $transition-duration $transition-easing,
+        visibility 0s,
+        background-color $transition-duration $transition-easing;
+
+    &--hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity $transition-duration $transition-easing,
+            visibility 0s $transition-duration;
+    }
+}
+
+// The avatar is 30dp, centred in a 48dp box like the icons.
+.#{$component}__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+
+    > * {
+        width: $avatar-size;
+        height: $avatar-size;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+}
+
+// Trailing items container
+.#{$component}__trailing {
+    display: flex;
+    align-items: center;
+}
+
+// ============================================================================
+// Input Wrapper & Input
+// ============================================================================
+
+// 4dp from the tap targets on either side.
+.#{$component}__input-wrapper {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    margin: 0 4px;
+    display: flex;
+    align-items: center;
+}
+
+.#{$component}__input {
+    width: 100%;
+    height: 100%;
+    min-height: 36px;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    @include m.typography("body-large");
+    color: t.color("on-surface");
+    caret-color: t.color("primary");
+    outline: none;
+    box-sizing: border-box;
+
+    &::placeholder {
+        color: t.color("on-surface-variant");
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        color: t.color("on-surface");
+    }
+}
+
+// ============================================================================
+// Divider
+// ============================================================================
+
+// SearchViewTokens.DividerColor is outline (it was outline-variant).
+.#{$component}__divider {
+    width: 100%;
+    height: 1px;
+    background-color: t.color("outline");
+    flex-shrink: 0;
+}
+
+// ============================================================================
+// Content Area (View mode only)
+// ============================================================================
+
+.#{$component}__content {
+    display: flex;
+    flex-direction: column;
+    background-color: t.color("surface-container-high");
+    overflow: hidden;
+}
+
+// ============================================================================
+// Suggestions: M3 one-line list items
+// ============================================================================
+
+.#{$component}__suggestions {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    // The arrows name no behaviour, so that reduced motion can stop it
+    scroll-behavior: smooth;
+}
+
+.#{$component}__suggestion-list {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+
+// 56dp one-line items (they were 48), Body Large, 16dp padding; hover at 8%;
+// the option the arrows reach looks focused: 10% and the focus ring.
+.#{$component}__suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    min-height: 56px;
+    @include m.typography("body-large");
+    color: t.color("on-surface");
+    cursor: pointer;
+    transition: background-color $transition-duration $transition-easing;
+    box-sizing: border-box;
+
+    &:hover {
+        background-color: t.alpha("on-surface", 0.08);
+    }
+
+    &--selected,
+    &--selected:hover {
+        background-color: t.alpha("on-surface", 0.1);
+        outline: 3px solid t.color("secondary");
+        outline-offset: -3px;
+    }
+
+    // Highlighted text in suggestions
+    strong {
+        font-weight: 600;
+        color: t.color("on-surface");
+    }
+}
+
+.#{$component}__suggestion-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: $icon-size;
+    height: $icon-size;
+    color: t.color("on-surface-variant");
+
+    svg {
+        width: $icon-size;
+        height: $icon-size;
+        fill: currentColor;
+    }
+}
+
+.#{$component}__suggestion-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Two-line items: 72dp, the second line Body Medium on-surface-variant.
+.#{$component}__suggestion-item--two-line {
+    min-height: 72px;
+
+    .#{$component}__suggestion-text {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.#{$component}__suggestion-supporting {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    @include m.typography("body-medium");
+    color: t.color("on-surface-variant");
+}
+
+.#{$component}__suggestion-divider {
+    height: 1px;
+    margin: 8px 0;
+    background-color: t.color("outline-variant");
+}
+
+// The live region: read, not seen.
+.#{$component}__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+// ============================================================================
+// Responsive Adjustments
+// ============================================================================
+
+@include m.breakpoint-down("sm") {
+    .#{$component} {
+        min-width: 0;
+        max-width: 100%;
+
+        // Compact windows: docked opens full screen, M3's default there.
+        &--docked.#{$component}--view {
+            .#{$component}__surface {
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                background-color: t.color("surface-container-high");
+            }
+
+            .#{$component}__container {
+                border-radius: 0;
+            }
+
+            .#{$component}__content {
+                flex: 1;
+                max-height: none;
+                border-radius: 0;
+            }
+        }
+    }
+
+    // Contained on a compact window, as full screen.
+    .#{$component}--contained.#{$component}--docked.#{$component}--view {
+        @include contained-fullscreen;
+    }
+}

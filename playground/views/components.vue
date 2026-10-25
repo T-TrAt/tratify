@@ -39,7 +39,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Hash, Monitor, Smartphone } from 'lucide-vue-next'
-import { catalog, sections, componentId } from '../catalog'
+import { overviewCatalog as catalog, sections, componentId } from '../catalog'
 import ComponentDemo from '../ComponentDemo.vue'
 import ComponentIndex from '../components/ComponentIndex.vue'
 import MasonryFeed from '../components/MasonryFeed.vue'

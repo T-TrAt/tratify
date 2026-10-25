@@ -1,0 +1,115 @@
+// src/components/progress/features/state.ts - Canvas-compatible state management
+
+import { PREFIX } from "../../../core";
+import { ProgressConfig, ProgressShape, ProgressThickness } from "../types";
+import { PROGRESS_CLASSES, PROGRESS_SHAPES } from "../constants";
+import { addClass } from "../../../core/dom";
+
+/**
+ * Progress component state
+ */
+export interface ProgressState {
+  value: number;
+  max: number;
+  buffer: number;
+  indeterminate: boolean;
+  thickness: number | string; // Allow both number and string for thickness
+  shape: ProgressShape;
+  labelFormatter: (value: number, max: number) => string;
+  label?: HTMLElement;
+  showLabel?: boolean;
+}
+
+/**
+ * Component with lifecycle methods and canvas drawing
+ */
+export interface ComponentWithLifecycle {
+  element: HTMLElement;
+  canvas?: HTMLCanvasElement;
+  draw?: () => void;
+  lifecycle?: {
+    init?: () => void;
+    destroy?: () => void;
+  };
+  getClass?: (name: string) => string;
+  // API methods that may be available after full composition
+  setIndeterminate?: (indeterminate: boolean) => unknown;
+  setValue?: (value: number) => unknown;
+  setBuffer?: (buffer: number) => unknown;
+  setShape?: (shape: ProgressShape) => unknown;
+  showLabel?: () => unknown;
+  // The canvas accepts the public presets or a pixel count, not arbitrary strings.
+  setThickness?: (thickness: ProgressThickness) => unknown;
+  state?: ProgressState;
+}
+
+/**
+ * Adds state management for canvas-based progress component
+ *
+ * @param config Progress configuration
+ * @returns Component enhancer with state management
+ */
+export const withState =
+  (config: ProgressConfig) =>
+  <C extends ComponentWithLifecycle>(
+    component: C
+  ): C & { state: ProgressState } => {
+    // Apply indeterminate class immediately if needed
+    if (config.indeterminate && component.element) {
+      addClass(component.element, `${PREFIX}-${PROGRESS_CLASSES.INDETERMINATE}`);
+      component.element.removeAttribute("aria-valuenow");
+    }
+
+    // Remove any existing thickness classes - we'll handle thickness via canvas
+    if (component.element) {
+      const containerClass =
+        component.getClass?.(PROGRESS_CLASSES.CONTAINER) || "";
+      component.element.classList.remove(
+        `${containerClass}--thin`,
+        `${containerClass}--thick`
+      );
+    }
+
+    // Apply shape class immediately if needed (linear only)
+    if (
+      config.shape &&
+      config.shape !== PROGRESS_SHAPES.FLAT &&
+      component.element
+    ) {
+      const isCircular = component.element.classList.contains(
+        component.getClass?.(PROGRESS_CLASSES.CIRCULAR) || ""
+      );
+      if (!isCircular) {
+        const containerClass =
+          component.getClass?.(PROGRESS_CLASSES.CONTAINER) || "";
+        addClass(component.element, `${containerClass}--${config.shape}`);
+      }
+    }
+
+    // Initialize state values
+    // Clamped to 0…max from the start, as setValue clamps
+    const max = config.max ?? 100;
+    const clamp = (value: number): number => Math.max(0, Math.min(max, value));
+    const state: ProgressState = {
+      value: clamp(config.value ?? 0),
+      max,
+      buffer: clamp(config.buffer ?? 0),
+      indeterminate: config.indeterminate === true,
+      // Store thickness as is (string or number) to maintain the original value
+      thickness: config.thickness ?? "thin",
+      shape: config.shape ?? PROGRESS_SHAPES.FLAT,
+      labelFormatter:
+        config.labelFormatter ??
+        ((v: number, m: number): string => `${Math.round((v / m) * 100)}%`),
+      showLabel: config.showLabel,
+    };
+
+    // The canvas feature draws itself as soon as it is composed, so there is
+    // nothing to initialise here: the state is the state.
+    component.state = state;
+
+    return {
+      ...component,
+      state,
+    };
+  };

@@ -1,0 +1,94 @@
+// src/styles/components/_progress.scss
+//
+// Progress indicator. The indicator itself is drawn on a canvas, which reads
+// its colours from the theme, so this stylesheet only lays the element out:
+// the 4dp inset from the container edge that the guidelines ask for, the
+// optional label, and the hidden and disabled states.
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-progress";
+
+.#{$component} {
+  position: relative;
+  display: block;
+  // The canvas is the only child and defines the height; without this the
+  // line box adds a few pixels under it
+  line-height: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &__canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Linear: spans its container, inset 4dp from each edge
+  // ---------------------------------------------------------------------------
+  &--linear {
+    width: 100%;
+    padding: 0 #{4px};
+    box-sizing: border-box;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Circular: sized by the canvas
+  // ---------------------------------------------------------------------------
+  &--circular {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Label, an extension of this library rather than an M3 element
+  // ---------------------------------------------------------------------------
+  &__label {
+    @include m.typography("label-medium");
+    position: absolute;
+    line-height: normal;
+    color: t.color("on-surface-variant");
+    white-space: nowrap;
+
+    .#{$component}--linear & {
+      inset-inline-end: 0;
+      top: 100%;
+      margin-top: 4px;
+    }
+
+    .#{$component}--circular & {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  // A linear indicator with a label leaves room for it underneath
+  &--linear:has(.#{$component}__label) {
+    margin-bottom: 20px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // States
+  // ---------------------------------------------------------------------------
+  &--disabled,
+  &[aria-disabled="true"] {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  &--transition {
+    transition: opacity v.motion("duration-short4") v.motion("easing-standard");
+  }
+
+  @include m.print {
+    display: none;
+  }
+}

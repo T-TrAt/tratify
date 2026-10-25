@@ -1,0 +1,49 @@
+// src/components/select/index.ts
+
+/**
+ * Select Component Module
+ * 
+ * The Select component provides a dropdown select control,
+ * combining a text field and menu for a complete selection interface.
+ * 
+ * @module components/select
+ * @category Components
+ */
+
+// Export main component factory
+export { default, default as createSelect } from './select';
+// The event map `on` and `off` are typed with
+export type { SelectEvents } from './types';
+
+// Export types and interfaces
+export type { 
+  SelectConfig, 
+  SelectVariant,
+  SelectComponent,
+  SelectOption,
+  SelectEvent,
+  SelectChangeEvent
+} from './types';
+
+/**
+ * Constants for select configuration
+ * 
+ * @example
+ * import { createSelect, SELECT_VARIANTS } from 'material';
+ * 
+ * const select = createSelect({
+ *   variant: SELECT_VARIANTS.OUTLINED,
+ *   options: [...]
+ * });
+ * 
+ * @category Components
+ */
+export {
+  SELECT_VARIANTS,
+  SELECT_PLACEMENT,
+  SELECT_INTERACTION,
+  SELECT_EVENTS,
+  SELECT_ICONS,
+  SELECT_DEFAULTS,
+  SELECT_CLASSES
+} from './constants';

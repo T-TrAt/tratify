@@ -5,6 +5,8 @@ import { createHash } from 'node:crypto'
 
 import { prepareInputSource } from './prepare-input-source.mjs'
 await prepareInputSource()
+await import('./prepare-material-docs.mjs')
+await import('./prepare-material-examples.mjs')
 const root = fileURLToPath(new URL('../', import.meta.url))
 const output = join(root, 'templates/playground')
 const library = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
@@ -40,6 +42,8 @@ async function adapt(directory) {
     if (entry.isDirectory()) await adapt(path)
     else if (/\.(vue|ts)$/.test(entry.name)) {
       let source = await readFile(path, 'utf8')
+      source = source.replace(/(['"])(?:\.\.\/)+vendor\/material\/generated\/index\.js\1/g, "'apptify/material'")
+      source = source.replace(/(['"])(?:\.\.\/)+vendor\/material\/generated\/style\.css\1/g, "'apptify/material/style.css'")
       source = source.replace(/(['"])(?:\.\.\/)+src(?:\/(?:index|core\/motion|core\/context|components\/content))?\1/g, "'apptify'")
       if (/(['"])(?:\.\.\/)+src(?:\/[^'"]*)?\1/.test(source)) throw new Error('Unmapped private library import: ' + path)
       if (path === join(output, 'src/editor/runtime.ts')) source = "import 'apptify/style.css'\n" + source
@@ -106,9 +110,9 @@ await writeFile(join(output, 'README.md'), [
   "- 账号表单：`src/components/UserMenu.vue`，需要接入自己的后端。",
   "- 样式：`src/style.css`；图片与来源：`public/images/`。",
   "",
-  "可删除 `views/index.vue` 和 `views/components.vue`，再添加业务页面；删除后重启开发服务。删除组件总览后，可一并删除 `ComponentDemo.vue`、`catalog.ts` 和 `components/ComponentIndex.vue`。",
+  "可按需删除 `views/index.vue`、`views/components.vue`、`views/tags.vue` 和 `views/material.vue`，再添加业务页面；删除后重启开发服务。同时移除这些示例页面后，可一并删除 `ComponentDemo.vue`、`catalog.ts` 和 `components/ComponentIndex.vue`。",
   "",
-  "复制命令在 `vendor/` 保存库归档，移动整个项目后仍可独立安装。使用 npm 更新库：`npm install apptify@latest`。手工复制模板时，将 `gitignore` 重命名为 `.gitignore`。",
+  "复制命令在 `vendor/` 保存本地库归档，移动整个项目后仍可独立安装。本工作区的 Apptify 不发布到 npm，更新请重新生成模板；手工复制模板时，将 `gitignore` 重命名为 `.gitignore`。",
   "",
   "部署时将页面请求回退到 `index.html`，保留 API 与静态资源路由。",
   "",

@@ -1,0 +1,42 @@
+// src/styles/elements/_index.scss
+// Every element's pre-upgrade rules, for a page that compiles mtrl's SCSS:
+//   @use 'material/src/styles/elements' with ($tag-prefix: 'x');
+// The build emits the same rules as material/elements/preupgrade.css.
+@forward 'config';
+@use 'badge';
+@use 'bottom-app-bar';
+@use 'bottom-sheet';
+@use 'button-group';
+@use 'button';
+@use 'card';
+@use 'carousel';
+@use 'checkbox';
+@use 'chips';
+@use 'datepicker';
+@use 'dialog';
+@use 'divider';
+@use 'drawer';
+@use 'extended-fab';
+@use 'fab';
+@use 'fab-menu';
+@use 'icon-button';
+@use 'list';
+@use 'loading-indicator';
+@use 'menu';
+@use 'navigation-bar';
+@use 'navigation-rail';
+@use 'progress';
+@use 'radios';
+@use 'search';
+@use 'select';
+@use 'side-sheet';
+@use 'slider';
+@use 'snackbar';
+@use 'split-button';
+@use 'switch';
+@use 'tabs';
+@use 'text-field';
+@use 'timepicker';
+@use 'toolbar';
+@use 'tooltip';
+@use 'top-app-bar';

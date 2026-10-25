@@ -1,0 +1,146 @@
+// src/components/switch/api.ts
+import type { BaseComponent, SwitchComponent, SwitchEvents, ApiOptions } from "./types";
+
+/**
+ * Enhances switch component with API methods
+ * @param {ApiOptions} options - API configuration
+ * @returns {Function} Higher-order function that adds API methods to component
+ */
+export const withAPI =
+  ({ disabled, lifecycle, checkable }: ApiOptions) =>
+  (component: BaseComponent): SwitchComponent => ({
+    ...component,
+    element: component.element,
+    input: component.input as HTMLInputElement,
+
+    // Value management - returns boolean checked state for form compatibility
+    getValue(): boolean {
+      return checkable.isChecked();
+    },
+
+    setValue(value: boolean | string): SwitchComponent {
+      // Handle boolean values
+      if (typeof value === "boolean") {
+        if (value) {
+          checkable.check();
+        } else {
+          checkable.uncheck();
+        }
+      }
+      // Handle string values ("true", "false", "1", "0")
+      else if (typeof value === "string") {
+        const shouldCheck = value === "true" || value === "1";
+        if (shouldCheck) {
+          checkable.check();
+        } else {
+          checkable.uncheck();
+        }
+      }
+      return this;
+    },
+
+    // HTML value attribute access (for rare cases where you need the input's value attribute)
+    getValueAttribute(): string {
+      return component.input?.value || "";
+    },
+
+    setValueAttribute(value: string): SwitchComponent {
+      if (component.input) {
+        component.input.value = value;
+      }
+      return this;
+    },
+
+    // State management
+    check(): SwitchComponent {
+      checkable.check();
+      return this;
+    },
+
+    uncheck(): SwitchComponent {
+      checkable.uncheck();
+      return this;
+    },
+
+    toggle(): SwitchComponent {
+      checkable.toggle();
+      return this;
+    },
+
+    isChecked(): boolean {
+      return checkable.isChecked();
+    },
+
+    // Label management
+    setLabel(text: string): SwitchComponent {
+      component.label?.setText(text);
+      return this;
+    },
+
+    getLabel(): string {
+      return component.label?.getText() || "";
+    },
+
+    // Supporting text management (if present). A getter, not a copy: the
+    // element is created and removed after the API object exists, and a
+    // snapshot taken here would go on reporting whatever was there at creation.
+    get supportingTextElement(): HTMLElement | null {
+      return component.supportingTextElement || null;
+    },
+    setSupportingText(text: string, isError?: boolean): SwitchComponent {
+      if (component.setSupportingText) {
+        component.setSupportingText(text, isError);
+      }
+      return this;
+    },
+
+    removeSupportingText(): SwitchComponent {
+      if (component.removeSupportingText) {
+        component.removeSupportingText();
+      }
+      return this;
+    },
+
+    // The error state, owned here alone
+    setError(error: boolean): SwitchComponent {
+      component.setError?.(error);
+      return this;
+    },
+
+    isError(): boolean {
+      return component.isError?.() ?? false;
+    },
+
+    // Event handling
+    on<K extends keyof SwitchEvents>(event: K, handler: SwitchEvents[K]): SwitchComponent {
+      component.on?.(event, handler);
+      return this;
+    },
+
+    off<K extends keyof SwitchEvents>(event: K, handler: SwitchEvents[K]): SwitchComponent {
+      component.off?.(event, handler);
+      return this;
+    },
+
+    // State management
+    enable(): SwitchComponent {
+      disabled.enable();
+      return this;
+    },
+
+    isDisabled(): boolean {
+
+      return disabled.isDisabled();
+
+    },
+
+
+    disable(): SwitchComponent {
+      disabled.disable();
+      return this;
+    },
+
+    destroy(): void {
+      lifecycle.destroy();
+    },
+  });

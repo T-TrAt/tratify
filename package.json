@@ -1,15 +1,17 @@
 {
   "name": "apptify",
-  "version": "0.7.2",
-  "description": "An Apple-inspired, responsive Vue 3 component library.",
+  "private": true,
+  "author": "T-TrAt",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GARBAGELINUXGRAPHIC/apptify.git"
+    "url": "git+https://github.com/T-TrAt/tratify.git"
   },
-  "homepage": "https://github.com/GARBAGELINUXGRAPHIC/apptify#readme",
+  "homepage": "https://github.com/T-TrAt/tratify#readme",
   "bugs": {
-    "url": "https://github.com/GARBAGELINUXGRAPHIC/apptify/issues"
+    "url": "https://github.com/T-TrAt/tratify/issues"
   },
+  "version": "0.7.2",
+  "description": "An Apple-inspired, responsive Vue 3 component library.",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -17,6 +19,10 @@
     "docs",
     "tooling",
     "templates/playground",
+    "vendor/material/generated",
+    "vendor/material/LICENSE",
+    "vendor/material/SOURCE.json",
+    "vendor/glass-ui-kit",
     "THIRD_PARTY_LICENSES.txt"
   ],
   "main": "./dist/apptify.js",
@@ -28,6 +34,11 @@
       "import": "./dist/apptify.js"
     },
     "./style.css": "./dist/apptify.css",
+    "./material": {
+      "types": "./vendor/material/generated/index.d.ts",
+      "import": "./vendor/material/generated/index.js"
+    },
+    "./material/style.css": "./vendor/material/generated/style.css",
     "./vite": {
       "types": "./tooling/vite.d.ts",
       "import": "./tooling/vite.js"
@@ -37,8 +48,13 @@
     "**/*.css"
   ],
   "scripts": {
+    "build:material": "node tooling/build-material.mjs",
+    "build:tratify": "node tooling/build-tratify.mjs",
+    "predev": "npm run build:material",
     "dev": "vite",
+    "prebuild": "npm run build:material",
     "build": "vue-tsc --noEmit && vite build && vite build --config vite.lib.config.ts && vue-tsc -p tsconfig.lib.json",
+    "pretypecheck": "npm run build:material",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -66,6 +82,7 @@
     "esbuild": "^0.25.12",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.28",
+    "sass": "^1.106.1",
     "typescript": "^5.8.2",
     "vite": "^6.3.4",
     "vite-plugin-pages": "^0.32.5",

@@ -1,0 +1,5429 @@
+{
+  "badge": {
+    "name": "MBadge",
+    "source": "vendor/material/src/vue/badge.ts",
+    "specSource": "vendor/material/src/elements/badge.ts",
+    "tag": "m-badge",
+    "declaration": false,
+    "props": [
+      {
+        "id": "badge-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-badge> 的 label 属性。"
+      },
+      {
+        "id": "badge-prop-max",
+        "name": "max",
+        "type": "number",
+        "description": "对应 <m-badge> 的 max 属性。"
+      },
+      {
+        "id": "badge-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-badge> 的 variant 属性。",
+        "options": [
+          "small",
+          "large"
+        ]
+      },
+      {
+        "id": "badge-prop-color",
+        "name": "color",
+        "type": "string",
+        "description": "对应 <m-badge> 的 color 属性。"
+      },
+      {
+        "id": "badge-prop-visible",
+        "name": "visible",
+        "type": "boolean",
+        "description": "实时 visible，通过 :visible 受控传入；组件不会自动发出更新事件。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "badge-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。"
+    ]
+  },
+  "bottom-app-bar": {
+    "name": "MBottomAppBar",
+    "source": "vendor/material/src/vue/bottom-app-bar.ts",
+    "specSource": "vendor/material/src/elements/bottom-app-bar.ts",
+    "tag": "m-bottom-app-bar",
+    "declaration": false,
+    "props": [
+      {
+        "id": "bottom-app-bar-prop-fabPosition",
+        "name": "fabPosition",
+        "type": "string",
+        "description": "对应 <m-bottom-app-bar> 的 fab-position 属性。"
+      },
+      {
+        "id": "bottom-app-bar-prop-autoHide",
+        "name": "autoHide",
+        "type": "boolean",
+        "description": "对应 <m-bottom-app-bar> 的 auto-hide 属性。"
+      },
+      {
+        "id": "bottom-app-bar-prop-transitionDuration",
+        "name": "transitionDuration",
+        "type": "number",
+        "description": "对应 <m-bottom-app-bar> 的 transition-duration 属性。"
+      },
+      {
+        "id": "bottom-app-bar-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-bottom-app-bar> 的 aria-label 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "bottom-app-bar-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "bottom-app-bar-slot-fab",
+        "name": "fab",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #fab> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "bottom-app-bar-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Shows the bottom bar"
+      },
+      {
+        "id": "bottom-app-bar-method-element-hide",
+        "name": "element.hide",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Hides the bottom bar"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "bottom-sheet": {
+    "name": "MBottomSheet",
+    "source": "vendor/material/src/vue/bottom-sheet.ts",
+    "specSource": "vendor/material/src/elements/bottom-sheet.ts",
+    "tag": "m-bottom-sheet",
+    "declaration": false,
+    "props": [
+      {
+        "id": "bottom-sheet-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-bottom-sheet> 的 open 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-expanded",
+        "name": "expanded",
+        "type": "boolean",
+        "description": "对应 <m-bottom-sheet> 的 expanded 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-modal",
+        "name": "modal",
+        "type": "boolean",
+        "description": "对应 <m-bottom-sheet> 的 modal 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-bottom-sheet> 的 headline 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-peekHeight",
+        "name": "peekHeight",
+        "type": "number",
+        "description": "对应 <m-bottom-sheet> 的 peek-height 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-maxWidth",
+        "name": "maxWidth",
+        "type": "number",
+        "description": "对应 <m-bottom-sheet> 的 max-width 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-noDragHandle",
+        "name": "noDragHandle",
+        "type": "boolean",
+        "description": "对应 <m-bottom-sheet> 的 no-drag-handle 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-noCloseOnScrimClick",
+        "name": "noCloseOnScrimClick",
+        "type": "boolean",
+        "description": "对应 <m-bottom-sheet> 的 no-close-on-scrim-click 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-noCloseOnEscape",
+        "name": "noCloseOnEscape",
+        "type": "boolean",
+        "description": "对应 <m-bottom-sheet> 的 no-close-on-escape 属性。"
+      },
+      {
+        "id": "bottom-sheet-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-bottom-sheet> 的 aria-label 属性。"
+      }
+    ],
+    "events": [
+      {
+        "id": "bottom-sheet-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "bottom-sheet-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      },
+      {
+        "id": "bottom-sheet-event-expand",
+        "name": "expand",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 expand 事件的数据。"
+      },
+      {
+        "id": "bottom-sheet-event-collapse",
+        "name": "collapse",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 collapse 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "bottom-sheet-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "bottom-sheet-slot-headline",
+        "name": "headline",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #headline> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "bottom-sheet-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。"
+      },
+      {
+        "id": "bottom-sheet-method-element-close",
+        "name": "element.close",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.close() 调用。 Closes the sheet"
+      },
+      {
+        "id": "bottom-sheet-method-element-expand",
+        "name": "element.expand",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.expand() 调用。 Opens the sheet to its full height"
+      },
+      {
+        "id": "bottom-sheet-method-element-collapse",
+        "name": "element.collapse",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.collapse() 调用。 Returns the sheet to the peek height"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "button-group-item": {
+    "name": "MButtonGroupItem",
+    "source": "vendor/material/src/vue/button-group-item.ts",
+    "specSource": "vendor/material/src/elements/button-group.ts",
+    "tag": "m-button-group-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "button-group-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-button-group-item> 的 value 属性。"
+      },
+      {
+        "id": "button-group-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-button-group-item> 的 label 属性。"
+      },
+      {
+        "id": "button-group-item-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-button-group-item> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "button-group-item-prop-selectedIcon",
+        "name": "selectedIcon",
+        "type": "string",
+        "description": "对应 <m-button-group-item> 的 selected-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown on an icon-only item while it is selected."
+      },
+      {
+        "id": "button-group-item-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-button-group-item> 的 aria-label 属性。"
+      },
+      {
+        "id": "button-group-item-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-button-group-item> 的 disabled 属性。"
+      },
+      {
+        "id": "button-group-item-prop-selected",
+        "name": "selected",
+        "type": "boolean",
+        "description": "对应 <m-button-group-item> 的 selected 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "button-group-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "button-group": {
+    "name": "MButtonGroup",
+    "source": "vendor/material/src/vue/button-group.ts",
+    "specSource": "vendor/material/src/elements/button-group.ts",
+    "tag": "m-button-group",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "button-group-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 variant 属性。",
+        "options": [
+          "filled",
+          "tonal",
+          "outlined",
+          "elevated",
+          "text"
+        ]
+      },
+      {
+        "id": "button-group-prop-kind",
+        "name": "kind",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 kind 属性。"
+      },
+      {
+        "id": "button-group-prop-selection",
+        "name": "selection",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 selection 属性。"
+      },
+      {
+        "id": "button-group-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-button-group> 的 required 属性。"
+      },
+      {
+        "id": "button-group-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 size 属性。",
+        "options": [
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ]
+      },
+      {
+        "id": "button-group-prop-shape",
+        "name": "shape",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 shape 属性。",
+        "options": [
+          "round",
+          "square"
+        ]
+      },
+      {
+        "id": "button-group-prop-labels",
+        "name": "labels",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 labels 属性。"
+      },
+      {
+        "id": "button-group-prop-orientation",
+        "name": "orientation",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 orientation 属性。",
+        "options": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      {
+        "id": "button-group-prop-density",
+        "name": "density",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 density 属性。"
+      },
+      {
+        "id": "button-group-prop-equalWidth",
+        "name": "equalWidth",
+        "type": "boolean",
+        "description": "对应 <m-button-group> 的 equal-width 属性。"
+      },
+      {
+        "id": "button-group-prop-expandedRatio",
+        "name": "expandedRatio",
+        "type": "number",
+        "description": "对应 <m-button-group> 的 expanded-ratio 属性。"
+      },
+      {
+        "id": "button-group-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-button-group> 的 disabled 属性。"
+      },
+      {
+        "id": "button-group-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-button-group> 的 aria-label 属性。"
+      },
+      {
+        "id": "button-group-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-button-group> 的 value 属性。"
+      },
+      {
+        "id": "button-group-prop-value",
+        "name": "value",
+        "type": "ButtonGroupValue",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "button-group-prop-modelValue",
+        "name": "modelValue",
+        "type": "ButtonGroupValue",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "button-group-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<ButtonGroupValue>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "button-group-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<ButtonGroupValue>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "button-group-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: ButtonGroupValue; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "button-group-event-action",
+        "name": "action",
+        "type": "CustomEvent<{ value: string; index: number; }>",
+        "description": "通过 event.detail 读取 action 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "button-group-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "button": {
+    "name": "MButton",
+    "source": "vendor/material/src/vue/button.ts",
+    "specSource": "vendor/material/src/elements/button.ts",
+    "tag": "m-button",
+    "declaration": false,
+    "props": [
+      {
+        "id": "button-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-button> 的 variant 属性。",
+        "options": [
+          "filled",
+          "tonal",
+          "outlined",
+          "elevated",
+          "text"
+        ]
+      },
+      {
+        "id": "button-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-button> 的 size 属性。",
+        "options": [
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ]
+      },
+      {
+        "id": "button-prop-shape",
+        "name": "shape",
+        "type": "string",
+        "description": "对应 <m-button> 的 shape 属性。",
+        "options": [
+          "round",
+          "square"
+        ]
+      },
+      {
+        "id": "button-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-button> 的 disabled 属性。"
+      },
+      {
+        "id": "button-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-button> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "button-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-button> 的 value 属性。"
+      },
+      {
+        "id": "button-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-button> 的 type 属性。",
+        "options": [
+          "button",
+          "submit",
+          "reset"
+        ]
+      },
+      {
+        "id": "button-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-button> 的 aria-label 属性。"
+      },
+      {
+        "id": "button-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      },
+      {
+        "id": "button-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "默认插槽的回退文本。"
+      }
+    ],
+    "events": [
+      {
+        "id": "button-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ selected: boolean; value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "button-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件文本内容；未提供时使用 label。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。"
+    ]
+  },
+  "card": {
+    "name": "MCard",
+    "source": "vendor/material/src/vue/card.ts",
+    "specSource": "vendor/material/src/elements/card.ts",
+    "tag": "m-card",
+    "declaration": false,
+    "props": [
+      {
+        "id": "card-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-card> 的 variant 属性。",
+        "options": [
+          "elevated",
+          "filled",
+          "outlined"
+        ]
+      },
+      {
+        "id": "card-prop-clickable",
+        "name": "clickable",
+        "type": "boolean",
+        "description": "对应 <m-card> 的 clickable 属性。"
+      },
+      {
+        "id": "card-prop-fullWidth",
+        "name": "fullWidth",
+        "type": "boolean",
+        "description": "对应 <m-card> 的 full-width 属性。"
+      },
+      {
+        "id": "card-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-card> 的 headline 属性。"
+      },
+      {
+        "id": "card-prop-subhead",
+        "name": "subhead",
+        "type": "string",
+        "description": "对应 <m-card> 的 subhead 属性。"
+      },
+      {
+        "id": "card-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-card> 的 disabled 属性。"
+      },
+      {
+        "id": "card-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-card> 的 aria-label 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "card-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "card-slot-avatar",
+        "name": "avatar",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #avatar> 命名插槽。"
+      },
+      {
+        "id": "card-slot-header-action",
+        "name": "header-action",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #header-action> 命名插槽。"
+      },
+      {
+        "id": "card-slot-headline",
+        "name": "headline",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #headline> 命名插槽。"
+      },
+      {
+        "id": "card-slot-subhead",
+        "name": "subhead",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #subhead> 命名插槽。"
+      },
+      {
+        "id": "card-slot-media",
+        "name": "media",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #media> 命名插槽。"
+      },
+      {
+        "id": "card-slot-actions",
+        "name": "actions",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #actions> 命名插槽。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。"
+    ]
+  },
+  "carousel-item": {
+    "name": "MCarouselItem",
+    "source": "vendor/material/src/vue/carousel-item.ts",
+    "specSource": "vendor/material/src/elements/carousel.ts",
+    "tag": "m-carousel-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "carousel-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 value 属性。"
+      },
+      {
+        "id": "carousel-item-prop-src",
+        "name": "src",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 src 属性。"
+      },
+      {
+        "id": "carousel-item-prop-alt",
+        "name": "alt",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 alt 属性。"
+      },
+      {
+        "id": "carousel-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 label 属性。"
+      },
+      {
+        "id": "carousel-item-prop-description",
+        "name": "description",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 description 属性。"
+      },
+      {
+        "id": "carousel-item-prop-buttonText",
+        "name": "buttonText",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 button-text 属性。"
+      },
+      {
+        "id": "carousel-item-prop-buttonUrl",
+        "name": "buttonUrl",
+        "type": "string",
+        "description": "对应 <m-carousel-item> 的 button-url 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "carousel-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "carousel": {
+    "name": "MCarousel",
+    "source": "vendor/material/src/vue/carousel.ts",
+    "specSource": "vendor/material/src/elements/carousel.ts",
+    "tag": "m-carousel",
+    "declaration": false,
+    "model": "index",
+    "props": [
+      {
+        "id": "carousel-prop-wheel",
+        "name": "wheel",
+        "type": "boolean",
+        "description": "对应 <m-carousel> 的 wheel 属性。"
+      },
+      {
+        "id": "carousel-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-carousel> 的 variant 属性。",
+        "options": [
+          "multi-browse",
+          "uncontained",
+          "hero",
+          "hero-center",
+          "full-screen"
+        ]
+      },
+      {
+        "id": "carousel-prop-defaultIndex",
+        "name": "defaultIndex",
+        "type": "number",
+        "description": "初始 index，对应 <m-carousel> 的 index 属性。"
+      },
+      {
+        "id": "carousel-prop-itemWidth",
+        "name": "itemWidth",
+        "type": "number",
+        "description": "对应 <m-carousel> 的 item-width 属性。"
+      },
+      {
+        "id": "carousel-prop-gap",
+        "name": "gap",
+        "type": "number",
+        "description": "对应 <m-carousel> 的 gap 属性。"
+      },
+      {
+        "id": "carousel-prop-padding",
+        "name": "padding",
+        "type": "number",
+        "description": "对应 <m-carousel> 的 padding 属性。"
+      },
+      {
+        "id": "carousel-prop-cornerRadius",
+        "name": "cornerRadius",
+        "type": "number",
+        "description": "对应 <m-carousel> 的 corner-radius 属性。"
+      },
+      {
+        "id": "carousel-prop-minSmallItemWidth",
+        "name": "minSmallItemWidth",
+        "type": "number",
+        "description": "对应 <m-carousel> 的 min-small-item-width 属性。"
+      },
+      {
+        "id": "carousel-prop-maxSmallItemWidth",
+        "name": "maxSmallItemWidth",
+        "type": "number",
+        "description": "对应 <m-carousel> 的 max-small-item-width 属性。"
+      },
+      {
+        "id": "carousel-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-carousel> 的 aria-label 属性。"
+      },
+      {
+        "id": "carousel-prop-index",
+        "name": "index",
+        "type": "number",
+        "description": "实时 index，可使用 v-model:index 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "carousel-prop-modelValue",
+        "name": "modelValue",
+        "type": "number",
+        "description": "v-model 的绑定值，等同于 index。"
+      }
+    ],
+    "events": [
+      {
+        "id": "carousel-event-update-index",
+        "name": "update:index",
+        "type": "(value: NonNullable<number>) => void",
+        "description": "组件事件触发且 index 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "carousel-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<number>) => void",
+        "description": "组件事件触发且 index 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "carousel-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: number; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "carousel-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "carousel-method-element-next",
+        "name": "element.next",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.next() 调用。"
+      },
+      {
+        "id": "carousel-method-element-prev",
+        "name": "element.prev",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.prev() 调用。"
+      },
+      {
+        "id": "carousel-method-element-goTo",
+        "name": "element.goTo",
+        "type": "(index: number) => unknown",
+        "description": "通过组件 ref 的 element.goTo() 调用。"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 index；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "checkbox": {
+    "name": "MCheckbox",
+    "source": "vendor/material/src/vue/checkbox.ts",
+    "specSource": "vendor/material/src/elements/checkbox.ts",
+    "tag": "m-checkbox",
+    "declaration": false,
+    "model": "checked",
+    "props": [
+      {
+        "id": "checkbox-prop-defaultChecked",
+        "name": "defaultChecked",
+        "type": "boolean",
+        "description": "初始 checked，对应 <m-checkbox> 的 checked 属性。"
+      },
+      {
+        "id": "checkbox-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-checkbox> 的 disabled 属性。"
+      },
+      {
+        "id": "checkbox-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-checkbox> 的 required 属性。"
+      },
+      {
+        "id": "checkbox-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-checkbox> 的 value 属性。"
+      },
+      {
+        "id": "checkbox-prop-error",
+        "name": "error",
+        "type": "boolean",
+        "description": "对应 <m-checkbox> 的 error 属性。"
+      },
+      {
+        "id": "checkbox-prop-labelPosition",
+        "name": "labelPosition",
+        "type": "string",
+        "description": "对应 <m-checkbox> 的 label-position 属性。"
+      },
+      {
+        "id": "checkbox-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-checkbox> 的 aria-label 属性。"
+      },
+      {
+        "id": "checkbox-prop-checked",
+        "name": "checked",
+        "type": "boolean",
+        "description": "实时 checked，可使用 v-model:checked 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "checkbox-prop-indeterminate",
+        "name": "indeterminate",
+        "type": "boolean",
+        "description": "实时 indeterminate，可使用 v-model:indeterminate 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "checkbox-prop-modelValue",
+        "name": "modelValue",
+        "type": "boolean",
+        "description": "v-model 的绑定值，等同于 checked。"
+      },
+      {
+        "id": "checkbox-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      },
+      {
+        "id": "checkbox-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "默认插槽的回退文本。"
+      }
+    ],
+    "events": [
+      {
+        "id": "checkbox-event-update-checked",
+        "name": "update:checked",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 checked 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "checkbox-event-update-indeterminate",
+        "name": "update:indeterminate",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 indeterminate 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "checkbox-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 checked 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "checkbox-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ checked: boolean; value: boolean; valueAttribute: string; nativeEvent: Event | undefined; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "checkbox-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件文本内容；未提供时使用 label。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "checkbox-method-element-toggle",
+        "name": "element.toggle",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.toggle() 调用。 Toggles the checkbox's checked state. Clears indeterminate, as a user click does."
+      },
+      {
+        "id": "checkbox-method-element-check",
+        "name": "element.check",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.check() 调用。 Checks the checkbox (sets checked=true). Clears indeterminate, as a user click does."
+      },
+      {
+        "id": "checkbox-method-element-uncheck",
+        "name": "element.uncheck",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.uncheck() 调用。 Unchecks the checkbox (sets checked=false). Clears indeterminate, as a user click does."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 checked；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "chip": {
+    "name": "MChip",
+    "source": "vendor/material/src/vue/chip.ts",
+    "specSource": "vendor/material/src/elements/chips.ts",
+    "tag": "m-chip",
+    "declaration": true,
+    "props": [
+      {
+        "id": "chip-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-chip> 的 value 属性。"
+      },
+      {
+        "id": "chip-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-chip> 的 label 属性。"
+      },
+      {
+        "id": "chip-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-chip> 的 variant 属性。"
+      },
+      {
+        "id": "chip-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-chip> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "chip-prop-trailingIcon",
+        "name": "trailingIcon",
+        "type": "string",
+        "description": "对应 <m-chip> 的 trailing-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "chip-prop-avatar",
+        "name": "avatar",
+        "type": "string",
+        "description": "对应 <m-chip> 的 avatar 属性。 Markup (HTML), not a person's name or an image URL. Not sanitized by default: see Markup and sanitizing. Input chips only; takes precedence over `icon`."
+      },
+      {
+        "id": "chip-prop-removeLabel",
+        "name": "removeLabel",
+        "type": "string",
+        "description": "对应 <m-chip> 的 remove-label 属性。"
+      },
+      {
+        "id": "chip-prop-selected",
+        "name": "selected",
+        "type": "boolean",
+        "description": "对应 <m-chip> 的 selected 属性。"
+      },
+      {
+        "id": "chip-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-chip> 的 disabled 属性。"
+      },
+      {
+        "id": "chip-prop-elevated",
+        "name": "elevated",
+        "type": "boolean",
+        "description": "对应 <m-chip> 的 elevated 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "chip-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "chips": {
+    "name": "MChips",
+    "source": "vendor/material/src/vue/chips.ts",
+    "specSource": "vendor/material/src/elements/chips.ts",
+    "tag": "m-chips",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "chips-prop-selection",
+        "name": "selection",
+        "type": "string",
+        "description": "对应 <m-chips> 的 selection 属性。"
+      },
+      {
+        "id": "chips-prop-selectionRequired",
+        "name": "selectionRequired",
+        "type": "boolean",
+        "description": "对应 <m-chips> 的 selection-required 属性。"
+      },
+      {
+        "id": "chips-prop-scrollable",
+        "name": "scrollable",
+        "type": "boolean",
+        "description": "对应 <m-chips> 的 scrollable 属性。"
+      },
+      {
+        "id": "chips-prop-vertical",
+        "name": "vertical",
+        "type": "boolean",
+        "description": "对应 <m-chips> 的 vertical 属性。"
+      },
+      {
+        "id": "chips-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-chips> 的 label 属性。"
+      },
+      {
+        "id": "chips-prop-labelPosition",
+        "name": "labelPosition",
+        "type": "string",
+        "description": "对应 <m-chips> 的 label-position 属性。"
+      },
+      {
+        "id": "chips-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-chips> 的 aria-label 属性。"
+      },
+      {
+        "id": "chips-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-chips> 的 value 属性。"
+      },
+      {
+        "id": "chips-prop-value",
+        "name": "value",
+        "type": "ChipsValue",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "chips-prop-modelValue",
+        "name": "modelValue",
+        "type": "ChipsValue",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "chips-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<ChipsValue>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "chips-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<ChipsValue>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "chips-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string | string[] | null; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "chips-event-remove",
+        "name": "remove",
+        "type": "CustomEvent<{ chipValue: string | null; value: string | string[] | null; }>",
+        "description": "通过 event.detail 读取 remove 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "chips-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "datepicker": {
+    "name": "MDatepicker",
+    "source": "vendor/material/src/vue/datepicker.ts",
+    "specSource": "vendor/material/src/elements/datepicker.ts",
+    "tag": "m-datepicker",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "datepicker-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 variant 属性。"
+      },
+      {
+        "id": "datepicker-prop-selectionMode",
+        "name": "selectionMode",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 selection-mode 属性。"
+      },
+      {
+        "id": "datepicker-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-datepicker> 的 value 属性。"
+      },
+      {
+        "id": "datepicker-prop-min",
+        "name": "min",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 min 属性。"
+      },
+      {
+        "id": "datepicker-prop-max",
+        "name": "max",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 max 属性。"
+      },
+      {
+        "id": "datepicker-prop-dateFormat",
+        "name": "dateFormat",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 date-format 属性。"
+      },
+      {
+        "id": "datepicker-prop-initialView",
+        "name": "initialView",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 initial-view 属性。"
+      },
+      {
+        "id": "datepicker-prop-closeOnSelect",
+        "name": "closeOnSelect",
+        "type": "boolean",
+        "description": "对应 <m-datepicker> 的 close-on-select 属性。"
+      },
+      {
+        "id": "datepicker-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 label 属性。"
+      },
+      {
+        "id": "datepicker-prop-supportingText",
+        "name": "supportingText",
+        "type": "string",
+        "description": "对应 <m-datepicker> 的 supporting-text 属性。"
+      },
+      {
+        "id": "datepicker-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-datepicker> 的 required 属性。"
+      },
+      {
+        "id": "datepicker-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-datepicker> 的 disabled 属性。"
+      },
+      {
+        "id": "datepicker-prop-readonly",
+        "name": "readonly",
+        "type": "boolean",
+        "description": "对应 <m-datepicker> 的 readonly 属性。"
+      },
+      {
+        "id": "datepicker-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-datepicker> 的 open 属性。"
+      },
+      {
+        "id": "datepicker-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "datepicker-prop-modelValue",
+        "name": "modelValue",
+        "type": "string",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "datepicker-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "datepicker-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "datepicker-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "datepicker-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; date: Date | Date[] | null; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "datepicker-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "datepicker-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "datepicker-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "datepicker-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Opens the calendar, unless the picker is disabled or read-only."
+      },
+      {
+        "id": "datepicker-method-element-close",
+        "name": "element.close",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.close() 调用。 Closes the datepicker dropdown/modal. When it returns, `isOpen()` is false and `close` has been emitted. On a closed picker it does nothing."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "dialog": {
+    "name": "MDialog",
+    "source": "vendor/material/src/vue/dialog.ts",
+    "specSource": "vendor/material/src/elements/dialog.ts",
+    "tag": "m-dialog",
+    "declaration": false,
+    "props": [
+      {
+        "id": "dialog-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-dialog> 的 open 属性。"
+      },
+      {
+        "id": "dialog-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-dialog> 的 headline 属性。"
+      },
+      {
+        "id": "dialog-prop-subtitle",
+        "name": "subtitle",
+        "type": "string",
+        "description": "对应 <m-dialog> 的 subtitle 属性。"
+      },
+      {
+        "id": "dialog-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-dialog> 的 size 属性。"
+      },
+      {
+        "id": "dialog-prop-animation",
+        "name": "animation",
+        "type": "string",
+        "description": "对应 <m-dialog> 的 animation 属性。"
+      },
+      {
+        "id": "dialog-prop-fullscreen",
+        "name": "fullscreen",
+        "type": "boolean",
+        "description": "对应 <m-dialog> 的 fullscreen 属性。"
+      },
+      {
+        "id": "dialog-prop-closeButton",
+        "name": "closeButton",
+        "type": "boolean",
+        "description": "对应 <m-dialog> 的 close-button 属性。"
+      },
+      {
+        "id": "dialog-prop-divider",
+        "name": "divider",
+        "type": "boolean",
+        "description": "对应 <m-dialog> 的 divider 属性。"
+      },
+      {
+        "id": "dialog-prop-footerAlignment",
+        "name": "footerAlignment",
+        "type": "string",
+        "description": "对应 <m-dialog> 的 footer-alignment 属性。"
+      },
+      {
+        "id": "dialog-prop-noCloseOnScrimClick",
+        "name": "noCloseOnScrimClick",
+        "type": "boolean",
+        "description": "对应 <m-dialog> 的 no-close-on-scrim-click 属性。"
+      },
+      {
+        "id": "dialog-prop-noCloseOnEscape",
+        "name": "noCloseOnEscape",
+        "type": "boolean",
+        "description": "对应 <m-dialog> 的 no-close-on-escape 属性。"
+      },
+      {
+        "id": "dialog-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-dialog> 的 aria-label 属性。"
+      }
+    ],
+    "events": [
+      {
+        "id": "dialog-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "dialog-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      },
+      {
+        "id": "dialog-event-cancel",
+        "name": "cancel",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 cancel 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "dialog-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "dialog-slot-headline",
+        "name": "headline",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #headline> 命名插槽。"
+      },
+      {
+        "id": "dialog-slot-actions",
+        "name": "actions",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #actions> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "dialog-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。"
+      },
+      {
+        "id": "dialog-method-element-close",
+        "name": "element.close",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.close() 调用。 Closes the dialog. When it returns, `isOpen()` is false and `close` has been emitted (`beforeclose` first; a listener that prevents it leaves the dialog open, with no `close`). The surface animates out and is removed after that; `afterclose` is emitted once it is, never inside this call. On a closed dialog it does nothing and emits nothing. `close()` then `open()` at once ends open, and `open()` then `close()` ends closed: the later call wins, and what the earlier one still had to do (its `afterclose`, or showing the surface and its `afteropen`) is dropped."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "divider": {
+    "name": "MDivider",
+    "source": "vendor/material/src/vue/divider.ts",
+    "specSource": "vendor/material/src/elements/divider.ts",
+    "tag": "m-divider",
+    "declaration": false,
+    "props": [
+      {
+        "id": "divider-prop-orientation",
+        "name": "orientation",
+        "type": "string",
+        "description": "对应 <m-divider> 的 orientation 属性。"
+      },
+      {
+        "id": "divider-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-divider> 的 variant 属性。"
+      },
+      {
+        "id": "divider-prop-insetStart",
+        "name": "insetStart",
+        "type": "number",
+        "description": "对应 <m-divider> 的 inset-start 属性。"
+      },
+      {
+        "id": "divider-prop-insetEnd",
+        "name": "insetEnd",
+        "type": "number",
+        "description": "对应 <m-divider> 的 inset-end 属性。"
+      },
+      {
+        "id": "divider-prop-thickness",
+        "name": "thickness",
+        "type": "number",
+        "description": "对应 <m-divider> 的 thickness 属性。"
+      },
+      {
+        "id": "divider-prop-color",
+        "name": "color",
+        "type": "string",
+        "description": "对应 <m-divider> 的 color 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "divider-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。"
+    ]
+  },
+  "drawer-item": {
+    "name": "MDrawerItem",
+    "source": "vendor/material/src/vue/drawer-item.ts",
+    "specSource": "vendor/material/src/elements/drawer.ts",
+    "tag": "m-drawer-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "drawer-item-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-drawer-item> 的 type 属性。"
+      },
+      {
+        "id": "drawer-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-drawer-item> 的 value 属性。"
+      },
+      {
+        "id": "drawer-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-drawer-item> 的 label 属性。"
+      },
+      {
+        "id": "drawer-item-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-drawer-item> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "drawer-item-prop-badge",
+        "name": "badge",
+        "type": "string",
+        "description": "对应 <m-drawer-item> 的 badge 属性。"
+      },
+      {
+        "id": "drawer-item-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-drawer-item> 的 disabled 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "drawer-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "drawer": {
+    "name": "MDrawer",
+    "source": "vendor/material/src/vue/drawer.ts",
+    "specSource": "vendor/material/src/elements/drawer.ts",
+    "tag": "m-drawer",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "drawer-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-drawer> 的 value 属性。"
+      },
+      {
+        "id": "drawer-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-drawer> 的 open 属性。"
+      },
+      {
+        "id": "drawer-prop-modal",
+        "name": "modal",
+        "type": "boolean",
+        "description": "对应 <m-drawer> 的 modal 属性。"
+      },
+      {
+        "id": "drawer-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-drawer> 的 headline 属性。"
+      },
+      {
+        "id": "drawer-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-drawer> 的 position 属性。",
+        "options": [
+          "start",
+          "end"
+        ]
+      },
+      {
+        "id": "drawer-prop-width",
+        "name": "width",
+        "type": "string",
+        "description": "对应 <m-drawer> 的 width 属性。"
+      },
+      {
+        "id": "drawer-prop-dense",
+        "name": "dense",
+        "type": "boolean",
+        "description": "对应 <m-drawer> 的 dense 属性。"
+      },
+      {
+        "id": "drawer-prop-noCloseOnScrimClick",
+        "name": "noCloseOnScrimClick",
+        "type": "boolean",
+        "description": "对应 <m-drawer> 的 no-close-on-scrim-click 属性。"
+      },
+      {
+        "id": "drawer-prop-noCloseOnEscape",
+        "name": "noCloseOnEscape",
+        "type": "boolean",
+        "description": "对应 <m-drawer> 的 no-close-on-escape 属性。"
+      },
+      {
+        "id": "drawer-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-drawer> 的 aria-label 属性。"
+      },
+      {
+        "id": "drawer-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "drawer-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "drawer-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "drawer-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "drawer-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "drawer-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "drawer-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "drawer-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "extended-fab": {
+    "name": "MExtendedFab",
+    "source": "vendor/material/src/vue/extended-fab.ts",
+    "specSource": "vendor/material/src/elements/extended-fab.ts",
+    "tag": "m-extended-fab",
+    "declaration": false,
+    "props": [
+      {
+        "id": "extended-fab-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 variant 属性。",
+        "options": [
+          "primary-container",
+          "secondary-container",
+          "tertiary-container",
+          "primary",
+          "secondary",
+          "tertiary"
+        ]
+      },
+      {
+        "id": "extended-fab-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 size 属性。",
+        "options": [
+          "small",
+          "medium",
+          "large"
+        ]
+      },
+      {
+        "id": "extended-fab-prop-width",
+        "name": "width",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 width 属性。"
+      },
+      {
+        "id": "extended-fab-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-extended-fab> 的 disabled 属性。"
+      },
+      {
+        "id": "extended-fab-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "extended-fab-prop-iconPosition",
+        "name": "iconPosition",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 icon-position 属性。"
+      },
+      {
+        "id": "extended-fab-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 position 属性。",
+        "options": [
+          "start",
+          "end"
+        ]
+      },
+      {
+        "id": "extended-fab-prop-collapseOnScroll",
+        "name": "collapseOnScroll",
+        "type": "boolean",
+        "description": "对应 <m-extended-fab> 的 collapse-on-scroll 属性。"
+      },
+      {
+        "id": "extended-fab-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 value 属性。"
+      },
+      {
+        "id": "extended-fab-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 type 属性。",
+        "options": [
+          "button",
+          "submit",
+          "reset"
+        ]
+      },
+      {
+        "id": "extended-fab-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-extended-fab> 的 aria-label 属性。"
+      },
+      {
+        "id": "extended-fab-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      },
+      {
+        "id": "extended-fab-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "默认插槽的回退文本。"
+      }
+    ],
+    "events": [
+      {
+        "id": "extended-fab-event-collapse",
+        "name": "collapse",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 collapse 事件的数据。"
+      },
+      {
+        "id": "extended-fab-event-expand",
+        "name": "expand",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 expand 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "extended-fab-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件文本内容；未提供时使用 label。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "extended-fab-method-element-lower",
+        "name": "element.lower",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.lower() 调用。 Lowers the Extended FAB (useful for pressed state) Visually lowers the Extended FAB by reducing its elevation, typically used to indicate a pressed or active state."
+      },
+      {
+        "id": "extended-fab-method-element-raise",
+        "name": "element.raise",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.raise() 调用。 Raises the Extended FAB back to its default elevation Restores the default elevation after it has been lowered."
+      },
+      {
+        "id": "extended-fab-method-element-collapse",
+        "name": "element.collapse",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.collapse() 调用。 Collapses the Extended FAB into a standard FAB Hides the text label, showing only the icon in a circular container. Useful for saving space or to emphasize other content."
+      },
+      {
+        "id": "extended-fab-method-element-expand",
+        "name": "element.expand",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.expand() 调用。 Expands a collapsed Extended FAB back to its full size Shows the text label alongside the icon."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "fab-menu-item": {
+    "name": "MFabMenuItem",
+    "source": "vendor/material/src/vue/fab-menu-item.ts",
+    "specSource": "vendor/material/src/elements/fab-menu.ts",
+    "tag": "m-fab-menu-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "fab-menu-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-fab-menu-item> 的 value 属性。"
+      },
+      {
+        "id": "fab-menu-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-fab-menu-item> 的 label 属性。"
+      },
+      {
+        "id": "fab-menu-item-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-fab-menu-item> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. The menu opts out of server rendering, so the server leaves this escaped until the component upgrades."
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "fab-menu-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "fab-menu": {
+    "name": "MFabMenu",
+    "source": "vendor/material/src/vue/fab-menu.ts",
+    "specSource": "vendor/material/src/elements/fab-menu.ts",
+    "tag": "m-fab-menu",
+    "declaration": false,
+    "props": [
+      {
+        "id": "fab-menu-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-fab-menu> 的 open 属性。"
+      },
+      {
+        "id": "fab-menu-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-fab-menu> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. The menu opts out of server rendering, so the server leaves this escaped until the component upgrades."
+      },
+      {
+        "id": "fab-menu-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-fab-menu> 的 aria-label 属性。"
+      },
+      {
+        "id": "fab-menu-prop-color",
+        "name": "color",
+        "type": "string",
+        "description": "对应 <m-fab-menu> 的 color 属性。"
+      },
+      {
+        "id": "fab-menu-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-fab-menu> 的 size 属性。"
+      },
+      {
+        "id": "fab-menu-prop-presentation",
+        "name": "presentation",
+        "type": "string",
+        "description": "对应 <m-fab-menu> 的 presentation 属性。"
+      },
+      {
+        "id": "fab-menu-prop-placement",
+        "name": "placement",
+        "type": "string",
+        "description": "对应 <m-fab-menu> 的 placement 属性。"
+      }
+    ],
+    "events": [
+      {
+        "id": "fab-menu-event-open",
+        "name": "open",
+        "type": "CustomEvent<{}>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "fab-menu-event-close",
+        "name": "close",
+        "type": "CustomEvent<{}>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      },
+      {
+        "id": "fab-menu-event-select",
+        "name": "select",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 select 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "fab-menu-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "fab-menu-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Opens the menu."
+      },
+      {
+        "id": "fab-menu-method-element-hide",
+        "name": "element.hide",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Closes the menu."
+      },
+      {
+        "id": "fab-menu-method-element-toggle",
+        "name": "element.toggle",
+        "type": "(event?: Event | undefined) => unknown",
+        "description": "通过组件 ref 的 element.toggle() 调用。 Opens or closes the menu"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "fab": {
+    "name": "MFab",
+    "source": "vendor/material/src/vue/fab.ts",
+    "specSource": "vendor/material/src/elements/fab.ts",
+    "tag": "m-fab",
+    "declaration": false,
+    "props": [
+      {
+        "id": "fab-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-fab> 的 variant 属性。"
+      },
+      {
+        "id": "fab-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-fab> 的 size 属性。"
+      },
+      {
+        "id": "fab-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-fab> 的 disabled 属性。"
+      },
+      {
+        "id": "fab-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-fab> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "fab-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-fab> 的 position 属性。"
+      },
+      {
+        "id": "fab-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-fab> 的 value 属性。"
+      },
+      {
+        "id": "fab-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-fab> 的 type 属性。"
+      },
+      {
+        "id": "fab-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-fab> 的 aria-label 属性。"
+      },
+      {
+        "id": "fab-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "fab-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "fab-method-element-lower",
+        "name": "element.lower",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.lower() 调用。 Lowers the FAB (useful for pressed state) Visually lowers the FAB by reducing its elevation, typically used to indicate a pressed or active state."
+      },
+      {
+        "id": "fab-method-element-raise",
+        "name": "element.raise",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.raise() 调用。 Raises the FAB back to its default elevation Restores the default elevation after it has been lowered."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "icon-button": {
+    "name": "MIconButton",
+    "source": "vendor/material/src/vue/icon-button.ts",
+    "specSource": "vendor/material/src/elements/icon-button.ts",
+    "tag": "m-icon-button",
+    "declaration": false,
+    "model": "selected",
+    "props": [
+      {
+        "id": "icon-button-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 variant 属性。",
+        "options": [
+          "filled",
+          "tonal",
+          "outlined",
+          "standard"
+        ]
+      },
+      {
+        "id": "icon-button-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 size 属性。",
+        "options": [
+          "xs",
+          "s",
+          "m",
+          "l",
+          "xl"
+        ]
+      },
+      {
+        "id": "icon-button-prop-shape",
+        "name": "shape",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 shape 属性。",
+        "options": [
+          "round",
+          "square"
+        ]
+      },
+      {
+        "id": "icon-button-prop-width",
+        "name": "width",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 width 属性。"
+      },
+      {
+        "id": "icon-button-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-icon-button> 的 disabled 属性。"
+      },
+      {
+        "id": "icon-button-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "icon-button-prop-selectedIcon",
+        "name": "selectedIcon",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 selected-icon 属性。 Markup (HTML), shown while `toggle` and `selected`. Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "icon-button-prop-toggle",
+        "name": "toggle",
+        "type": "boolean",
+        "description": "对应 <m-icon-button> 的 toggle 属性。"
+      },
+      {
+        "id": "icon-button-prop-defaultSelected",
+        "name": "defaultSelected",
+        "type": "boolean",
+        "description": "初始 selected，对应 <m-icon-button> 的 selected 属性。"
+      },
+      {
+        "id": "icon-button-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 value 属性。"
+      },
+      {
+        "id": "icon-button-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 type 属性。",
+        "options": [
+          "button",
+          "submit",
+          "reset"
+        ]
+      },
+      {
+        "id": "icon-button-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-icon-button> 的 aria-label 属性。"
+      },
+      {
+        "id": "icon-button-prop-selected",
+        "name": "selected",
+        "type": "boolean",
+        "description": "实时 selected，可使用 v-model:selected 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "icon-button-prop-modelValue",
+        "name": "modelValue",
+        "type": "boolean",
+        "description": "v-model 的绑定值，等同于 selected。"
+      },
+      {
+        "id": "icon-button-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "icon-button-event-update-selected",
+        "name": "update:selected",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 selected 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "icon-button-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 selected 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "icon-button-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ selected: boolean; value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "icon-button-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "icon-button-method-element-select",
+        "name": "element.select",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.select() 调用。 Selects the IconButton (for toggle buttons)"
+      },
+      {
+        "id": "icon-button-method-element-deselect",
+        "name": "element.deselect",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.deselect() 调用。 Deselects the IconButton (for toggle buttons)"
+      },
+      {
+        "id": "icon-button-method-element-toggleSelected",
+        "name": "element.toggleSelected",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.toggleSelected() 调用。 Toggles the selection state (for toggle buttons)"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 selected；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "list-item": {
+    "name": "MListItem",
+    "source": "vendor/material/src/vue/list-item.ts",
+    "specSource": "vendor/material/src/elements/list.ts",
+    "tag": "m-list-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "list-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 value 属性。"
+      },
+      {
+        "id": "list-item-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 headline 属性。"
+      },
+      {
+        "id": "list-item-prop-overline",
+        "name": "overline",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 overline 属性。"
+      },
+      {
+        "id": "list-item-prop-supportingText",
+        "name": "supportingText",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 supporting-text 属性。"
+      },
+      {
+        "id": "list-item-prop-leadingIcon",
+        "name": "leadingIcon",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 leading-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "list-item-prop-leadingAvatar",
+        "name": "leadingAvatar",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 leading-avatar 属性。 Markup (HTML), not a person's name or an image URL. Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "list-item-prop-leadingImage",
+        "name": "leadingImage",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 leading-image 属性。"
+      },
+      {
+        "id": "list-item-prop-trailingIcon",
+        "name": "trailingIcon",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 trailing-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "list-item-prop-trailingText",
+        "name": "trailingText",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 trailing-text 属性。"
+      },
+      {
+        "id": "list-item-prop-kind",
+        "name": "kind",
+        "type": "string",
+        "description": "对应 <m-list-item> 的 kind 属性。"
+      },
+      {
+        "id": "list-item-prop-inset",
+        "name": "inset",
+        "type": "boolean",
+        "description": "对应 <m-list-item> 的 inset 属性。"
+      },
+      {
+        "id": "list-item-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-list-item> 的 disabled 属性。"
+      },
+      {
+        "id": "list-item-prop-selected",
+        "name": "selected",
+        "type": "boolean",
+        "description": "对应 <m-list-item> 的 selected 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "list-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "list": {
+    "name": "MList",
+    "source": "vendor/material/src/vue/list.ts",
+    "specSource": "vendor/material/src/elements/list.ts",
+    "tag": "m-list",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "list-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-list> 的 variant 属性。",
+        "options": [
+          "standard",
+          "segmented"
+        ]
+      },
+      {
+        "id": "list-prop-selection",
+        "name": "selection",
+        "type": "string",
+        "description": "对应 <m-list> 的 selection 属性。",
+        "options": [
+          "none",
+          "single",
+          "multiple"
+        ]
+      },
+      {
+        "id": "list-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-list> 的 value 属性。"
+      },
+      {
+        "id": "list-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-list> 的 disabled 属性。"
+      },
+      {
+        "id": "list-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-list> 的 aria-label 属性。"
+      },
+      {
+        "id": "list-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "list-prop-values",
+        "name": "values",
+        "type": "string[]",
+        "description": "实时 values，可使用 v-model:values 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "list-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "list-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "list-event-update-values",
+        "name": "update:values",
+        "type": "(value: NonNullable<string[]>) => void",
+        "description": "组件事件触发且 values 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "list-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "list-event-activate",
+        "name": "activate",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 activate 事件的数据。"
+      },
+      {
+        "id": "list-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string | null; values: string[]; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "list-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "loading-indicator": {
+    "name": "MLoadingIndicator",
+    "source": "vendor/material/src/vue/loading-indicator.ts",
+    "specSource": "vendor/material/src/elements/loading-indicator.ts",
+    "tag": "m-loading-indicator",
+    "declaration": false,
+    "props": [
+      {
+        "id": "loading-indicator-prop-size",
+        "name": "size",
+        "type": "number",
+        "description": "对应 <m-loading-indicator> 的 size 属性。"
+      },
+      {
+        "id": "loading-indicator-prop-contained",
+        "name": "contained",
+        "type": "boolean",
+        "description": "对应 <m-loading-indicator> 的 contained 属性。"
+      },
+      {
+        "id": "loading-indicator-prop-value",
+        "name": "value",
+        "type": "number",
+        "description": "对应 <m-loading-indicator> 的 value 属性。"
+      },
+      {
+        "id": "loading-indicator-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-loading-indicator> 的 aria-label 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "loading-indicator-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "loading-indicator-method-element-start",
+        "name": "element.start",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.start() 调用。 Runs the indeterminate animation (it runs from creation)"
+      },
+      {
+        "id": "loading-indicator-method-element-stop",
+        "name": "element.stop",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.stop() 调用。 Freezes the indicator on its current frame"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "menu-item": {
+    "name": "MMenuItem",
+    "source": "vendor/material/src/vue/menu-item.ts",
+    "specSource": "vendor/material/src/elements/menu.ts",
+    "tag": "m-menu-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "menu-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-menu-item> 的 value 属性。"
+      },
+      {
+        "id": "menu-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-menu-item> 的 label 属性。"
+      },
+      {
+        "id": "menu-item-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-menu-item> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "menu-item-prop-shortcut",
+        "name": "shortcut",
+        "type": "string",
+        "description": "对应 <m-menu-item> 的 shortcut 属性。"
+      },
+      {
+        "id": "menu-item-prop-supportingText",
+        "name": "supportingText",
+        "type": "string",
+        "description": "对应 <m-menu-item> 的 supporting-text 属性。"
+      },
+      {
+        "id": "menu-item-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-menu-item> 的 disabled 属性。"
+      },
+      {
+        "id": "menu-item-prop-divider",
+        "name": "divider",
+        "type": "boolean",
+        "description": "对应 <m-menu-item> 的 divider 属性。"
+      },
+      {
+        "id": "menu-item-prop-gap",
+        "name": "gap",
+        "type": "boolean",
+        "description": "对应 <m-menu-item> 的 gap 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "menu-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "menu": {
+    "name": "MMenu",
+    "source": "vendor/material/src/vue/menu.ts",
+    "specSource": "vendor/material/src/elements/menu.ts",
+    "tag": "m-menu",
+    "declaration": false,
+    "props": [
+      {
+        "id": "menu-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-menu> 的 open 属性。"
+      },
+      {
+        "id": "menu-prop-defaultAnchor",
+        "name": "defaultAnchor",
+        "type": "string",
+        "description": "初始 anchor，对应 <m-menu> 的 anchor 属性。"
+      },
+      {
+        "id": "menu-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-menu> 的 position 属性。"
+      },
+      {
+        "id": "menu-prop-offset",
+        "name": "offset",
+        "type": "number",
+        "description": "对应 <m-menu> 的 offset 属性。"
+      },
+      {
+        "id": "menu-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-menu> 的 variant 属性。"
+      },
+      {
+        "id": "menu-prop-color",
+        "name": "color",
+        "type": "string",
+        "description": "对应 <m-menu> 的 color 属性。"
+      },
+      {
+        "id": "menu-prop-noCloseOnSelect",
+        "name": "noCloseOnSelect",
+        "type": "boolean",
+        "description": "对应 <m-menu> 的 no-close-on-select 属性。"
+      },
+      {
+        "id": "menu-prop-dense",
+        "name": "dense",
+        "type": "boolean",
+        "description": "对应 <m-menu> 的 dense 属性。"
+      },
+      {
+        "id": "menu-prop-maxHeight",
+        "name": "maxHeight",
+        "type": "string",
+        "description": "对应 <m-menu> 的 max-height 属性。"
+      },
+      {
+        "id": "menu-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-menu> 的 aria-label 属性。"
+      },
+      {
+        "id": "menu-prop-anchor",
+        "name": "anchor",
+        "type": "HTMLElement | null",
+        "description": "实时 anchor，可使用 v-model:anchor 绑定；组件事件触发时同步更新值。"
+      }
+    ],
+    "events": [
+      {
+        "id": "menu-event-update-anchor",
+        "name": "update:anchor",
+        "type": "(value: NonNullable<HTMLElement | null>) => void",
+        "description": "组件事件触发且 anchor 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "menu-event-open",
+        "name": "open",
+        "type": "CustomEvent<{}>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "menu-event-close",
+        "name": "close",
+        "type": "CustomEvent<{}>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      },
+      {
+        "id": "menu-event-select",
+        "name": "select",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 select 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "menu-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "menu-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Opens the menu."
+      },
+      {
+        "id": "menu-method-element-hide",
+        "name": "element.hide",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Closes the menu."
+      },
+      {
+        "id": "menu-method-element-toggle",
+        "name": "element.toggle",
+        "type": "(event?: Event | undefined) => unknown",
+        "description": "通过组件 ref 的 element.toggle() 调用。 Toggles the menu's open state"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "navigation-bar-item": {
+    "name": "MNavigationBarItem",
+    "source": "vendor/material/src/vue/navigation-bar-item.ts",
+    "specSource": "vendor/material/src/elements/navigation-bar.ts",
+    "tag": "m-navigation-bar-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "navigation-bar-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 value 属性。"
+      },
+      {
+        "id": "navigation-bar-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 label 属性。"
+      },
+      {
+        "id": "navigation-bar-item-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "navigation-bar-item-prop-selectedIcon",
+        "name": "selectedIcon",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 selected-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while this destination is active."
+      },
+      {
+        "id": "navigation-bar-item-prop-href",
+        "name": "href",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 href 属性。"
+      },
+      {
+        "id": "navigation-bar-item-prop-badge",
+        "name": "badge",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 badge 属性。"
+      },
+      {
+        "id": "navigation-bar-item-prop-badgeLabel",
+        "name": "badgeLabel",
+        "type": "string",
+        "description": "对应 <m-navigation-bar-item> 的 badge-label 属性。"
+      },
+      {
+        "id": "navigation-bar-item-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-navigation-bar-item> 的 disabled 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "navigation-bar-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "navigation-bar": {
+    "name": "MNavigationBar",
+    "source": "vendor/material/src/vue/navigation-bar.ts",
+    "specSource": "vendor/material/src/elements/navigation-bar.ts",
+    "tag": "m-navigation-bar",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "navigation-bar-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-navigation-bar> 的 value 属性。"
+      },
+      {
+        "id": "navigation-bar-prop-itemLayout",
+        "name": "itemLayout",
+        "type": "string",
+        "description": "对应 <m-navigation-bar> 的 item-layout 属性。"
+      },
+      {
+        "id": "navigation-bar-prop-hideOnScroll",
+        "name": "hideOnScroll",
+        "type": "boolean",
+        "description": "对应 <m-navigation-bar> 的 hide-on-scroll 属性。"
+      },
+      {
+        "id": "navigation-bar-prop-noRipple",
+        "name": "noRipple",
+        "type": "boolean",
+        "description": "对应 <m-navigation-bar> 的 no-ripple 属性。"
+      },
+      {
+        "id": "navigation-bar-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-navigation-bar> 的 aria-label 属性。"
+      },
+      {
+        "id": "navigation-bar-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "navigation-bar-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "navigation-bar-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "navigation-bar-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "navigation-bar-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "navigation-bar-event-visibility",
+        "name": "visibility",
+        "type": "CustomEvent<{ hidden: boolean; }>",
+        "description": "通过 event.detail 读取 visibility 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "navigation-bar-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "navigation-bar-method-element-hide",
+        "name": "element.hide",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Slides the bar out of view (without the slide under reduced motion)"
+      },
+      {
+        "id": "navigation-bar-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "navigation-rail-item": {
+    "name": "MNavigationRailItem",
+    "source": "vendor/material/src/vue/navigation-rail-item.ts",
+    "specSource": "vendor/material/src/elements/navigation-rail.ts",
+    "tag": "m-navigation-rail-item",
+    "declaration": true,
+    "props": [
+      {
+        "id": "navigation-rail-item-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 value 属性。"
+      },
+      {
+        "id": "navigation-rail-item-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 label 属性。"
+      },
+      {
+        "id": "navigation-rail-item-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "navigation-rail-item-prop-selectedIcon",
+        "name": "selectedIcon",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 selected-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while this destination is active."
+      },
+      {
+        "id": "navigation-rail-item-prop-href",
+        "name": "href",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 href 属性。"
+      },
+      {
+        "id": "navigation-rail-item-prop-badge",
+        "name": "badge",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 badge 属性。"
+      },
+      {
+        "id": "navigation-rail-item-prop-badgeLabel",
+        "name": "badgeLabel",
+        "type": "string",
+        "description": "对应 <m-navigation-rail-item> 的 badge-label 属性。"
+      },
+      {
+        "id": "navigation-rail-item-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-navigation-rail-item> 的 disabled 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "navigation-rail-item-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "navigation-rail": {
+    "name": "MNavigationRail",
+    "source": "vendor/material/src/vue/navigation-rail.ts",
+    "specSource": "vendor/material/src/elements/navigation-rail.ts",
+    "tag": "m-navigation-rail",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "navigation-rail-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-navigation-rail> 的 value 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-expanded",
+        "name": "expanded",
+        "type": "boolean",
+        "description": "对应 <m-navigation-rail> 的 expanded 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-hideWhenCollapsed",
+        "name": "hideWhenCollapsed",
+        "type": "boolean",
+        "description": "对应 <m-navigation-rail> 的 hide-when-collapsed 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-layout",
+        "name": "layout",
+        "type": "string",
+        "description": "对应 <m-navigation-rail> 的 layout 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-expandedWidth",
+        "name": "expandedWidth",
+        "type": "number",
+        "description": "对应 <m-navigation-rail> 的 expanded-width 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-noToggle",
+        "name": "noToggle",
+        "type": "boolean",
+        "description": "对应 <m-navigation-rail> 的 no-toggle 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-noRipple",
+        "name": "noRipple",
+        "type": "boolean",
+        "description": "对应 <m-navigation-rail> 的 no-ripple 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-expandLabel",
+        "name": "expandLabel",
+        "type": "string",
+        "description": "对应 <m-navigation-rail> 的 expand-label 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-collapseLabel",
+        "name": "collapseLabel",
+        "type": "string",
+        "description": "对应 <m-navigation-rail> 的 collapse-label 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-expandIcon",
+        "name": "expandIcon",
+        "type": "string",
+        "description": "对应 <m-navigation-rail> 的 expand-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while the rail is collapsed."
+      },
+      {
+        "id": "navigation-rail-prop-collapseIcon",
+        "name": "collapseIcon",
+        "type": "string",
+        "description": "对应 <m-navigation-rail> 的 collapse-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while the rail is expanded."
+      },
+      {
+        "id": "navigation-rail-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-navigation-rail> 的 aria-label 属性。"
+      },
+      {
+        "id": "navigation-rail-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "navigation-rail-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "navigation-rail-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "navigation-rail-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "navigation-rail-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "navigation-rail-event-expand",
+        "name": "expand",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 expand 事件的数据。"
+      },
+      {
+        "id": "navigation-rail-event-collapse",
+        "name": "collapse",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 collapse 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "navigation-rail-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "navigation-rail-slot-header",
+        "name": "header",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #header> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "navigation-rail-method-element-expand",
+        "name": "element.expand",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.expand() 调用。"
+      },
+      {
+        "id": "navigation-rail-method-element-collapse",
+        "name": "element.collapse",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.collapse() 调用。"
+      },
+      {
+        "id": "navigation-rail-method-element-toggle",
+        "name": "element.toggle",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.toggle() 调用。"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "progress": {
+    "name": "MProgress",
+    "source": "vendor/material/src/vue/progress.ts",
+    "specSource": "vendor/material/src/elements/progress.ts",
+    "tag": "m-progress",
+    "declaration": false,
+    "props": [
+      {
+        "id": "progress-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-progress> 的 variant 属性。",
+        "options": [
+          "linear",
+          "circular"
+        ]
+      },
+      {
+        "id": "progress-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "number",
+        "description": "初始 value，对应 <m-progress> 的 value 属性。"
+      },
+      {
+        "id": "progress-prop-max",
+        "name": "max",
+        "type": "number",
+        "description": "对应 <m-progress> 的 max 属性。"
+      },
+      {
+        "id": "progress-prop-buffer",
+        "name": "buffer",
+        "type": "number",
+        "description": "对应 <m-progress> 的 buffer 属性。"
+      },
+      {
+        "id": "progress-prop-defaultIndeterminate",
+        "name": "defaultIndeterminate",
+        "type": "boolean",
+        "description": "初始 indeterminate，对应 <m-progress> 的 indeterminate 属性。"
+      },
+      {
+        "id": "progress-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-progress> 的 disabled 属性。"
+      },
+      {
+        "id": "progress-prop-shape",
+        "name": "shape",
+        "type": "string",
+        "description": "对应 <m-progress> 的 shape 属性。",
+        "options": [
+          "flat",
+          "wavy"
+        ]
+      },
+      {
+        "id": "progress-prop-thickness",
+        "name": "thickness",
+        "type": "string",
+        "description": "对应 <m-progress> 的 thickness 属性。"
+      },
+      {
+        "id": "progress-prop-size",
+        "name": "size",
+        "type": "number",
+        "description": "对应 <m-progress> 的 size 属性。"
+      },
+      {
+        "id": "progress-prop-showLabel",
+        "name": "showLabel",
+        "type": "boolean",
+        "description": "对应 <m-progress> 的 show-label 属性。"
+      },
+      {
+        "id": "progress-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-progress> 的 aria-label 属性。"
+      },
+      {
+        "id": "progress-prop-value",
+        "name": "value",
+        "type": "number",
+        "description": "实时 value，通过 :value 受控传入；组件不会自动发出更新事件。"
+      },
+      {
+        "id": "progress-prop-indeterminate",
+        "name": "indeterminate",
+        "type": "boolean",
+        "description": "实时 indeterminate，通过 :indeterminate 受控传入；组件不会自动发出更新事件。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "progress-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。"
+    ]
+  },
+  "radio": {
+    "name": "MRadio",
+    "source": "vendor/material/src/vue/radio.ts",
+    "specSource": "vendor/material/src/elements/radios.ts",
+    "tag": "m-radio",
+    "declaration": true,
+    "props": [
+      {
+        "id": "radio-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-radio> 的 value 属性。"
+      },
+      {
+        "id": "radio-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-radio> 的 label 属性。"
+      },
+      {
+        "id": "radio-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-radio> 的 disabled 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "radio-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "radios": {
+    "name": "MRadios",
+    "source": "vendor/material/src/vue/radios.ts",
+    "specSource": "vendor/material/src/elements/radios.ts",
+    "tag": "m-radios",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "radios-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-radios> 的 value 属性。"
+      },
+      {
+        "id": "radios-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-radios> 的 disabled 属性。"
+      },
+      {
+        "id": "radios-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-radios> 的 required 属性。"
+      },
+      {
+        "id": "radios-prop-direction",
+        "name": "direction",
+        "type": "string",
+        "description": "对应 <m-radios> 的 direction 属性。"
+      },
+      {
+        "id": "radios-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-radios> 的 aria-label 属性。"
+      },
+      {
+        "id": "radios-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "radios-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "radios-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "radios-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "radios-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "radios-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string | null; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "radios-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "search-suggestion": {
+    "name": "MSearchSuggestion",
+    "source": "vendor/material/src/vue/search-suggestion.ts",
+    "specSource": "vendor/material/src/elements/search.ts",
+    "tag": "m-search-suggestion",
+    "declaration": true,
+    "props": [
+      {
+        "id": "search-suggestion-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-search-suggestion> 的 value 属性。"
+      },
+      {
+        "id": "search-suggestion-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-search-suggestion> 的 label 属性。"
+      },
+      {
+        "id": "search-suggestion-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-search-suggestion> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "search-suggestion-prop-group",
+        "name": "group",
+        "type": "string",
+        "description": "对应 <m-search-suggestion> 的 group 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "search-suggestion-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "search": {
+    "name": "MSearch",
+    "source": "vendor/material/src/vue/search.ts",
+    "specSource": "vendor/material/src/elements/search.ts",
+    "tag": "m-search",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "search-prop-placeholder",
+        "name": "placeholder",
+        "type": "string",
+        "description": "对应 <m-search> 的 placeholder 属性。"
+      },
+      {
+        "id": "search-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-search> 的 value 属性。"
+      },
+      {
+        "id": "search-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-search> 的 variant 属性。"
+      },
+      {
+        "id": "search-prop-viewMode",
+        "name": "viewMode",
+        "type": "string",
+        "description": "对应 <m-search> 的 view-mode 属性。"
+      },
+      {
+        "id": "search-prop-minWidth",
+        "name": "minWidth",
+        "type": "string",
+        "description": "对应 <m-search> 的 min-width 属性。"
+      },
+      {
+        "id": "search-prop-maxWidth",
+        "name": "maxWidth",
+        "type": "string",
+        "description": "对应 <m-search> 的 max-width 属性。"
+      },
+      {
+        "id": "search-prop-noClearButton",
+        "name": "noClearButton",
+        "type": "boolean",
+        "description": "对应 <m-search> 的 no-clear-button 属性。"
+      },
+      {
+        "id": "search-prop-noExpandOnFocus",
+        "name": "noExpandOnFocus",
+        "type": "boolean",
+        "description": "对应 <m-search> 的 no-expand-on-focus 属性。"
+      },
+      {
+        "id": "search-prop-noCollapseOnBlur",
+        "name": "noCollapseOnBlur",
+        "type": "boolean",
+        "description": "对应 <m-search> 的 no-collapse-on-blur 属性。"
+      },
+      {
+        "id": "search-prop-fullWidth",
+        "name": "fullWidth",
+        "type": "boolean",
+        "description": "对应 <m-search> 的 full-width 属性。"
+      },
+      {
+        "id": "search-prop-leadingIcon",
+        "name": "leadingIcon",
+        "type": "string",
+        "description": "对应 <m-search> 的 leading-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "search-prop-trailingIcon",
+        "name": "trailingIcon",
+        "type": "string",
+        "description": "对应 <m-search> 的 trailing-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "search-prop-trailingLabel",
+        "name": "trailingLabel",
+        "type": "string",
+        "description": "对应 <m-search> 的 trailing-label 属性。"
+      },
+      {
+        "id": "search-prop-avatar",
+        "name": "avatar",
+        "type": "string",
+        "description": "对应 <m-search> 的 avatar 属性。 Markup (HTML), not a person's name or an image URL. Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "search-prop-avatarLabel",
+        "name": "avatarLabel",
+        "type": "string",
+        "description": "对应 <m-search> 的 avatar-label 属性。"
+      },
+      {
+        "id": "search-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-search> 的 open 属性。"
+      },
+      {
+        "id": "search-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-search> 的 disabled 属性。"
+      },
+      {
+        "id": "search-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-search> 的 aria-label 属性。"
+      },
+      {
+        "id": "search-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "search-prop-modelValue",
+        "name": "modelValue",
+        "type": "string",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "search-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "search-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "search-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "search-event-input",
+        "name": "input",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 input 事件的数据。"
+      },
+      {
+        "id": "search-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "search-event-select",
+        "name": "select",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 select 事件的数据。"
+      },
+      {
+        "id": "search-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "search-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      },
+      {
+        "id": "search-event-action",
+        "name": "action",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 action 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "search-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "search-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Opens the view."
+      },
+      {
+        "id": "search-method-element-close",
+        "name": "element.close",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.close() 调用。 Closes the view."
+      },
+      {
+        "id": "search-method-element-focus",
+        "name": "element.focus",
+        "type": "((options?: FocusOptions) => void) & (() => unknown)",
+        "description": "通过组件 ref 的 element.focus() 调用。 Focuses the search input"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "select-option": {
+    "name": "MSelectOption",
+    "source": "vendor/material/src/vue/select-option.ts",
+    "specSource": "vendor/material/src/elements/select.ts",
+    "tag": "m-select-option",
+    "declaration": true,
+    "props": [
+      {
+        "id": "select-option-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-select-option> 的 value 属性。"
+      },
+      {
+        "id": "select-option-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-select-option> 的 label 属性。"
+      },
+      {
+        "id": "select-option-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-select-option> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "select-option-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-select-option> 的 disabled 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "select-option-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "select": {
+    "name": "MSelect",
+    "source": "vendor/material/src/vue/select.ts",
+    "specSource": "vendor/material/src/elements/select.ts",
+    "tag": "m-select",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "select-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-select> 的 variant 属性。",
+        "options": [
+          "filled",
+          "outlined"
+        ]
+      },
+      {
+        "id": "select-prop-density",
+        "name": "density",
+        "type": "string",
+        "description": "对应 <m-select> 的 density 属性。"
+      },
+      {
+        "id": "select-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-select> 的 label 属性。"
+      },
+      {
+        "id": "select-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-select> 的 value 属性。"
+      },
+      {
+        "id": "select-prop-placement",
+        "name": "placement",
+        "type": "string",
+        "description": "对应 <m-select> 的 placement 属性。"
+      },
+      {
+        "id": "select-prop-supportingText",
+        "name": "supportingText",
+        "type": "string",
+        "description": "对应 <m-select> 的 supporting-text 属性。"
+      },
+      {
+        "id": "select-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-select> 的 required 属性。"
+      },
+      {
+        "id": "select-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-select> 的 disabled 属性。"
+      },
+      {
+        "id": "select-prop-error",
+        "name": "error",
+        "type": "boolean",
+        "description": "对应 <m-select> 的 error 属性。"
+      },
+      {
+        "id": "select-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-select> 的 aria-label 属性。"
+      },
+      {
+        "id": "select-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "select-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "select-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "select-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "select-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "select-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string | null; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "select-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "side-sheet": {
+    "name": "MSideSheet",
+    "source": "vendor/material/src/vue/side-sheet.ts",
+    "specSource": "vendor/material/src/elements/side-sheet.ts",
+    "tag": "m-side-sheet",
+    "declaration": false,
+    "props": [
+      {
+        "id": "side-sheet-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-side-sheet> 的 open 属性。"
+      },
+      {
+        "id": "side-sheet-prop-modal",
+        "name": "modal",
+        "type": "boolean",
+        "description": "对应 <m-side-sheet> 的 modal 属性。"
+      },
+      {
+        "id": "side-sheet-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-side-sheet> 的 headline 属性。"
+      },
+      {
+        "id": "side-sheet-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-side-sheet> 的 position 属性。"
+      },
+      {
+        "id": "side-sheet-prop-width",
+        "name": "width",
+        "type": "number",
+        "description": "对应 <m-side-sheet> 的 width 属性。"
+      },
+      {
+        "id": "side-sheet-prop-noCloseButton",
+        "name": "noCloseButton",
+        "type": "boolean",
+        "description": "对应 <m-side-sheet> 的 no-close-button 属性。"
+      },
+      {
+        "id": "side-sheet-prop-noCloseOnScrimClick",
+        "name": "noCloseOnScrimClick",
+        "type": "boolean",
+        "description": "对应 <m-side-sheet> 的 no-close-on-scrim-click 属性。"
+      },
+      {
+        "id": "side-sheet-prop-noCloseOnEscape",
+        "name": "noCloseOnEscape",
+        "type": "boolean",
+        "description": "对应 <m-side-sheet> 的 no-close-on-escape 属性。"
+      },
+      {
+        "id": "side-sheet-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-side-sheet> 的 aria-label 属性。"
+      }
+    ],
+    "events": [
+      {
+        "id": "side-sheet-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "side-sheet-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "side-sheet-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "side-sheet-slot-headline",
+        "name": "headline",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #headline> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "side-sheet-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。"
+      },
+      {
+        "id": "side-sheet-method-element-close",
+        "name": "element.close",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.close() 调用。 Closes the sheet"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "slider": {
+    "name": "MSlider",
+    "source": "vendor/material/src/vue/slider.ts",
+    "specSource": "vendor/material/src/elements/slider.ts",
+    "tag": "m-slider",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "slider-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "number",
+        "description": "初始 value，对应 <m-slider> 的 value 属性。"
+      },
+      {
+        "id": "slider-prop-defaultSecondValue",
+        "name": "defaultSecondValue",
+        "type": "number",
+        "description": "初始 secondValue，对应 <m-slider> 的 second-value 属性。"
+      },
+      {
+        "id": "slider-prop-min",
+        "name": "min",
+        "type": "number",
+        "description": "对应 <m-slider> 的 min 属性。"
+      },
+      {
+        "id": "slider-prop-max",
+        "name": "max",
+        "type": "number",
+        "description": "对应 <m-slider> 的 max 属性。"
+      },
+      {
+        "id": "slider-prop-step",
+        "name": "step",
+        "type": "number",
+        "description": "对应 <m-slider> 的 step 属性。"
+      },
+      {
+        "id": "slider-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-slider> 的 disabled 属性。"
+      },
+      {
+        "id": "slider-prop-range",
+        "name": "range",
+        "type": "boolean",
+        "description": "对应 <m-slider> 的 range 属性。"
+      },
+      {
+        "id": "slider-prop-centered",
+        "name": "centered",
+        "type": "boolean",
+        "description": "对应 <m-slider> 的 centered 属性。"
+      },
+      {
+        "id": "slider-prop-ticks",
+        "name": "ticks",
+        "type": "boolean",
+        "description": "对应 <m-slider> 的 ticks 属性。"
+      },
+      {
+        "id": "slider-prop-showValue",
+        "name": "showValue",
+        "type": "boolean",
+        "description": "对应 <m-slider> 的 show-value 属性。"
+      },
+      {
+        "id": "slider-prop-color",
+        "name": "color",
+        "type": "string",
+        "description": "对应 <m-slider> 的 color 属性。"
+      },
+      {
+        "id": "slider-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-slider> 的 size 属性。"
+      },
+      {
+        "id": "slider-prop-orientation",
+        "name": "orientation",
+        "type": "string",
+        "description": "对应 <m-slider> 的 orientation 属性。"
+      },
+      {
+        "id": "slider-prop-topToBottom",
+        "name": "topToBottom",
+        "type": "boolean",
+        "description": "对应 <m-slider> 的 top-to-bottom 属性。"
+      },
+      {
+        "id": "slider-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-slider> 的 label 属性。"
+      },
+      {
+        "id": "slider-prop-labelPosition",
+        "name": "labelPosition",
+        "type": "string",
+        "description": "对应 <m-slider> 的 label-position 属性。"
+      },
+      {
+        "id": "slider-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-slider> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "slider-prop-iconPosition",
+        "name": "iconPosition",
+        "type": "string",
+        "description": "对应 <m-slider> 的 icon-position 属性。"
+      },
+      {
+        "id": "slider-prop-insetIcon",
+        "name": "insetIcon",
+        "type": "string",
+        "description": "对应 <m-slider> 的 inset-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown at size M, L or XL."
+      },
+      {
+        "id": "slider-prop-insetIconAtMin",
+        "name": "insetIconAtMin",
+        "type": "string",
+        "description": "对应 <m-slider> 的 inset-icon-at-min 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing. Replaces `inset-icon` while the value is at the minimum."
+      },
+      {
+        "id": "slider-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-slider> 的 aria-label 属性。"
+      },
+      {
+        "id": "slider-prop-value",
+        "name": "value",
+        "type": "number",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "slider-prop-secondValue",
+        "name": "secondValue",
+        "type": "number | null",
+        "description": "实时 secondValue，可使用 v-model:secondValue 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "slider-prop-modelValue",
+        "name": "modelValue",
+        "type": "number",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "slider-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "slider-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<number>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "slider-event-update-secondValue",
+        "name": "update:secondValue",
+        "type": "(value: NonNullable<number | null>) => void",
+        "description": "组件事件触发且 secondValue 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "slider-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<number>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "slider-event-input",
+        "name": "input",
+        "type": "CustomEvent<{ value: number; secondValue?: number; }>",
+        "description": "通过 event.detail 读取 input 事件的数据。"
+      },
+      {
+        "id": "slider-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: number; secondValue?: number; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "slider-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "snackbar": {
+    "name": "MSnackbar",
+    "source": "vendor/material/src/vue/snackbar.ts",
+    "specSource": "vendor/material/src/elements/snackbar.ts",
+    "tag": "m-snackbar",
+    "declaration": false,
+    "props": [
+      {
+        "id": "snackbar-prop-message",
+        "name": "message",
+        "type": "string",
+        "description": "对应 <m-snackbar> 的 message 属性。"
+      },
+      {
+        "id": "snackbar-prop-action",
+        "name": "action",
+        "type": "string",
+        "description": "对应 <m-snackbar> 的 action 属性。"
+      },
+      {
+        "id": "snackbar-prop-dismissible",
+        "name": "dismissible",
+        "type": "boolean",
+        "description": "对应 <m-snackbar> 的 dismissible 属性。"
+      },
+      {
+        "id": "snackbar-prop-closeLabel",
+        "name": "closeLabel",
+        "type": "string",
+        "description": "对应 <m-snackbar> 的 close-label 属性。"
+      },
+      {
+        "id": "snackbar-prop-duration",
+        "name": "duration",
+        "type": "string",
+        "description": "对应 <m-snackbar> 的 duration 属性。"
+      },
+      {
+        "id": "snackbar-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-snackbar> 的 position 属性。",
+        "options": [
+          "center",
+          "start",
+          "end"
+        ]
+      },
+      {
+        "id": "snackbar-prop-queueBehavior",
+        "name": "queueBehavior",
+        "type": "string",
+        "description": "对应 <m-snackbar> 的 queue-behavior 属性。"
+      },
+      {
+        "id": "snackbar-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "实时 open，可使用 v-model:open 绑定；组件事件触发时同步更新值。"
+      }
+    ],
+    "events": [
+      {
+        "id": "snackbar-event-update-open",
+        "name": "update:open",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 open 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "snackbar-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "snackbar-event-action",
+        "name": "action",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 action 事件的数据。"
+      },
+      {
+        "id": "snackbar-event-close",
+        "name": "close",
+        "type": "CustomEvent<{ reason: SnackbarCloseReason | undefined; }>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "snackbar-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "snackbar-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Displays the snackbar, through the queue. With nothing on screen, when it returns the state is `visible` and `open` has been emitted; behind another snackbar the state is `queued`, and `visible` and `open` come together at its turn. On a visible or queued snackbar it does nothing."
+      },
+      {
+        "id": "snackbar-method-element-hide",
+        "name": "element.hide",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Hides the snackbar. When it returns the state is `hidden` and `close` has been emitted; the element leaves the page after its transition. A queued snackbar gives up its turn and emits nothing, as it was never open. On a hidden snackbar it does nothing."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "split-button": {
+    "name": "MSplitButton",
+    "source": "vendor/material/src/vue/split-button.ts",
+    "specSource": "vendor/material/src/elements/split-button.ts",
+    "tag": "m-split-button",
+    "declaration": false,
+    "props": [
+      {
+        "id": "split-button-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 label 属性。"
+      },
+      {
+        "id": "split-button-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "split-button-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 variant 属性。"
+      },
+      {
+        "id": "split-button-prop-size",
+        "name": "size",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 size 属性。"
+      },
+      {
+        "id": "split-button-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-split-button> 的 disabled 属性。"
+      },
+      {
+        "id": "split-button-prop-trailingLabel",
+        "name": "trailingLabel",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 trailing-label 属性。"
+      },
+      {
+        "id": "split-button-prop-groupLabel",
+        "name": "groupLabel",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 group-label 属性。"
+      },
+      {
+        "id": "split-button-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-split-button> 的 aria-label 属性。"
+      }
+    ],
+    "events": [
+      {
+        "id": "split-button-event-open",
+        "name": "open",
+        "type": "CustomEvent<{}>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "split-button-event-close",
+        "name": "close",
+        "type": "CustomEvent<{}>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      },
+      {
+        "id": "split-button-event-select",
+        "name": "select",
+        "type": "CustomEvent<{ value: string | null; }>",
+        "description": "通过 event.detail 读取 select 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "split-button-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。"
+    ]
+  },
+  "switch": {
+    "name": "MSwitch",
+    "source": "vendor/material/src/vue/switch.ts",
+    "specSource": "vendor/material/src/elements/switch.ts",
+    "tag": "m-switch",
+    "declaration": false,
+    "model": "checked",
+    "props": [
+      {
+        "id": "switch-prop-defaultChecked",
+        "name": "defaultChecked",
+        "type": "boolean",
+        "description": "初始 checked，对应 <m-switch> 的 checked 属性。"
+      },
+      {
+        "id": "switch-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-switch> 的 disabled 属性。"
+      },
+      {
+        "id": "switch-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-switch> 的 required 属性。"
+      },
+      {
+        "id": "switch-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-switch> 的 value 属性。"
+      },
+      {
+        "id": "switch-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-switch> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "switch-prop-error",
+        "name": "error",
+        "type": "boolean",
+        "description": "对应 <m-switch> 的 error 属性。"
+      },
+      {
+        "id": "switch-prop-supportingText",
+        "name": "supportingText",
+        "type": "string",
+        "description": "对应 <m-switch> 的 supporting-text 属性。"
+      },
+      {
+        "id": "switch-prop-checked",
+        "name": "checked",
+        "type": "boolean",
+        "description": "实时 checked，可使用 v-model:checked 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "switch-prop-modelValue",
+        "name": "modelValue",
+        "type": "boolean",
+        "description": "v-model 的绑定值，等同于 checked。"
+      },
+      {
+        "id": "switch-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      },
+      {
+        "id": "switch-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "默认插槽的回退文本。"
+      }
+    ],
+    "events": [
+      {
+        "id": "switch-event-update-checked",
+        "name": "update:checked",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 checked 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "switch-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<boolean>) => void",
+        "description": "组件事件触发且 checked 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "switch-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ checked: boolean; value: boolean; valueAttribute: string; nativeEvent: Event | undefined; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "switch-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件文本内容；未提供时使用 label。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "switch-method-element-toggle",
+        "name": "element.toggle",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.toggle() 调用。 Toggles the switch's checked state"
+      },
+      {
+        "id": "switch-method-element-check",
+        "name": "element.check",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.check() 调用。 Checks/activates the switch"
+      },
+      {
+        "id": "switch-method-element-uncheck",
+        "name": "element.uncheck",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.uncheck() 调用。 Unchecks/deactivates the switch"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 checked；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "tab": {
+    "name": "MTab",
+    "source": "vendor/material/src/vue/tab.ts",
+    "specSource": "vendor/material/src/elements/tabs.ts",
+    "tag": "m-tab",
+    "declaration": true,
+    "props": [
+      {
+        "id": "tab-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "对应 <m-tab> 的 value 属性。"
+      },
+      {
+        "id": "tab-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-tab> 的 label 属性。"
+      },
+      {
+        "id": "tab-prop-icon",
+        "name": "icon",
+        "type": "string",
+        "description": "对应 <m-tab> 的 icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "tab-prop-badge",
+        "name": "badge",
+        "type": "string",
+        "description": "对应 <m-tab> 的 badge 属性。"
+      },
+      {
+        "id": "tab-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-tab> 的 disabled 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "tab-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "子项的文本或内容，由所属父组件读取。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "这是父组件读取的声明式子项，应放在对应的 Material 父组件内。"
+    ]
+  },
+  "tabs": {
+    "name": "MTabs",
+    "source": "vendor/material/src/vue/tabs.ts",
+    "specSource": "vendor/material/src/elements/tabs.ts",
+    "tag": "m-tabs",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "tabs-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-tabs> 的 variant 属性。",
+        "options": [
+          "primary",
+          "secondary"
+        ]
+      },
+      {
+        "id": "tabs-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-tabs> 的 value 属性。"
+      },
+      {
+        "id": "tabs-prop-value",
+        "name": "value",
+        "type": "string | null",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "tabs-prop-modelValue",
+        "name": "modelValue",
+        "type": "string | null",
+        "description": "v-model 的绑定值，等同于 value。"
+      }
+    ],
+    "events": [
+      {
+        "id": "tabs-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "tabs-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string | null>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "tabs-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string | null; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "tabs-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。"
+    ]
+  },
+  "text-field": {
+    "name": "MTextField",
+    "source": "vendor/material/src/vue/text-field.ts",
+    "specSource": "vendor/material/src/elements/text-field.ts",
+    "tag": "m-text-field",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "text-field-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 variant 属性。"
+      },
+      {
+        "id": "text-field-prop-density",
+        "name": "density",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 density 属性。"
+      },
+      {
+        "id": "text-field-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 label 属性。"
+      },
+      {
+        "id": "text-field-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 type 属性。"
+      },
+      {
+        "id": "text-field-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-text-field> 的 value 属性。"
+      },
+      {
+        "id": "text-field-prop-placeholder",
+        "name": "placeholder",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 placeholder 属性。"
+      },
+      {
+        "id": "text-field-prop-supportingText",
+        "name": "supportingText",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 supporting-text 属性。"
+      },
+      {
+        "id": "text-field-prop-prefixText",
+        "name": "prefixText",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 prefix-text 属性。"
+      },
+      {
+        "id": "text-field-prop-suffixText",
+        "name": "suffixText",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 suffix-text 属性。"
+      },
+      {
+        "id": "text-field-prop-leadingIcon",
+        "name": "leadingIcon",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 leading-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "text-field-prop-trailingIcon",
+        "name": "trailingIcon",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 trailing-icon 属性。 Markup (HTML). Not sanitized by default: see Markup and sanitizing."
+      },
+      {
+        "id": "text-field-prop-trailingIconLabel",
+        "name": "trailingIconLabel",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 trailing-icon-label 属性。 The trailing icon button's accessible name. With it the icon is a button that emits `trailing`; without it, or with an empty value, the icon is decorative. A change updates the existing icon through the factory setter."
+      },
+      {
+        "id": "text-field-prop-maxlength",
+        "name": "maxlength",
+        "type": "number",
+        "description": "对应 <m-text-field> 的 maxlength 属性。"
+      },
+      {
+        "id": "text-field-prop-pattern",
+        "name": "pattern",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 pattern 属性。"
+      },
+      {
+        "id": "text-field-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-text-field> 的 required 属性。"
+      },
+      {
+        "id": "text-field-prop-readonly",
+        "name": "readonly",
+        "type": "boolean",
+        "description": "对应 <m-text-field> 的 readonly 属性。"
+      },
+      {
+        "id": "text-field-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-text-field> 的 disabled 属性。"
+      },
+      {
+        "id": "text-field-prop-error",
+        "name": "error",
+        "type": "boolean",
+        "description": "对应 <m-text-field> 的 error 属性。"
+      },
+      {
+        "id": "text-field-prop-autocomplete",
+        "name": "autocomplete",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 autocomplete 属性。"
+      },
+      {
+        "id": "text-field-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-text-field> 的 aria-label 属性。"
+      },
+      {
+        "id": "text-field-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "text-field-prop-modelValue",
+        "name": "modelValue",
+        "type": "string",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "text-field-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "text-field-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "text-field-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "text-field-event-input",
+        "name": "input",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 input 事件的数据。"
+      },
+      {
+        "id": "text-field-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "text-field-event-trailing",
+        "name": "trailing",
+        "type": "CustomEvent<{ value: string; event: MouseEvent; }>",
+        "description": "通过 event.detail 读取 trailing 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "text-field-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "text-field-method-element-select",
+        "name": "element.select",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.select() 调用。 Selects the field's text."
+      },
+      {
+        "id": "text-field-method-element-setError",
+        "name": "element.setError",
+        "type": "(error: boolean, message?: string | undefined) => unknown",
+        "description": "通过组件 ref 的 element.setError() 调用。 Sets the error state of the text field"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "timepicker": {
+    "name": "MTimepicker",
+    "source": "vendor/material/src/vue/timepicker.ts",
+    "specSource": "vendor/material/src/elements/timepicker.ts",
+    "tag": "m-timepicker",
+    "declaration": false,
+    "model": "value",
+    "props": [
+      {
+        "id": "timepicker-prop-defaultValue",
+        "name": "defaultValue",
+        "type": "string",
+        "description": "初始 value，对应 <m-timepicker> 的 value 属性。"
+      },
+      {
+        "id": "timepicker-prop-format",
+        "name": "format",
+        "type": "string",
+        "description": "对应 <m-timepicker> 的 format 属性。"
+      },
+      {
+        "id": "timepicker-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-timepicker> 的 type 属性。"
+      },
+      {
+        "id": "timepicker-prop-orientation",
+        "name": "orientation",
+        "type": "string",
+        "description": "对应 <m-timepicker> 的 orientation 属性。"
+      },
+      {
+        "id": "timepicker-prop-min",
+        "name": "min",
+        "type": "string",
+        "description": "对应 <m-timepicker> 的 min 属性。"
+      },
+      {
+        "id": "timepicker-prop-max",
+        "name": "max",
+        "type": "string",
+        "description": "对应 <m-timepicker> 的 max 属性。"
+      },
+      {
+        "id": "timepicker-prop-step",
+        "name": "step",
+        "type": "number",
+        "description": "对应 <m-timepicker> 的 step 属性。"
+      },
+      {
+        "id": "timepicker-prop-showSeconds",
+        "name": "showSeconds",
+        "type": "boolean",
+        "description": "对应 <m-timepicker> 的 show-seconds 属性。"
+      },
+      {
+        "id": "timepicker-prop-label",
+        "name": "label",
+        "type": "string",
+        "description": "对应 <m-timepicker> 的 label 属性。"
+      },
+      {
+        "id": "timepicker-prop-required",
+        "name": "required",
+        "type": "boolean",
+        "description": "对应 <m-timepicker> 的 required 属性。"
+      },
+      {
+        "id": "timepicker-prop-disabled",
+        "name": "disabled",
+        "type": "boolean",
+        "description": "对应 <m-timepicker> 的 disabled 属性。"
+      },
+      {
+        "id": "timepicker-prop-open",
+        "name": "open",
+        "type": "boolean",
+        "description": "对应 <m-timepicker> 的 open 属性。"
+      },
+      {
+        "id": "timepicker-prop-value",
+        "name": "value",
+        "type": "string",
+        "description": "实时 value，可使用 v-model:value 绑定；组件事件触发时同步更新值。"
+      },
+      {
+        "id": "timepicker-prop-modelValue",
+        "name": "modelValue",
+        "type": "string",
+        "description": "v-model 的绑定值，等同于 value。"
+      },
+      {
+        "id": "timepicker-prop-name",
+        "name": "name",
+        "type": "string",
+        "description": "表单字段名称，传给关联的自定义元素。"
+      }
+    ],
+    "events": [
+      {
+        "id": "timepicker-event-update-value",
+        "name": "update:value",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与传入值不同时，更新绑定值。"
+      },
+      {
+        "id": "timepicker-event-update-modelValue",
+        "name": "update:modelValue",
+        "type": "(value: NonNullable<string>) => void",
+        "description": "组件事件触发且 value 与绑定值不同时，更新 v-model。"
+      },
+      {
+        "id": "timepicker-event-change",
+        "name": "change",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 change 事件的数据。"
+      },
+      {
+        "id": "timepicker-event-input",
+        "name": "input",
+        "type": "CustomEvent<{ value: string; draftValue: string; }>",
+        "description": "通过 event.detail 读取 input 事件的数据。"
+      },
+      {
+        "id": "timepicker-event-confirm",
+        "name": "confirm",
+        "type": "CustomEvent<{ value: string; }>",
+        "description": "通过 event.detail 读取 confirm 事件的数据。"
+      },
+      {
+        "id": "timepicker-event-open",
+        "name": "open",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 open 事件的数据。"
+      },
+      {
+        "id": "timepicker-event-close",
+        "name": "close",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 close 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "timepicker-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "timepicker-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Opens the dialog, unless the picker is disabled."
+      },
+      {
+        "id": "timepicker-method-element-close",
+        "name": "element.close",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.close() 调用。 Closes the dialog without committing."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "默认 v-model 绑定 value；事件对象使用 event.detail，update:* 事件直接提供更新值。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "toolbar": {
+    "name": "MToolbar",
+    "source": "vendor/material/src/vue/toolbar.ts",
+    "specSource": "vendor/material/src/elements/toolbar.ts",
+    "tag": "m-toolbar",
+    "declaration": false,
+    "props": [
+      {
+        "id": "toolbar-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 variant 属性。",
+        "options": [
+          "docked",
+          "floating"
+        ]
+      },
+      {
+        "id": "toolbar-prop-color",
+        "name": "color",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 color 属性。"
+      },
+      {
+        "id": "toolbar-prop-orientation",
+        "name": "orientation",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 orientation 属性。",
+        "options": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      {
+        "id": "toolbar-prop-placement",
+        "name": "placement",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 placement 属性。"
+      },
+      {
+        "id": "toolbar-prop-arrangement",
+        "name": "arrangement",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 arrangement 属性。"
+      },
+      {
+        "id": "toolbar-prop-flat",
+        "name": "flat",
+        "type": "boolean",
+        "description": "对应 <m-toolbar> 的 flat 属性。"
+      },
+      {
+        "id": "toolbar-prop-fabPosition",
+        "name": "fabPosition",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 fab-position 属性。"
+      },
+      {
+        "id": "toolbar-prop-scrollBehavior",
+        "name": "scrollBehavior",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 scroll-behavior 属性。"
+      },
+      {
+        "id": "toolbar-prop-scrollThreshold",
+        "name": "scrollThreshold",
+        "type": "number",
+        "description": "对应 <m-toolbar> 的 scroll-threshold 属性。"
+      },
+      {
+        "id": "toolbar-prop-overflowLabel",
+        "name": "overflowLabel",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 overflow-label 属性。"
+      },
+      {
+        "id": "toolbar-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-toolbar> 的 aria-label 属性。"
+      }
+    ],
+    "events": [
+      {
+        "id": "toolbar-event-show",
+        "name": "show",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 show 事件的数据。"
+      },
+      {
+        "id": "toolbar-event-hide",
+        "name": "hide",
+        "type": "CustomEvent<null>",
+        "description": "通过 event.detail 读取 hide 事件的数据。"
+      }
+    ],
+    "slots": [
+      {
+        "id": "toolbar-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "toolbar-slot-fab",
+        "name": "fab",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #fab> 命名插槽。"
+      },
+      {
+        "id": "toolbar-slot-overflow",
+        "name": "overflow",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #overflow> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "toolbar-method-element-show",
+        "name": "element.show",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Brings the toolbar back on screen"
+      },
+      {
+        "id": "toolbar-method-element-hide",
+        "name": "element.hide",
+        "type": "() => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Moves the toolbar off screen and out of the focus order"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "tooltip": {
+    "name": "MTooltip",
+    "source": "vendor/material/src/vue/tooltip.ts",
+    "specSource": "vendor/material/src/elements/tooltip.ts",
+    "tag": "m-tooltip",
+    "declaration": false,
+    "props": [
+      {
+        "id": "tooltip-prop-for",
+        "name": "for",
+        "type": "string",
+        "description": "对应 <m-tooltip> 的 for 属性。"
+      },
+      {
+        "id": "tooltip-prop-text",
+        "name": "text",
+        "type": "string",
+        "description": "对应 <m-tooltip> 的 text 属性。"
+      },
+      {
+        "id": "tooltip-prop-position",
+        "name": "position",
+        "type": "string",
+        "description": "对应 <m-tooltip> 的 position 属性。",
+        "options": [
+          "top",
+          "right",
+          "bottom",
+          "left",
+          "top-start",
+          "top-end",
+          "right-start",
+          "right-end",
+          "bottom-start",
+          "bottom-end",
+          "left-start",
+          "left-end"
+        ]
+      },
+      {
+        "id": "tooltip-prop-variant",
+        "name": "variant",
+        "type": "string",
+        "description": "对应 <m-tooltip> 的 variant 属性。",
+        "options": [
+          "default",
+          "rich",
+          "plain"
+        ]
+      },
+      {
+        "id": "tooltip-prop-showDelay",
+        "name": "showDelay",
+        "type": "number",
+        "description": "对应 <m-tooltip> 的 show-delay 属性。"
+      },
+      {
+        "id": "tooltip-prop-hideDelay",
+        "name": "hideDelay",
+        "type": "number",
+        "description": "对应 <m-tooltip> 的 hide-delay 属性。"
+      },
+      {
+        "id": "tooltip-prop-noShowOnHover",
+        "name": "noShowOnHover",
+        "type": "boolean",
+        "description": "对应 <m-tooltip> 的 no-show-on-hover 属性。"
+      },
+      {
+        "id": "tooltip-prop-noShowOnFocus",
+        "name": "noShowOnFocus",
+        "type": "boolean",
+        "description": "对应 <m-tooltip> 的 no-show-on-focus 属性。"
+      },
+      {
+        "id": "tooltip-prop-target",
+        "name": "target",
+        "type": "HTMLElement | null",
+        "description": "实时 target，通过 :target 受控传入；组件不会自动发出更新事件。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "tooltip-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "tooltip-method-element-show",
+        "name": "element.show",
+        "type": "(immediate?: boolean | undefined) => unknown",
+        "description": "通过组件 ref 的 element.show() 调用。 Shows the tooltip. Outside the overlays' open and close contract, by design: it is shown after the show delay and emits no event, so `isVisible()` is still false when `show()` returns. `show(true)` shows it at once."
+      },
+      {
+        "id": "tooltip-method-element-hide",
+        "name": "element.hide",
+        "type": "(immediate?: boolean | undefined) => unknown",
+        "description": "通过组件 ref 的 element.hide() 调用。 Hides the tooltip, after the hide delay and without an event; `hide(true)` hides it at once."
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  },
+  "top-app-bar": {
+    "name": "MTopAppBar",
+    "source": "vendor/material/src/vue/top-app-bar.ts",
+    "specSource": "vendor/material/src/elements/top-app-bar.ts",
+    "tag": "m-top-app-bar",
+    "declaration": false,
+    "props": [
+      {
+        "id": "top-app-bar-prop-type",
+        "name": "type",
+        "type": "string",
+        "description": "对应 <m-top-app-bar> 的 type 属性。",
+        "options": [
+          "small",
+          "medium",
+          "large",
+          "center"
+        ]
+      },
+      {
+        "id": "top-app-bar-prop-headline",
+        "name": "headline",
+        "type": "string",
+        "description": "对应 <m-top-app-bar> 的 headline 属性。"
+      },
+      {
+        "id": "top-app-bar-prop-noScroll",
+        "name": "noScroll",
+        "type": "boolean",
+        "description": "对应 <m-top-app-bar> 的 no-scroll 属性。"
+      },
+      {
+        "id": "top-app-bar-prop-noCompress",
+        "name": "noCompress",
+        "type": "boolean",
+        "description": "对应 <m-top-app-bar> 的 no-compress 属性。"
+      },
+      {
+        "id": "top-app-bar-prop-scrollThreshold",
+        "name": "scrollThreshold",
+        "type": "number",
+        "description": "对应 <m-top-app-bar> 的 scroll-threshold 属性。"
+      },
+      {
+        "id": "top-app-bar-prop-scrollTarget",
+        "name": "scrollTarget",
+        "type": "string",
+        "description": "对应 <m-top-app-bar> 的 scroll-target 属性。"
+      },
+      {
+        "id": "top-app-bar-prop-ariaLabel",
+        "name": "ariaLabel",
+        "type": "string",
+        "description": "对应 <m-top-app-bar> 的 aria-label 属性。"
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "id": "top-app-bar-slot-default",
+        "name": "default",
+        "type": "() => VNodeChild",
+        "description": "组件的默认内容。"
+      },
+      {
+        "id": "top-app-bar-slot-leading",
+        "name": "leading",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #leading> 命名插槽。"
+      },
+      {
+        "id": "top-app-bar-slot-trailing",
+        "name": "trailing",
+        "type": "() => VNodeChild",
+        "description": "对应 <template #trailing> 命名插槽。"
+      }
+    ],
+    "methods": [
+      {
+        "id": "top-app-bar-method-element-setScrollState",
+        "name": "element.setScrollState",
+        "type": "(scrolled: boolean) => unknown",
+        "description": "通过组件 ref 的 element.setScrollState() 调用。 Manually sets the scrolled state"
+      }
+    ],
+    "notes": [
+      "HTML 属性、class、style 和原生事件透传到宿主自定义元素；aria-label 用于设置无障碍名称。",
+      "组件 ref 只暴露 element；公开方法通过 ref.value?.element 调用。"
+    ]
+  }
+}

@@ -6,3 +6,6 @@ test-results/
 artifacts/
 .DS_Store
 /templates/
+/vendor/material/generated/
+/packages/tratify/SOURCE.json
+/packages/tratify/THIRD_PARTY_LICENSES.txt

@@ -1,0 +1,214 @@
+// src/components/radios/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-radios';
+
+.#{$component} {
+  display: flex;
+  margin: 0;
+  padding: 0;
+
+  // Vertical layout (default)
+  &--vertical {
+    flex-direction: column;
+
+    // Each option is its own 48dp target, so the rows stack with no gap between
+    // them (a 12px margin made the pitch 60px).
+  }
+
+  // Horizontal layout. align-items stays flex-start: options on one line share
+  // the start edge, and the next line starts after the tallest row.
+  &--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    .#{$component}__item {
+      margin-inline-end: 16px;
+
+      &:last-child {
+        margin-inline-end: 0;
+      }
+    }
+  }
+
+  // Disabled state
+  // No blanket dimming: DisabledSelectedIconOpacity and
+  // DisabledUnselectedIconOpacity are both 0.38, applied per role below.
+  &--disabled {
+    pointer-events: none;
+  }
+
+  // Radio item
+  &__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+
+    &--disabled {
+      cursor: not-allowed;
+
+      .#{$component}__label {
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  // Radio input
+  &__input {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+
+    // Selected: a primary ring and dot.
+    &:checked ~ .#{$component}__label .#{$component}__circle {
+      border-color: t.color('primary');
+
+      &::after {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    // Disabled styles
+    &:disabled ~ .#{$component}__label {
+      .#{$component}__circle {
+        border-color: t.alpha('on-surface', 0.38);
+
+        &::after {
+          background-color: t.alpha('on-surface', 0.38);
+        }
+      }
+
+      .#{$component}__text {
+        color: t.alpha('on-surface', 0.38);
+      }
+    }
+  }
+
+  // Radio label. The row is at least 48dp and grows with a wrapping label.
+  // 4px of vertical padding leaves a 40px content box, so a one-line row stays
+  // 48px: the control's top is 4px and the 20px circle's top is 14px. The
+  // circle stays centred on the label block (align-items: center).
+  &__label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 4px 0;
+    min-height: 48px;
+    color: t.color('on-surface');
+
+    // Body Large, as the checkbox and switch labels: a list item's headline.
+    @include m.typography('body-large');
+
+    // The text already comes first in the DOM (radio.ts); reversing the row put it
+    // back after the control.
+    &--before {
+      .#{$component}__text {
+        margin-inline: 0 8px;
+      }
+    }
+
+    // An empty label leaves the 40px control. The row is the 48dp target and
+    // the control is centred in it: the circle inset is 14px and the state
+    // layer inset is 4px. Without the width the row would be 40px.
+    &:has(> .#{$component}__text:empty) {
+      min-width: 48px;
+      justify-content: center;
+    }
+  }
+
+  // Radio control: the 40dp state layer area
+  &__control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  // The 20dp icon: a 2dp ring (RadioStrokeWidth; it was 1.5px, which Chromium
+  // paints as 1px) in on-surface-variant, and a 10dp dot (Compose and material-web;
+  // it was 12px) that springs in on the fast spatial spring.
+  &__circle {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid t.color('on-surface-variant');
+    border-radius: 50%;
+    box-sizing: border-box;
+    transition: m.spring(border-color, fast-effects);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: t.color('primary');
+      opacity: 0;
+      transition: m.spring(transform, fast-spatial), m.spring(opacity, fast-effects);
+    }
+  }
+
+  // The state layer (md-comp-radio-button): unselected on-surface on hover and
+  // focus, selected primary; a press takes the colour of the state it leads to. The
+  // unselected ring turns on-surface. Hover was primary even when unselected, a
+  // plain :focus showed on mouse clicks, and there was no press.
+  &__ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    transition: m.spring(background-color, fast-effects);
+  }
+
+  &__item {
+    $input: '.#{$component}__input:not(:disabled)';
+    $label: '.#{$component}__label';
+    $ripple: '.#{$component}__ripple';
+
+    #{$input}:not(:checked) ~ #{$label}:is(:hover, :active) .#{$component}__circle,
+    #{$input}:not(:checked):focus-visible ~ #{$label} .#{$component}__circle {
+      border-color: t.color('on-surface');
+    }
+
+    #{$input} ~ #{$label}:hover #{$ripple} { background-color: t.alpha('on-surface', v.state('hover-state-layer-opacity')); }
+    #{$input}:focus-visible ~ #{$label} #{$ripple} { background-color: t.alpha('on-surface', v.state('focus-state-layer-opacity')); }
+    #{$input} ~ #{$label}:active #{$ripple} { background-color: t.alpha('primary', v.state('pressed-state-layer-opacity')); }
+
+    #{$input}:checked ~ #{$label}:hover #{$ripple} { background-color: t.alpha('primary', v.state('hover-state-layer-opacity')); }
+    #{$input}:checked:focus-visible ~ #{$label} #{$ripple} { background-color: t.alpha('primary', v.state('focus-state-layer-opacity')); }
+    #{$input}:checked ~ #{$label}:active #{$ripple} { background-color: t.alpha('on-surface', v.state('pressed-state-layer-opacity')); }
+
+    // md.comp.focus-ring: 3dp secondary, 2dp outside the state layer.
+    #{$input}:focus-visible ~ #{$label} #{$ripple} {
+      outline: 3px solid t.color('secondary');
+      outline-offset: 2px;
+    }
+  }
+
+  // Radio text: the gap follows the reading direction (it was a physical
+  // margin-left, 0px in right-to-left layouts).
+  &__text {
+    margin-inline-start: 8px;
+
+    // An empty span would still take the 8px gap and push the control to the
+    // inline start. Taking no space lets the unlabelled row centre it.
+    &:empty {
+      display: none;
+    }
+  }
+}

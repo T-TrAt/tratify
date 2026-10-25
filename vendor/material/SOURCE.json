@@ -1,0 +1,31 @@
+{
+  "name": "material",
+  "version": "3.2.4",
+  "repository": "https://github.com/floor/material",
+  "revision": "c910072f3fc5b660276731d8a935d7186f288364",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2025 floor",
+  "copiedOn": "2026-10-23",
+  "included": [
+    "src/components",
+    "src/core",
+    "src/elements",
+    "src/vue",
+    "src/styles",
+    "scripts/style-manifest.ts"
+  ],
+  "adaptations": "Build output resolves upstream CSS registration imports locally and scopes document theme CSS to .apptify-material. Local styles restore native closed-dialog display rules for drawer and sheet surfaces. Menu positioning follows opener layout changes, clears stale right-edge constraints, and preserves anchor alignment when opening above. Carousel direction observation only rebuilds when its effective direction changes, preserving continuous scroll placement during unrelated dir mutations. Modal drawer, bottom sheet and side sheet styles use the same spatial transition for entry and exit, deferring display and overlay removal until the surface finishes sliding out. Timepicker styles match the dialog's height expansion, staggered entry content, accelerated exit and linear scrim transitions, with entry starting styles and deferred display and overlay removal through exit. Modal datepicker styles follow the same dialog motion; an explicit visibility state stages entry and exit without replaying content fades when calendar views rerender. Picker contents remain visible with the surface through exit instead of fading ahead; timepicker cancellation resets draft state without rebuilding the painted contents until the next open. FAB menu grid placement is limited to its icons so the ripple covers the full trigger and follows its size transitions. Other component source is retained unchanged.",
+  "patchedFiles": [
+    "src/components/menu/features/controller.ts",
+    "src/components/menu/features/position.ts",
+    "src/components/carousel/features/scroll.ts",
+    "src/styles/components/_bottom-sheet.scss",
+    "src/styles/components/_side-sheet.scss",
+    "src/styles/components/_drawer.scss",
+    "src/styles/components/_timepicker.scss",
+    "src/components/datepicker/datepicker.ts",
+    "src/styles/components/_datepicker.scss",
+    "src/components/timepicker/api.ts",
+    "src/styles/components/_fab-menu.scss"
+  ]
+}

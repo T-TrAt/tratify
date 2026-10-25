@@ -1,0 +1,1269 @@
+// src/components/dialog/features.ts (partial updated code)
+
+import { getOverlayConfig } from "./config";
+import {
+  DialogConfig,
+  DialogButton,
+  DialogButtonRecord,
+  DialogComponent,
+  DialogConfirmOptions,
+  DialogFeatureComponent,
+  DialogStructure,
+  DialogStructured,
+} from "./types";
+import type { ApiOptions } from "./api";
+import createButton from "../button";
+import { createDivider } from "../divider"; // Import the divider component
+import type { DividerComponent } from "../divider/types";
+import { addClass, removeClass } from "../../core/dom/classes";
+
+import { setHTML } from "../../core/dom/html";
+import { activeElementOf, deepActiveElement, tabStops, wrapTab } from "../../core/dom/focus";
+import { hideFromTopLayer, onModalEscape, onTopLayerClose, showInTopLayer, type ModalEscape } from "../../core/dom/layer";
+const DIALOG_EVENTS = {
+  OPEN: "open",
+  CLOSE: "close",
+  BEFORE_OPEN: "beforeopen",
+  BEFORE_CLOSE: "beforeclose",
+  AFTER_OPEN: "afteropen",
+  AFTER_CLOSE: "afterclose",
+};
+
+/**
+ * Creates the dialog DOM structure with proper divider handling
+ * @param config Dialog configuration
+ * @returns Component enhancer with DOM structure
+ */
+/** Ids for the elements that name and describe a dialog */
+let dialogCount = 0;
+
+export const withStructure =
+  (config: DialogConfig, getComponent: () => DialogComponent) =>
+  <C extends DialogFeatureComponent>(
+    component: C,
+  ): C & { overlay: HTMLElement; structure: DialogStructure } => {
+  // The headline names the dialog and the supporting text describes it, so
+  // both need an id to point at (M3 dialog accessibility, "Labeling elements")
+  const uid = `${component.getClass("dialog")}-${++dialogCount}`;
+  const titleId = `${uid}-title`;
+  const contentId = `${uid}-content`;
+
+  // Create the overlay element
+  const overlayConfig = getOverlayConfig();
+  const overlay = document.createElement(overlayConfig.tag || "div");
+
+  // Add overlay classes
+  overlay.classList.add(component.getClass("dialog__overlay"));
+
+  // Set overlay attributes safely
+  if (
+    overlayConfig.attributes &&
+    typeof overlayConfig.attributes === "object"
+  ) {
+    Object.entries(overlayConfig.attributes).forEach(([key, value]) => {
+      if (key && typeof key === "string" && value !== undefined) {
+        overlay.setAttribute(key, String(value));
+      }
+    });
+  }
+
+  // Set custom z-index if provided
+  if (config.zIndex) {
+    overlay.style.zIndex = String(config.zIndex);
+  }
+
+  // A basic dialog has no close affordance; a full-screen one does
+  const showCloseButton =
+    config.closeButton ?? config.size === "fullscreen";
+
+  // Create internal structure
+  const createHeader = () => {
+    const header = document.createElement("div");
+    header.classList.add(component.getClass("dialog__header"));
+
+    const headerContent = document.createElement("div");
+    headerContent.classList.add(component.getClass("dialog__header-content"));
+    header.appendChild(headerContent);
+
+    if (config.title) {
+      const title = document.createElement("h2");
+      title.classList.add(component.getClass("dialog__header-title"));
+      title.id = titleId;
+      title.textContent = config.title;
+      headerContent.appendChild(title);
+    }
+
+    if (config.subtitle) {
+      const subtitle = document.createElement("p");
+      subtitle.classList.add(component.getClass("dialog__header-subtitle"));
+      subtitle.textContent = config.subtitle;
+      headerContent.appendChild(subtitle);
+    }
+
+    if (showCloseButton) {
+      const closeButton = document.createElement("button");
+      closeButton.classList.add(component.getClass("dialog__header-close"));
+      closeButton.setAttribute("aria-label", "Close dialog");
+      setHTML(closeButton, `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      `);
+
+      // Close button click handler with event-based communication
+      closeButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Use the dialog:close custom event which will be listened for in withVisibility
+        if (component && component.emit) {
+          component.emit("dialog:close", { source: "closeButton" });
+        }
+      });
+
+      header.appendChild(closeButton);
+    }
+
+    return header;
+  };
+
+  const createContent = () => {
+    const content = document.createElement("div");
+    content.classList.add(component.getClass("dialog__content"));
+    content.id = contentId;
+
+    if (config.content) {
+      setHTML(content, config.content);
+    }
+
+    return content;
+  };
+
+  const createFooter = () => {
+    const footer = document.createElement("div");
+    footer.classList.add(component.getClass("dialog__footer"));
+
+    // Apply footer alignment
+    const alignment = config.footerAlignment || "right";
+    if (alignment !== "right") {
+      addClass(footer, `${component.getClass("dialog__footer")}--${alignment}`);
+    }
+
+    // Add buttons if provided
+    if (Array.isArray(config.buttons) && config.buttons.length > 0) {
+      config.buttons.forEach((buttonConfig) =>
+        addButton(footer, buttonConfig, component, getComponent),
+      );
+    }
+
+    return footer;
+  };
+
+  const createDividerElement = () => {
+    const divider = createDivider({
+      variant: "full-width",
+      class: component.getClass("dialog__divider"),
+    });
+    return divider;
+  };
+
+  // Create the dialog structure
+  const header = createHeader();
+  const content = createContent();
+  const footer =
+    Array.isArray(config.buttons) && config.buttons.length > 0
+      ? createFooter()
+      : null;
+
+  // Add dialog classes to the main component element
+  addClass(component.element, component.getClass("dialog"));
+
+  // Name and describe the dialog by its own content
+  if (config.title) {
+    component.element.setAttribute("aria-labelledby", titleId);
+  } else if (config.ariaLabel) {
+    component.element.setAttribute("aria-label", config.ariaLabel);
+  }
+  if (config.content) {
+    component.element.setAttribute("aria-describedby", contentId);
+  }
+
+  // Apply size class
+  const size = config.size || "medium";
+  if (size !== "medium") {
+    addClass(component.element, `${component.getClass("dialog")}--${size}`);
+  }
+
+  // Apply animation class
+  const animation = config.animation || "scale";
+  if (animation !== "scale") {
+    addClass(
+      component.element,
+      `${component.getClass("dialog")}--${animation}`,
+    );
+  }
+
+  // Add header to dialog
+  component.element.appendChild(header);
+
+  // Create divider elements if configured
+  let headerDivider: DividerComponent | null = null;
+  let footerDivider: DividerComponent | null = null;
+
+  if (config.divider) {
+    // Add header divider (between header and content)
+    headerDivider = createDividerElement();
+    headerDivider.element.classList.add(
+      component.getClass("dialog__header-divider"),
+    );
+    component.element.appendChild(headerDivider.element);
+
+    // If footer exists, add footer divider (between content and footer)
+    if (footer) {
+      footerDivider = createDividerElement();
+      footerDivider.element.classList.add(
+        component.getClass("dialog__footer-divider"),
+      );
+    }
+  }
+
+  // Add content to dialog
+  component.element.appendChild(content);
+
+  // Add footer divider before footer if it exists
+  if (footerDivider) {
+    component.element.appendChild(footerDivider.element);
+  }
+
+  // Add footer to dialog if exists
+  if (footer) {
+    component.element.appendChild(footer);
+  }
+
+  // Add overlay to container or document.body. In the top layer the dialog
+  // is a <dialog> of its own, with ::backdrop for a scrim, and goes there
+  // without the overlay.
+  const container = config.container || document.body;
+  if (config.layer === "top") {
+    container.appendChild(component.element);
+  } else {
+    overlay.appendChild(component.element);
+    container.appendChild(overlay);
+  }
+
+  // Store elements in component
+  return {
+    ...component,
+    overlay,
+    structure: {
+      header,
+      content,
+      footer,
+      headerDivider,
+      footerDivider,
+      container,
+    },
+  };
+};
+
+/**
+ * Add methods to manage dividers
+ * @returns Component enhancer with divider management features
+ */
+export const withDivider =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "divider"> => {
+  return {
+    ...component,
+    divider: {
+      /**
+       * Shows or hides the dividers
+       * @param show Whether to show the dividers
+       * @returns Component instance for chaining
+       */
+      toggleDivider(show: boolean) {
+        // Handle header divider
+        if (show && !component.structure.headerDivider) {
+          // Create and add header divider
+          const headerDivider = createDivider({
+            variant: "full-width",
+            class: `${component.getClass(
+              "dialog__divider",
+            )} ${component.getClass("dialog__header-divider")}`,
+          });
+
+          // Insert after header, before content
+          component.element.insertBefore(
+            headerDivider.element,
+            component.structure.content,
+          );
+
+          component.structure.headerDivider = headerDivider;
+
+          // If footer exists, add footer divider
+          if (
+            component.structure.footer &&
+            !component.structure.footerDivider
+          ) {
+            const footerDivider = createDivider({
+              variant: "full-width",
+              class: `${component.getClass(
+                "dialog__divider",
+              )} ${component.getClass("dialog__footer-divider")}`,
+            });
+
+            // Insert before footer
+            component.element.insertBefore(
+              footerDivider.element,
+              component.structure.footer,
+            );
+
+            component.structure.footerDivider = footerDivider;
+          }
+        } else if (!show) {
+          // Remove header divider if it exists
+          if (component.structure.headerDivider) {
+            component.structure.headerDivider.element.remove();
+            component.structure.headerDivider = null;
+          }
+
+          // Remove footer divider if it exists
+          if (component.structure.footerDivider) {
+            component.structure.footerDivider.element.remove();
+            component.structure.footerDivider = null;
+          }
+        }
+
+        return component;
+      },
+
+      /**
+       * Checks if the dialog has dividers
+       * @returns Whether the dialog has dividers
+       */
+      hasDivider() {
+        return component.structure.headerDivider !== null;
+      },
+    },
+  };
+};
+
+/**
+ * Adds button to dialog footer
+ * @param footer Footer element
+ * @param buttonConfig Button configuration
+ * @param component Dialog component
+ */
+const addButton = (
+  footer: HTMLElement,
+  buttonConfig: DialogButton,
+  // Not DialogComponent: this runs from withStructure, the first feature in
+  // the pipe, so the dialog does not have its API yet. What it touches is emit
+  // and _buttons, and saying so is what stops the next reader assuming the
+  // rest is there. The callback resolves the public dialog when clicked.
+  component: DialogFeatureComponent & {
+    _buttons?: DialogButtonRecord[];
+  },
+  getComponent: () => DialogComponent,
+) => {
+  const {
+    text,
+    variant = "text", // Using string literal directly instead of BUTTON_VARIANTS.TEXT
+    onClick,
+    closeDialog = true,
+    autofocus = false,
+    attributes = {},
+    size,
+  } = buttonConfig;
+
+  // size reaches the button; it was accepted and dropped
+  const button = createButton({
+    text,
+    variant,
+    ...(size ? { size } : {}),
+    ...attributes,
+  });
+
+  // Button click handler with event-based communication
+  // The forwarder hands a { event, element, originalEvent } payload, not the
+  // DOM event itself. Destructured, so what reaches the declared contract
+  // below is the event it says it takes.
+  button.on("click", ({ originalEvent: event }) => {
+    let shouldClose = closeDialog;
+
+    // Call onClick handler if provided
+    if (typeof onClick === "function") {
+      try {
+        const result = onClick(event, getComponent());
+        if (result === false) {
+          shouldClose = false;
+        }
+      } catch (err) {
+        console.error("Error in onClick handler:", err);
+      }
+    }
+
+    // Close dialog if needed - using event-based communication
+    if (shouldClose) {
+      if (component && component.emit) {
+        component.emit("dialog:close", { source: "button", text });
+      }
+    }
+  });
+
+  // Set autofocus if needed
+  if (autofocus) {
+    button.element.setAttribute("autofocus", "true");
+  }
+
+  footer.appendChild(button.element);
+
+  // Store button instance
+  if (!component._buttons) {
+    component._buttons = [];
+  }
+
+  component._buttons.push({
+    config: buttonConfig,
+    instance: button,
+  });
+};
+
+/**
+ * Add visibility control to dialog
+ * @returns Component enhancer with visibility features
+ */
+export const withVisibility =
+  (getComponent: () => DialogComponent) =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "visibility" | "focus"> => {
+  // Initial state
+  const isOpen = component.config.open === true;
+
+  // The state open() and close() change before they return. What
+  // follows a call is on these timers: the surface made visible and focus
+  // trapped, `afteropen`, and the removal with `afterclose`. A call the other
+  // way, or destroy(), cancels what is still pending.
+  let opened = isOpen;
+  // The dialog's place among the open modals, while it is open: Escape is a
+  // key press handled there, for the topmost one, and never the key press
+  // that opened the dialog.
+  let escape: ModalEscape | undefined;
+  // True while the dialog sends a key press on as a `cancel` of its own
+  let asking = false;
+  let showTimer: ReturnType<typeof setTimeout> | undefined;
+  let afterOpenTimer: ReturnType<typeof setTimeout> | undefined;
+  let afterCloseTimer: ReturnType<typeof setTimeout> | undefined;
+
+  // How long the events after opening and closing wait, unless configured:
+  // the stylesheet grows the surface over duration-long2 and closes it over
+  // duration-short3 (material-web dialog/internal/animations.ts)
+  const openDuration = component.config.animationDuration ?? 500;
+  const closeDuration = component.config.animationDuration ?? 150;
+
+  // In the top layer the dialog is a <dialog> shown with showModal(): its
+  // ::backdrop is the scrim, and a click on the backdrop lands on the dialog
+  const top = component.config.layer === "top";
+  const scrim = top ? component.element : component.overlay;
+
+  // Helper functions to handle focus trap
+  const focusableElements =
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  let previouslyFocusedElement: HTMLElement | null = null;
+  let mouseDownOnOverlay = false;
+  /** Elements taken out of the page while the dialog is open */
+  const inerted: HTMLElement[] = [];
+  /** The body's own overflow, put back when the dialog closes */
+  let scrollLock: string | null = null;
+
+  /**
+   * The elements a person can tab to inside the dialog, looked up when they
+   * press Tab rather than when the dialog opens, so buttons added later are
+   * part of the cycle.
+   */
+  const focusable = (): HTMLElement[] =>
+    (Array.from(
+      component.element.querySelectorAll(focusableElements)
+    ) as HTMLElement[]).filter(
+      (el) =>
+        !el.hasAttribute("disabled") &&
+        el.getAttribute("aria-hidden") !== "true" &&
+        (el.offsetWidth > 0 || el.offsetHeight > 0 || el === activeElementOf(el))
+    );
+
+  /**
+   * Tab cycles inside the dialog. The handler is kept here so it can be taken
+   * off again: the previous one was removed by name from an inner scope that
+   * never held it, so every open left another listener behind.
+   */
+  function handleTabKey(e: KeyboardEvent) {
+    if (e.key !== "Tab") return;
+    const elements = focusable();
+    if (elements.length === 0) {
+      // Nothing to move to: keep focus on the dialog itself
+      e.preventDefault();
+      component.element.focus();
+      return;
+    }
+    const first = elements[0];
+    const last = elements[elements.length - 1];
+    const active = activeElementOf(component.element);
+    if (e.shiftKey && (active === first || !component.element.contains(active))) {
+      last.focus();
+      e.preventDefault();
+    } else if (!e.shiftKey && active === last) {
+      first.focus();
+      e.preventDefault();
+    }
+  }
+
+  /**
+   * Everything outside the dialog is taken out of the page while it is open:
+   * `inert` stops the pointer and the keyboard reaching it, and screen readers
+   * stay inside. Without it the Tab handler alone leaves a reader free to walk
+   * out of a modal dialog, and the page scrolls behind the scrim.
+   */
+  const inertBackground = (): void => {
+    if (component.config.modal === false) return;
+    // showModal() has made the rest of the page inert already
+    const parent = top ? null : component.overlay.parentElement;
+    if (parent) {
+      (Array.from(parent.children) as HTMLElement[]).forEach((sibling) => {
+        if (sibling === component.overlay) return;
+        if (sibling.hasAttribute("inert")) return;
+        sibling.setAttribute("inert", "");
+        inerted.push(sibling);
+      });
+    }
+    const body = component.element.ownerDocument.body;
+    if (body && scrollLock === null) {
+      scrollLock = body.style.overflow;
+      body.style.overflow = "hidden";
+    }
+  };
+
+  const releaseBackground = (): void => {
+    inerted.forEach((el) => el.removeAttribute("inert"));
+    inerted.length = 0;
+    const body = component.element.ownerDocument.body;
+    if (body && scrollLock !== null) {
+      body.style.overflow = scrollLock;
+      scrollLock = null;
+    }
+  };
+
+  // In the top layer the dialog may hold slotted content, which its own query
+  // does not see: Tab moves as the browser moves it, wrapped at the ends
+  const handleWrap = (e: KeyboardEvent): void => wrapTab(component.element, e);
+
+  const trapFocus = () => {
+    inertBackground();
+
+    // Focus lands on the first interactive element in the dialog, or on the
+    // dialog itself when it has none (M3 dialog accessibility, "Initial focus")
+    if (component.config.autofocus !== false) {
+      const requested = component.element.querySelector("[autofocus]") as HTMLElement | null;
+      const target = requested || (top ? tabStops(component.element) : focusable())[0] || component.element;
+      target.focus();
+    }
+
+    if (component.config.trapFocus !== false) {
+      component.element.addEventListener("keydown", top ? handleWrap : handleTabKey);
+    }
+  };
+
+  const releaseFocus = () => {
+    component.element.removeEventListener("keydown", handleTabKey);
+    component.element.removeEventListener("keydown", handleWrap);
+    releaseBackground();
+
+    // Focus goes back where it came from, whether or not it was trapped
+    if (previouslyFocusedElement) {
+      if (previouslyFocusedElement.isConnected) previouslyFocusedElement.focus();
+      previouslyFocusedElement = null;
+    }
+  };
+
+  const setupEvents = () => {
+    // Handle overlay close: require both mousedown and mouseup on overlay
+    // to prevent accidental closes when dragging from dialog content to overlay
+    if (component.config.closeOnOverlayClick !== false) {
+      scrim.addEventListener("mousedown", handleOverlayMouseDown);
+      document.addEventListener("mouseup", handleOverlayMouseUp);
+    }
+
+    // Escape, in both layers: a key press, prevented, so the browser sends a
+    // top-layer dialog no `cancel` and never forces one closed. closeOnEscape:
+    // false still takes the key: it is the topmost modal's.
+    escape?.stop();
+    escape = onModalEscape(component.element, () => {
+      // In the top layer the key press asks as the browser's `cancel` did, on
+      // the <dialog>: what listens for it there (<m-dialog>, which asks its
+      // host first) still hears every Escape, and can still refuse it
+      if (top) {
+        asking = true;
+        component.element.dispatchEvent(new Event("cancel", { cancelable: true }));
+        asking = false;
+      } else if (component.config.closeOnEscape !== false) visibility.close();
+    });
+    // What is not a key press (a back gesture) asks through `cancel` too
+    if (top) component.element.addEventListener("cancel", handleCancel);
+  };
+
+  const cleanupEvents = () => {
+    scrim.removeEventListener("mousedown", handleOverlayMouseDown);
+    document.removeEventListener("mouseup", handleOverlayMouseUp);
+    escape?.stop();
+    component.element.removeEventListener("cancel", handleCancel);
+  };
+
+  /**
+   * Whether a mouse event is on the scrim. In the top layer that is the
+   * dialog outside its own box, which is where the backdrop is; the document
+   * sees the event retargeted to a shadow host, so the path says where it was.
+   */
+  const onScrim = (e: MouseEvent): boolean => {
+    if (!top) return e.target === component.overlay;
+    if (e.composedPath()[0] !== scrim) return false;
+    const box = scrim.getBoundingClientRect();
+    return e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom;
+  };
+
+  function handleOverlayMouseDown(e: MouseEvent) {
+    // Track that mousedown started on the overlay itself
+    mouseDownOnOverlay = onScrim(e);
+  }
+
+  function handleOverlayMouseUp(e: MouseEvent) {
+    // Only close if both mousedown and mouseup were on the overlay
+    if (mouseDownOnOverlay && onScrim(e)) {
+      visibility.close();
+    }
+    mouseDownOnOverlay = false;
+  }
+
+  // The dialog stays open unless the dialog decides: a close request goes
+  // through close(), so the close event comes once and beforeclose can keep it
+  // open. A `cancel` from the browser in the task the dialog opened in is the
+  // opening key's, when the page stopped that key press before it reached the
+  // window: it is a new event, which only the task can tell.
+  function handleCancel(e: Event) {
+    e.preventDefault();
+    if ((asking || !escape?.opening) && component.config.closeOnEscape !== false && visibility.isOpen()) {
+      visibility.close();
+    }
+  }
+
+  /** Shows the <dialog> modal; without a document to show it in, just open */
+  const showModal = (): void => {
+    if (!component.element.isConnected) {
+      component.structure.container.appendChild(component.element);
+    }
+    if (!component.element.isConnected || !showInTopLayer(component.element, { kind: "modal" })) {
+      component.element.setAttribute("open", "");
+    }
+  };
+
+  // Setup initial state
+  if (isOpen) {
+    if (top) showModal();
+    addClass(
+      component.overlay,
+      `${component.getClass("dialog__overlay")}--visible`,
+    );
+    addClass(component.element, `${component.getClass("dialog")}--visible`);
+
+    // Setup focus trap and events
+    trapFocus();
+    setupEvents();
+  }
+
+  // Create visibility object with clean methods
+  const visibility = {
+    open() {
+      // An open dialog stays as it is, and emits nothing
+      if (opened) return;
+
+      // Store the currently focused element
+      previouslyFocusedElement = deepActiveElement() as HTMLElement;
+
+      // Trigger before open event
+      const beforeOpenEvent = {
+        dialog: getComponent(),
+        defaultPrevented: false,
+        preventDefault: () => {
+          beforeOpenEvent.defaultPrevented = true;
+        },
+      };
+
+      if (typeof component.emit === "function") {
+        component.emit(DIALOG_EVENTS.BEFORE_OPEN, beforeOpenEvent);
+      }
+
+      // If event was prevented, don't open
+      if (beforeOpenEvent.defaultPrevented) return;
+
+      // Open from here on. A close still on its way out is abandoned: the
+      // dialog stays in the document, and that close has no `afterclose`.
+      opened = true;
+      clearTimeout(afterCloseTimer);
+
+      // In the top layer everything happens now: the dialog is styled in its
+      // hidden state before it is made visible, which is what it animates from
+      if (top) {
+        showModal();
+        void component.element.offsetWidth;
+        addClass(component.element, `${component.getClass("dialog")}--visible`);
+        trapFocus();
+        setupEvents();
+        component.emit(DIALOG_EVENTS.OPEN, { dialog: getComponent() });
+        // An `open` listener may have closed it again
+        if (!opened) return;
+        afterOpenTimer = setTimeout(() => {
+          component.emit(DIALOG_EVENTS.AFTER_OPEN, { dialog: getComponent() });
+        }, openDuration);
+        return;
+      }
+
+      // A caller may have mounted the public surface elsewhere. Put it back
+      // inside the scrim before its background siblings are made inert.
+      if (component.element.parentNode !== component.overlay) {
+        component.overlay.appendChild(component.element);
+      }
+
+      // Add to DOM if needed
+      if (component.overlay && !component.overlay.parentNode) {
+        const container = component.structure.container || document.body;
+        container.appendChild(component.overlay);
+      }
+
+      // An open dialog can be dismissed: Escape and the scrim, from now
+      setupEvents();
+
+      // The dialog is open: say so before returning. A listener runs before
+      // the surface is visible and before focus is in; `afteropen` is the
+      // event for those.
+      if (typeof component.emit === "function") {
+        component.emit(DIALOG_EVENTS.OPEN, { dialog: getComponent() });
+      }
+      // An `open` listener may have closed it again: nothing left to show
+      if (!opened) return;
+
+      // Show the overlay and the dialog together, in a later task: an element
+      // inserted and made visible in the same task has no state to animate
+      // from, so the scrim appeared at once while it faded on the way out
+      showTimer = setTimeout(() => {
+        addClass(
+          component.overlay,
+          `${component.getClass("dialog__overlay")}--visible`,
+        );
+        addClass(component.element, `${component.getClass("dialog")}--visible`);
+
+        // Focus moves in once the surface is visible
+        trapFocus();
+
+        if (typeof component.emit === "function") {
+          afterOpenTimer = setTimeout(() => {
+            component.emit(DIALOG_EVENTS.AFTER_OPEN, { dialog: getComponent() });
+          }, openDuration);
+        }
+      }, 10);
+    },
+
+    /** @param forced - The browser has closed the <dialog>: nothing can refuse */
+    close(forced?: boolean) {
+      // A closed dialog stays as it is, and emits nothing
+      if (!opened) return;
+
+      // Trigger before close event
+      const beforeCloseEvent = {
+        dialog: getComponent(),
+        defaultPrevented: false,
+        preventDefault: () => {
+          beforeCloseEvent.defaultPrevented = true;
+        },
+      };
+
+      if (!forced && typeof component.emit === "function") {
+        component.emit(DIALOG_EVENTS.BEFORE_CLOSE, beforeCloseEvent);
+      }
+
+      // If event was prevented, don't close
+      if (beforeCloseEvent.defaultPrevented) {
+        return;
+      }
+
+      // Closed from here on. An open that had not shown the surface yet never
+      // does, and has no `afteropen`.
+      opened = false;
+      clearTimeout(showTimer);
+      clearTimeout(afterOpenTimer);
+
+      // Get class names
+      const dialogVisibleClass = `${component.getClass("dialog")}--visible`;
+      const overlayVisibleClass = `${component.getClass(
+        "dialog__overlay",
+      )}--visible`;
+
+      // Remove dialog visible class
+      removeClass(component.element, dialogVisibleClass);
+
+      // Remove overlay visible class
+      removeClass(component.overlay, overlayVisibleClass);
+
+      // Out of the top layer first: the page is inert until then, and focus
+      // could not go back to it. The stylesheet keeps it painted, in the top
+      // layer, while it animates out.
+      if (top) hideFromTopLayer(component.element);
+
+      // Release focus and cleanup events
+      releaseFocus();
+      cleanupEvents();
+
+      // Trigger close events
+      if (typeof component.emit === "function") {
+        component.emit(DIALOG_EVENTS.CLOSE, { dialog: getComponent() });
+      }
+      // A `close` listener may have opened it again: it stays in the document
+      if (opened) return;
+
+      // Remove from DOM after animation completes; a top-layer dialog stays
+      // where it was rendered
+      afterCloseTimer = setTimeout(() => {
+        if (!top && component.overlay && component.overlay.parentNode) {
+          component.overlay.parentNode.removeChild(component.overlay);
+        }
+
+        if (typeof component.emit === "function") {
+          component.emit(DIALOG_EVENTS.AFTER_CLOSE, { dialog: getComponent() });
+        }
+      }, closeDuration);
+    },
+
+    toggle(open?: boolean) {
+      if (open === undefined) {
+        this.isOpen() ? this.close() : this.open();
+      } else if (open) {
+        this.open();
+      } else {
+        this.close();
+      }
+    },
+
+    isOpen() {
+      return opened;
+    },
+
+    /** For destroy(): closed, with nothing left to run */
+    cancel() {
+      opened = false;
+      clearTimeout(showTimer);
+      clearTimeout(afterOpenTimer);
+      clearTimeout(afterCloseTimer);
+      cleanupEvents();
+    },
+  };
+
+  // Set up event listener for the dialog:close event
+  if (component && component.on) {
+    component.on("dialog:close", () => {
+      visibility.close();
+    });
+  }
+
+  // A close the browser made on its own (a form's dialog method, a close
+  // request it would not let the dialog refuse a third time): the <dialog> is
+  // closed, so the dialog's state follows, and beforeclose is not asked
+  if (top) {
+    onTopLayerClose(component.element, () => visibility.close(true));
+  }
+
+  return {
+    ...component,
+    visibility,
+    // The API's destroy path releases focus through this
+    focus: {
+      trapFocus,
+      releaseFocus,
+    },
+  };
+};
+
+/**
+ * Adds content management features to dialog
+ * @returns Component enhancer with content features
+ */
+export const withContent =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "content"> => {
+  const headerElement = component.structure.header;
+  const contentElement = component.structure.content;
+  const footerElement = component.structure.footer;
+
+  return {
+    ...component,
+    content: {
+      /**
+       * Sets dialog title
+       * @param title Title text
+       */
+      setTitle(title: string) {
+        let titleElement = headerElement.querySelector(
+          `.${component.getClass("dialog__header-title")}`,
+        );
+
+        if (!titleElement && title) {
+          // Create title element if it doesn't exist
+          titleElement = document.createElement("h2");
+          titleElement.classList.add(component.getClass("dialog__header-title"));
+          headerElement
+            .querySelector(`.${component.getClass("dialog__header-content")}`)
+            ?.appendChild(titleElement);
+        }
+
+        if (titleElement) {
+          titleElement.textContent = title;
+        }
+      },
+
+      /**
+       * Gets dialog title
+       * @returns Title text
+       */
+      getTitle() {
+        const titleElement = headerElement.querySelector(
+          `.${component.getClass("dialog__header-title")}`,
+        );
+        return titleElement ? titleElement.textContent || "" : "";
+      },
+
+      /**
+       * Sets dialog subtitle
+       * @param subtitle Subtitle text
+       */
+      setSubtitle(subtitle: string) {
+        let subtitleElement = headerElement.querySelector(
+          `.${component.getClass("dialog__header-subtitle")}`,
+        );
+
+        if (!subtitleElement && subtitle) {
+          // Create subtitle element if it doesn't exist
+          subtitleElement = document.createElement("p");
+          subtitleElement.classList.add(
+            component.getClass("dialog__header-subtitle"),
+          );
+          headerElement
+            .querySelector(`.${component.getClass("dialog__header-content")}`)
+            ?.appendChild(subtitleElement);
+        }
+
+        if (subtitleElement) {
+          subtitleElement.textContent = subtitle;
+        }
+      },
+
+      /**
+       * Gets dialog subtitle
+       * @returns Subtitle text
+       */
+      getSubtitle() {
+        const subtitleElement = headerElement.querySelector(
+          `.${component.getClass("dialog__header-subtitle")}`,
+        );
+        return subtitleElement ? subtitleElement.textContent || "" : "";
+      },
+
+      /**
+       * Sets dialog content
+       * @param content Content HTML
+       */
+      setContent(content: string) {
+        setHTML(contentElement, content);
+      },
+
+      /**
+       * Gets dialog content
+       * @returns Content HTML
+       */
+      getContent() {
+        return contentElement.innerHTML;
+      },
+
+      /**
+       * Gets dialog header element
+       * @returns Header element
+       */
+      getHeaderElement() {
+        return headerElement;
+      },
+
+      /**
+       * Gets dialog content element
+       * @returns Content element
+       */
+      getContentElement() {
+        return contentElement;
+      },
+
+      /**
+       * Gets dialog footer element
+       * @returns Footer element
+       */
+      getFooterElement() {
+        return footerElement;
+      },
+    },
+  };
+};
+
+/**
+ * Adds button management features to dialog
+ * @returns Component enhancer with button features
+ */
+export const withButtons =
+  (getComponent: () => DialogComponent) =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "buttons"> & { _buttons: DialogButtonRecord[] } => {
+  // Initialize buttons array if not already done
+  if (!component._buttons) {
+    component._buttons = [];
+  }
+  // Named in the returned object as well as mutated above, so the type says
+  // what the code guarantees rather than leaving it optional downstream.
+  const buttonRecords = component._buttons;
+
+  return {
+    ...component,
+    _buttons: buttonRecords,
+    buttons: {
+      /**
+       * Adds a button to the dialog footer
+       * @param button Button configuration
+       */
+      addButton(button: DialogButton) {
+        // Create footer if it doesn't exist
+        let footer = component.structure.footer;
+
+        if (!footer) {
+          footer = document.createElement("div");
+          footer.classList.add(component.getClass("dialog__footer"));
+
+          // Apply footer alignment
+          const alignment = component.config.footerAlignment || "right";
+          if (alignment !== "right") {
+            addClass(
+              footer,
+              `${component.getClass("dialog__footer")}--${alignment}`,
+            );
+          }
+
+          component.element.appendChild(footer);
+          component.structure.footer = footer;
+        }
+
+        // Add the button
+        addButton(footer, button, component, getComponent);
+      },
+
+      /**
+       * Removes a button by index or text
+       * @param indexOrText Button index or text
+       */
+      removeButton(indexOrText: number | string) {
+        if (typeof indexOrText === "number") {
+          // Remove by index
+          if (indexOrText >= 0 && indexOrText < buttonRecords.length) {
+            const button = buttonRecords[indexOrText];
+            button.instance.destroy();
+            buttonRecords.splice(indexOrText, 1);
+          }
+        } else {
+          // Remove by text
+          const index = buttonRecords.findIndex(
+            (button) => button.config.text === indexOrText,
+          );
+
+          if (index !== -1) {
+            const button = buttonRecords[index];
+            button.instance.destroy();
+            buttonRecords.splice(index, 1);
+          }
+        }
+
+        // If no buttons left, remove footer
+        if (buttonRecords.length === 0 && component.structure.footer) {
+          component.element.removeChild(component.structure.footer);
+          component.structure.footer = null;
+        }
+      },
+
+      /**
+       * Gets all footer buttons
+       * @returns Array of button configurations
+       */
+      getButtons() {
+        return buttonRecords.map((button) => button.config);
+      },
+
+      /**
+       * Sets footer alignment
+       * @param alignment Footer alignment
+       */
+      setFooterAlignment(alignment: string) {
+        const footer = component.structure.footer;
+        // Captured: the guard below narrows here, but property narrowing does
+        // not reach inside the callbacks that follow.
+        if (!footer) return;
+
+        // Define all possible alignments
+        const ALL_ALIGNMENTS = ["right", "left", "center", "space-between"];
+
+        // Remove existing alignment classes
+        ALL_ALIGNMENTS.forEach((align) => {
+          if (align !== "right") {
+            removeClass(
+              footer,
+              `${component.getClass("dialog__footer")}--${align}`,
+            );
+          }
+        });
+
+        // Add new alignment class if not right (default)
+        if (alignment !== "right") {
+          addClass(
+            footer,
+            `${component.getClass("dialog__footer")}--${alignment}`,
+          );
+        }
+      },
+    },
+  };
+};
+
+/**
+ * Adds size management features to dialog
+ * @returns Component enhancer with size features
+ */
+export const withSize =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "size"> => {
+  return {
+    ...component,
+    size: {
+      /**
+       * Sets dialog size
+       * @param size Size variant
+       */
+      setSize(size: string) {
+        // Define all possible sizes
+        const ALL_SIZES = [
+          "small",
+          "medium",
+          "large",
+          "fullwidth",
+          "fullscreen",
+        ];
+
+        // Remove existing size classes
+        ALL_SIZES.forEach((sizeValue) => {
+          removeClass(
+            component.element,
+            `${component.getClass("dialog")}--${sizeValue}`,
+          );
+        });
+
+        // Add new size class if not medium (default)
+        if (size !== "medium") {
+          addClass(
+            component.element,
+            `${component.getClass("dialog")}--${size}`,
+          );
+        }
+      },
+    },
+  };
+};
+
+/**
+ * Adds confirmation dialog features
+ * @returns Component enhancer with confirm feature
+ */
+export const withConfirm =
+  () =>
+  // The other features' sub-objects, every one of them installed before this
+  // runs. Named through ApiOptions so there is one description of them.
+  <C extends DialogStructured &
+    Omit<ApiOptions, "events" | "lifecycle"> & {
+      _buttons: DialogButtonRecord[];
+    }>(
+    component: C,
+  ) => {
+  return {
+    ...component,
+    confirm(options: DialogConfirmOptions): Promise<boolean> {
+      return new Promise((resolve) => {
+        const {
+          title = "Confirm",
+          message,
+          confirmText = "Yes",
+          cancelText = "No",
+          // Use string literals directly
+          confirmVariant = "filled",
+          cancelVariant = "text",
+          size = "small",
+        } = options;
+
+        // Set dialog properties. The message is text: escaped, so a message
+        // carrying user input can't inject markup.
+        component.content.setTitle(title);
+        const text = document.createElement("p");
+        text.textContent = message;
+        component.content.setContent(text.outerHTML);
+        component.size.setSize(size);
+
+        // Clear existing buttons
+        component._buttons.forEach((button) => button.instance.destroy());
+        component._buttons = [];
+
+        // Settles once: a button's answer, or false when the dialog closes
+        // any other way (Escape, the scrim, close()). It never resolved then,
+        // and the promise hung.
+        let settled = false;
+        const settle = (answer: boolean): void => {
+          if (settled) return;
+          settled = true;
+          component.off("close", onClose);
+          resolve(answer);
+        };
+        const onClose = (): void => settle(false);
+        component.on("close", onClose);
+
+        // The dismissing action first, the confirming one last, as M3 orders
+        // a dialog's actions
+        component.buttons.addButton({
+          text: cancelText,
+          variant: cancelVariant,
+          onClick: () => settle(false),
+        });
+
+        component.buttons.addButton({
+          text: confirmText,
+          variant: confirmVariant,
+          onClick: () => settle(true),
+        });
+
+        // Open the dialog
+        component.visibility.open();
+      });
+    },
+  };
+};

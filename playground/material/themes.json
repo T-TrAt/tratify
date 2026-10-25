@@ -1,0 +1,15 @@
+[
+  { "name": "baseline", "label": "默认紫" },
+  { "name": "ocean", "label": "海洋蓝" },
+  { "name": "forest", "label": "森林绿" },
+  { "name": "sunset", "label": "日落橙" },
+  { "name": "desert", "label": "沙漠金" },
+  { "name": "monochrome", "label": "黑白" },
+  { "name": "glass", "label": "Glass", "source": "glass-ui-kit" },
+  { "name": "roomia", "label": "Roomia", "source": "glass-ui-kit" },
+  { "name": "mist", "label": "Mist", "source": "glass-ui-kit" },
+  { "name": "teal", "label": "Teal", "source": "glass-ui-kit" },
+  { "name": "sapphire", "label": "Sapphire", "source": "glass-ui-kit" },
+  { "name": "copper", "label": "Copper", "source": "glass-ui-kit" },
+  { "name": "mauve", "label": "Mauve", "source": "glass-ui-kit" }
+]

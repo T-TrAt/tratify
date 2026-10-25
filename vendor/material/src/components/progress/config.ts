@@ -1,0 +1,237 @@
+// src/components/progress/config.ts - Simplified for canvas
+
+import {
+  createComponentConfig,
+  createElementConfig,
+} from "../../core/config/component";
+import { ProgressConfig, ProgressThickness, ProgressShape } from "./types";
+import type { ComponentWithLifecycle, ProgressState } from "./features/state";
+import {
+  PROGRESS_CLASSES,
+  PROGRESS_THICKNESS,
+  PROGRESS_DEFAULTS,
+} from "./constants";
+
+/**
+ * Default configuration for the Progress component
+ */
+export const defaultConfig: ProgressConfig = {
+  variant: PROGRESS_DEFAULTS.VARIANT,
+  value: PROGRESS_DEFAULTS.VALUE,
+  max: PROGRESS_DEFAULTS.MAX,
+  buffer: PROGRESS_DEFAULTS.BUFFER,
+  showLabel: PROGRESS_DEFAULTS.SHOW_LABEL,
+  thickness: "thin",
+  shape: PROGRESS_DEFAULTS.SHAPE,
+  showStopIndicator: true,
+  ariaLabel: PROGRESS_DEFAULTS.LABEL,
+};
+
+/**
+ * Creates the base configuration for the Progress component
+ * with all defaults applied (no complex schema needed for canvas)
+ *
+ * @param config User-provided configuration
+ * @returns Complete configuration with defaults
+ */
+export const createBaseConfig = (
+  config: ProgressConfig = {}
+): ProgressConfig => {
+  // Create configuration with defaults - no schema needed for canvas approach
+  return createComponentConfig(
+    defaultConfig,
+    config,
+    "progress"
+  ) as ProgressConfig;
+};
+
+/**
+ * Generates element configuration for the Progress container
+ * Canvas will be added by withCanvas feature
+ *
+ * @param {ProgressConfig} config - Progress configuration
+ * @returns {Object} Element configuration object for withElement
+ */
+export const getElementConfig = (config: ProgressConfig) => {
+  const isIndeterminate = config.indeterminate === true;
+
+  // Create the attributes object. The label says what is loading, as the M3
+  // accessibility guidance asks.
+  const attributes: Record<string, string> = {
+    role: "progressbar",
+    "aria-label": config.ariaLabel || PROGRESS_DEFAULTS.LABEL,
+    "aria-valuemin": "0",
+    "aria-valuemax": (config.max || 100).toString(),
+  };
+
+  // Only add aria-valuenow if not indeterminate
+  if (!isIndeterminate && config.value !== undefined) {
+    // The value the bar draws, clamped to 0…max
+    attributes["aria-valuenow"] = Math.max(0, Math.min(config.max || 100, config.value)).toString();
+  }
+
+  // Only add disabled attribute if it's explicitly true
+  if (config.disabled === true) {
+    attributes["aria-disabled"] = "true";
+  }
+
+  // Only the caller's classes: the prefixed block, type and shape classes are
+  // set by the component. These unprefixed copies (`progress progress--linear`)
+  // doubled them since `class` stopped being prefixed.
+  const classList = [config.class].filter(Boolean);
+
+  return createElementConfig(config, {
+    tag: "div",
+    attributes,
+    className: classList,
+  });
+};
+
+/**
+ * What getApiConfig reads off the progress component.
+ *
+ * `state` is required, not optional as it is on ComponentWithLifecycle, and
+ * that is the invariant the pipe guarantees: withState assigns it
+ * unconditionally and runs before this. There used to be a fallback here that
+ * built a state when `comp.state` was missing -- unreachable, and wrong if it
+ * had ever run, because it ignored the config and would have reset value, max,
+ * thickness and shape to defaults. Requiring the type is how the invariant gets
+ * written down instead of guessed at.
+ */
+type ProgressApiHost = ComponentWithLifecycle & {
+  state: ProgressState;
+  /** Required for the same reason as `state`: createBase installs it. */
+  getClass: (name: string) => string;
+  /** Mirrors state.label, for consumers that read it off the component */
+  label?: HTMLElement;
+  disabled?: {
+    enable?: () => void;
+    disable?: () => void;
+    isDisabled?: () => boolean;
+  };
+};
+
+/**
+ * Creates API configuration for the Progress component
+ */
+export const getApiConfig = (comp: ProgressApiHost) => {
+  return {
+    value: {
+      getValue: () => comp.state.value,
+      setValue: (value: number) => {
+        if (comp.state) {
+          // Clamp value between 0 and max
+          const clampedValue = Math.max(0, Math.min(comp.state.max, value));
+          // Update the state value
+          comp.state.value = clampedValue;
+          // Update label if it exists
+          if (comp.state.label) {
+            comp.state.label.textContent = comp.state.labelFormatter(
+              clampedValue,
+              comp.state.max
+            );
+          }
+          // Trigger animation through canvas component
+          if (typeof comp.setValue === "function") {
+            comp.setValue(clampedValue);
+          } else if (comp.draw) {
+            // Fallback to immediate redraw if setValue is not available
+            comp.draw();
+          }
+        }
+      },
+      getMax: () => comp.state.max,
+    },
+    buffer: {
+      getBuffer: () => comp.state.buffer,
+      setBuffer: (value: number) => {
+        comp.state.buffer = Math.max(0, Math.min(comp.state.max, value));
+      },
+    },
+    disabled: {
+      // `?.() || undefined` tested a void return for truthiness and meant
+      // exactly the call on its own.
+      enable: () => {
+        comp.disabled?.enable?.();
+      },
+      disable: () => {
+        comp.disabled?.disable?.();
+      },
+      isDisabled: () => comp.disabled?.isDisabled?.() || false,
+    },
+    label: {
+      show: () => {
+        if (!comp.state.label) {
+          const label = document.createElement("div");
+          label.className = `${comp.getClass(PROGRESS_CLASSES.LABEL)}`;
+          label.textContent = comp.state.labelFormatter(
+            comp.state.value,
+            comp.state.max
+          );
+          comp.element.appendChild(label);
+          comp.state.label = label;
+          comp.label = label;
+        }
+      },
+      hide: () => {
+        if (comp.state.label) {
+          comp.state.label.remove();
+          comp.state.label = undefined;
+          comp.label = undefined;
+        }
+      },
+      format: (formatter: (value: number, max: number) => string) => {
+        comp.state.labelFormatter = formatter;
+      },
+      formatter: comp.state.labelFormatter,
+    },
+    thickness: {
+      getThickness: () => {
+        const thickness = comp.state.thickness;
+        if (thickness === "thin") {
+          return PROGRESS_THICKNESS.THIN;
+        } else if (thickness === "thick") {
+          return PROGRESS_THICKNESS.THICK;
+        } else if (typeof thickness === "number") {
+          return thickness;
+        }
+        return PROGRESS_THICKNESS.THIN;
+      },
+      setThickness: (thickness: ProgressThickness) => {
+        comp.state.thickness = thickness;
+        if (comp.draw) {
+          comp.draw();
+        }
+      },
+    },
+    shape: {
+      getShape: () => comp.state.shape,
+      setShape: (shape: ProgressShape) => {
+        comp.state.shape = shape;
+        if (comp.setShape) {
+          comp.setShape(shape);
+        }
+      },
+    },
+    state: {
+      setIndeterminate: (indeterminate: boolean) => {
+        if (comp.state) {
+          comp.state.indeterminate = indeterminate;
+          if (typeof comp.setIndeterminate === "function") {
+            comp.setIndeterminate(indeterminate);
+          } else if (comp.draw) {
+            comp.draw();
+          }
+        }
+      },
+      isIndeterminate: () => comp.state.indeterminate,
+    },
+    lifecycle: {
+      destroy: () => {
+        comp.lifecycle?.destroy?.();
+      },
+    },
+  };
+};
+
+export default defaultConfig;

@@ -21,3 +21,61 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+Transparent Textures assets in public/textures/transparent-textures/
+
+Original pattern authors are credited individually in:
+  public/textures/transparent-textures/SOURCES.md
+  public/textures/transparent-textures/manifest.json
+In generated application templates these files accompany the PNG assets in
+the same public/textures/transparent-textures/ directory.
+
+Transparent conversion and collection: Mike Hearn / Transparent Textures.
+Source: https://www.transparenttextures.com/
+Repository: https://github.com/mike-hearn/transparent-textures
+
+Asset license: Creative Commons Attribution 3.0 Unported (CC BY 3.0).
+License: https://creativecommons.org/licenses/by/3.0/
+Maintainer's license declaration:
+  https://news.ycombinator.com/item?id=41515968
+
+Retain the supplied pattern titles, author credits, source references and
+license link when sharing these assets, and identify derivative changes.
+The texture assets are not covered by the project's MIT license.
+
+The original author of flowers.png is recorded as "Unknown" by the upstream
+website and repository; its attribution remains unresolved. See SOURCES.md.
+
+Material Design 3 components vendored from floor/material 3.2.4
+
+Copyright (c) 2025 floor
+License: MIT. The full license is preserved in vendor/material/LICENSE and
+vendor/material/generated/LICENSE, alongside the distributed runtime.
+Source: https://github.com/floor/material
+Revision: c910072f3fc5b660276731d8a935d7186f288364
+
+The component factories, web elements, Vue adapters and Sass styles are
+preserved in vendor/material/src. Apptify's build resolves the shadow-style
+imports locally and restricts the document-level theme tokens to containers
+with class "apptify-material". The original Apple components remain separate.
+Generated shadow styles also restore native closed-dialog display rules for
+drawer, bottom-sheet and side-sheet surfaces.
+Local menu positioning patches follow opener layout changes and correct
+edge alignment. The carousel direction observer ignores unrelated dir mutations
+to preserve continuous scrolling. Modal drawers, bottom sheets and side sheets
+retain display and their top-layer overlay until the reverse slide-out transition
+completes. Timepicker and modal datepicker styles follow the dialog's surface
+motion, staggered entry timing and backdrop fades. Picker contents stay with the
+surface throughout exit; cancelling a time selection preserves its painted DOM
+until the next open. Calendar view updates do not replay entry effects. Patched
+source paths are recorded in vendor/material/SOURCE.json.
+
+Glass UI Kit color palette data from @ziyarago/glass-ui-kit 1.32.0
+Copyright (c) 2024-2026 ZiyaraGo Technologies LLC
+License: MIT. Full license: vendor/glass-ui-kit/LICENSE and
+vendor/material/generated/GLASS-UI-KIT-LICENSE.
+Source: https://github.com/ziyarago/glass-ui-kit
+Revision: 60d4f3d235d5bbb62161a910de77b04016af78d3
+Original OKLCH scales and palette mappings are extracted from src/styles/main.css
+into vendor/glass-ui-kit/palettes.json, then adapted to Material semantic roles
+for light and dark modes by tooling/material-glass-themes.mjs.

@@ -1,0 +1,555 @@
+// src/components/tooltip/api.ts
+import {
+  TooltipComponent,
+  TooltipConfig,
+  TOOLTIP_POSITIONS,
+  TooltipPosition,
+  DEFAULT_OFFSET,
+} from "./types";
+import { TOOLTIP_DEFAULTS } from "./constants";
+import { hideFromTopLayer, showInTopLayer } from "../../core/dom/layer";
+
+/** The tooltip's exit transition in the stylesheet, in milliseconds */
+const EXIT_DURATION = 150;
+
+interface ApiOptions {
+  lifecycle: {
+    destroy: () => void;
+  };
+}
+
+interface ComponentWithElements {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+}
+
+/**
+ * Enhances a tooltip component with API methods
+ * @param {ApiOptions} options - API configuration options
+ * @returns {Function} Higher-order function that adds API methods to component
+ * @internal This is an internal utility for the Tooltip component
+ */
+export const withAPI =
+  ({ lifecycle }: ApiOptions) =>
+  (component: ComponentWithElements): TooltipComponent => {
+    // Set up internal state
+    let target: HTMLElement | null = null;
+    // Read from the component's config. These were constants, so position,
+    // showDelay, hideDelay, showOnHover and showOnFocus -- all documented
+    // options -- had no effect, and getPosition() reported bottom whatever the
+    // tooltip was created with.
+    const config = (component as { config?: Partial<TooltipConfig> }).config ?? {};
+    let position = (config.position ?? TOOLTIP_DEFAULTS.POSITION) as TooltipPosition;
+    let isVisible = false;
+    let showTimer: number | null = null;
+    let hideTimer: number | null = null;
+    const showDelay = config.showDelay ?? TOOLTIP_DEFAULTS.SHOW_DELAY;
+    const hideDelay = config.hideDelay ?? TOOLTIP_DEFAULTS.HIDE_DELAY;
+    const showOnFocus = config.showOnFocus !== false;
+    const showOnHover = config.showOnHover !== false;
+    // A top-layer tooltip renders after its target as a popover="manual"
+    // element, placed in viewport coordinates
+    const topLayer = config.layer === "top";
+    let layerTimer: number | null = null;
+
+    // aria-describedby is a list. Add and remove only this tooltip's id, so an
+    // existing description survives and a previous target stops pointing here.
+    const describe = (el: HTMLElement) => {
+      const ids = (el.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+      if (!ids.includes(component.element.id)) ids.push(component.element.id);
+      el.setAttribute("aria-describedby", ids.join(" "));
+    };
+    const undescribe = (el: HTMLElement) => {
+      const ids = (el.getAttribute("aria-describedby") ?? "").split(/\s+/).filter((id) => id && id !== component.element.id);
+      if (ids.length) el.setAttribute("aria-describedby", ids.join(" "));
+      else el.removeAttribute("aria-describedby");
+    };
+
+    // Create arrow element
+    const arrowElement = document.createElement("div");
+    arrowElement.className = `${component.getClass("tooltip")}__arrow`;
+    component.element.appendChild(arrowElement);
+
+    // Add to body (but hidden initially). A top-layer tooltip waits for its
+    // target, and as a closed popover it renders nothing until shown.
+    if (topLayer) component.element.setAttribute("popover", "manual");
+    else document.body.appendChild(component.element);
+    component.element.setAttribute("aria-hidden", "true");
+
+    /**
+     * Calculate position based on target element and desired position
+     */
+    const calculatePosition = (): {
+      top: number;
+      left: number;
+      arrowPosition?: string;
+    } => {
+      if (!target) return { top: 0, left: 0 };
+
+      // A fixed-width auto-sized surface can shrink against the viewport when
+      // its previous left position is near the right edge. Measure it at the
+      // viewport origin before placing it again. This happens in one task, so
+      // there is no visible intermediate position.
+      component.element.style.left = "0px";
+      // offsetWidth/offsetHeight are layout dimensions: the entrance scale
+      // changes the visual rect but must not change placement or clamping.
+      const tooltipWidth = component.element.offsetWidth;
+      const tooltipHeight = component.element.offsetHeight;
+      // getBoundingClientRect() is relative to the viewport, and the surface is
+      // `position: fixed` in every path (see the stylesheet), so the rectangle
+      // is already in the coordinates the surface is placed in. The scroll
+      // offset this used to add to paths below the top layer placed the
+      // tooltip one scroll distance away from its target on a scrolled page.
+      const targetRect = target.getBoundingClientRect();
+
+      // Default offset
+      const offset = DEFAULT_OFFSET;
+
+      let top = 0;
+      let left = 0;
+      let arrowPosition: string | undefined;
+
+      // Calculate position based on position value
+      switch (position) {
+        case TOOLTIP_POSITIONS.TOP:
+          top = targetRect.top - tooltipHeight - offset;
+          left =
+            targetRect.left +
+            targetRect.width / 2 -
+            tooltipWidth / 2;
+          arrowPosition = "bottom";
+          break;
+
+        case TOOLTIP_POSITIONS.TOP_START:
+          top = targetRect.top - tooltipHeight - offset;
+          left = targetRect.left;
+          arrowPosition = "bottom-start";
+          break;
+
+        case TOOLTIP_POSITIONS.TOP_END:
+          top = targetRect.top - tooltipHeight - offset;
+          left =
+            targetRect.left + targetRect.width - tooltipWidth;
+          arrowPosition = "bottom-end";
+          break;
+
+        case TOOLTIP_POSITIONS.RIGHT:
+          top =
+            targetRect.top +
+            targetRect.height / 2 -
+            tooltipHeight / 2;
+          left = targetRect.left + targetRect.width + offset;
+          arrowPosition = "left";
+          break;
+
+        case TOOLTIP_POSITIONS.RIGHT_START:
+          top = targetRect.top;
+          left = targetRect.left + targetRect.width + offset;
+          arrowPosition = "left-start";
+          break;
+
+        case TOOLTIP_POSITIONS.RIGHT_END:
+          top =
+            targetRect.top + targetRect.height - tooltipHeight;
+          left = targetRect.left + targetRect.width + offset;
+          arrowPosition = "left-end";
+          break;
+
+        case TOOLTIP_POSITIONS.BOTTOM:
+          top = targetRect.top + targetRect.height + offset;
+          left =
+            targetRect.left +
+            targetRect.width / 2 -
+            tooltipWidth / 2;
+          arrowPosition = "top";
+          break;
+
+        case TOOLTIP_POSITIONS.BOTTOM_START:
+          top = targetRect.top + targetRect.height + offset;
+          left = targetRect.left;
+          arrowPosition = "top-start";
+          break;
+
+        case TOOLTIP_POSITIONS.BOTTOM_END:
+          top = targetRect.top + targetRect.height + offset;
+          left =
+            targetRect.left + targetRect.width - tooltipWidth;
+          arrowPosition = "top-end";
+          break;
+
+        case TOOLTIP_POSITIONS.LEFT:
+          top =
+            targetRect.top +
+            targetRect.height / 2 -
+            tooltipHeight / 2;
+          left = targetRect.left - tooltipWidth - offset;
+          arrowPosition = "right";
+          break;
+
+        case TOOLTIP_POSITIONS.LEFT_START:
+          top = targetRect.top;
+          left = targetRect.left - tooltipWidth - offset;
+          arrowPosition = "right-start";
+          break;
+
+        case TOOLTIP_POSITIONS.LEFT_END:
+          top =
+            targetRect.top + targetRect.height - tooltipHeight;
+          left = targetRect.left - tooltipWidth - offset;
+          arrowPosition = "right-end";
+          break;
+
+        default:
+          top = targetRect.top + targetRect.height + offset;
+          left =
+            targetRect.left +
+            targetRect.width / 2 -
+            tooltipWidth / 2;
+          arrowPosition = "top";
+      }
+
+      // Constrain to window boundaries
+      const windowWidth = window.innerWidth;
+
+      // Adjust horizontal position
+      if (left < 0) {
+        left = 0;
+      } else if (left + tooltipWidth > windowWidth) {
+        left = windowWidth - tooltipWidth;
+      }
+
+      return { top, left, arrowPosition };
+    };
+
+    /**
+     * Handle events on target element
+     */
+    const addTargetEvents = (targetEl: HTMLElement) => {
+      if (showOnHover) {
+        targetEl.addEventListener("mouseenter", handleTargetMouseEnter);
+        targetEl.addEventListener("mouseleave", handleTargetMouseLeave);
+      }
+
+      if (showOnFocus) {
+        targetEl.addEventListener("focus", handleTargetFocus);
+        targetEl.addEventListener("blur", handleTargetBlur);
+      }
+    };
+
+    const removeTargetEvents = (targetEl: HTMLElement) => {
+      if (targetEl) {
+        targetEl.removeEventListener("mouseenter", handleTargetMouseEnter);
+        targetEl.removeEventListener("mouseleave", handleTargetMouseLeave);
+        targetEl.removeEventListener("focus", handleTargetFocus);
+        targetEl.removeEventListener("blur", handleTargetBlur);
+      }
+    };
+
+    // Event handlers
+    const handleTargetMouseEnter = () => api.show();
+    const handleTargetMouseLeave = () => api.hide();
+
+    // WCAG 1.4.13: the pointer can move from the target onto the tooltip and
+    // rest there without it disappearing, and leaving the tooltip hides it as
+    // leaving the target does
+    const handleTooltipMouseEnter = () => {
+      if (isVisible && hideTimer !== null) api.show(true);
+    };
+    const handleTooltipMouseLeave = () => {
+      if (isVisible) api.hide();
+    };
+    component.element.addEventListener("mouseenter", handleTooltipMouseEnter);
+    component.element.addEventListener("mouseleave", handleTooltipMouseLeave);
+
+    // WCAG 1.4.13: Escape dismisses the tooltip without moving focus
+    const handleDocumentKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isVisible) api.hide(true);
+    };
+    const handleTargetFocus = () => api.show();
+    const handleTargetBlur = () => api.hide();
+
+    // Create the API object
+    const api: TooltipComponent = {
+      element: component.element,
+      target,
+      lifecycle,
+
+      getClass: component.getClass,
+
+      setText(text) {
+        // Create a text node
+        const contentNode = document.createTextNode(text);
+
+        // Clear existing content, stopping at the arrow.
+        //
+        // firstChild reaches null when the arrow is no longer a child, which
+        // is what happens to any tooltip whose element has been emptied. The
+        // loop then called removeChild(null) and threw; guarding it alone only
+        // moves the throw to insertBefore, since the arrow it anchors to is
+        // gone too. So the anchor is checked as well, and the text is appended
+        // when there is nothing to insert before. The arrow is not recreated:
+        // whatever removed it meant to.
+        while (
+          component.element.firstChild &&
+          component.element.firstChild !== arrowElement
+        ) {
+          component.element.removeChild(component.element.firstChild);
+        }
+
+        // Add new content before the arrow
+        if (arrowElement.parentNode === component.element) {
+          component.element.insertBefore(contentNode, arrowElement);
+        } else {
+          component.element.appendChild(contentNode);
+        }
+
+        // Update position if visible
+        if (isVisible) {
+          this.updatePosition();
+        }
+
+        return this;
+      },
+
+      getText() {
+        // Return text content excluding the arrow element
+        const clone = component.element.cloneNode(true) as HTMLElement;
+        const arrowClone = clone.querySelector(
+          `.${component.getClass("tooltip")}__arrow`
+        );
+        if (arrowClone) {
+          arrowClone.remove();
+        }
+        return clone.textContent || "";
+      },
+
+      setPosition(newPosition) {
+        // Update position value
+        position = newPosition;
+
+        // Update position class
+        const baseClass = component.getClass("tooltip");
+
+        // Remove existing position classes
+        const positionClasses = Object.values(TOOLTIP_POSITIONS).map(
+          (p) => `${baseClass}--${p}`
+        );
+        component.element.classList.remove(...positionClasses);
+
+        // Add new position class
+        component.element.classList.add(`${baseClass}--${newPosition}`);
+
+        // Update position if visible
+        if (isVisible) {
+          this.updatePosition();
+        }
+
+        return this;
+      },
+
+      getPosition() {
+        return position;
+      },
+
+      setTarget(newTarget) {
+        // Remove events from old target
+        if (target) {
+          removeTargetEvents(target);
+          undescribe(target);
+        }
+
+        // Set new target
+        target = newTarget;
+        this.target = newTarget;
+
+        // Set target's aria attributes
+        describe(target);
+
+        // A top-layer tooltip goes after its target, in the target's tree,
+        // unless its owner already placed it
+        if (topLayer && !component.element.isConnected && target.parentNode) {
+          target.after(component.element);
+        }
+
+        // Add events to new target
+        addTargetEvents(target);
+
+        // Update position if visible
+        if (isVisible) {
+          this.updatePosition();
+        }
+
+        return this;
+      },
+
+      show(immediate = false) {
+        // Clear any existing timers
+        if (showTimer !== null) {
+          window.clearTimeout(showTimer);
+          showTimer = null;
+        }
+
+        if (hideTimer !== null) {
+          window.clearTimeout(hideTimer);
+          hideTimer = null;
+        }
+
+        const showTooltip = () => {
+          if (!target) return this;
+
+          if (topLayer) {
+            if (layerTimer !== null) window.clearTimeout(layerTimer);
+            layerTimer = null;
+            if (!component.element.isConnected) document.body.appendChild(component.element);
+            showInTopLayer(component.element, { kind: "popover-manual" });
+            // Styled hidden first, so the enter transition runs and the
+            // tooltip is measured as the one on the body is
+            void component.element.offsetWidth;
+          }
+
+          // Show the tooltip
+          component.element.setAttribute("aria-hidden", "false");
+          component.element.classList.add(
+            `${component.getClass("tooltip")}--visible`
+          );
+          isVisible = true;
+
+          // Update position
+          this.updatePosition();
+
+          // Add resize listener
+          window.addEventListener("resize", handleWindowResize);
+          window.addEventListener("scroll", handleWindowScroll);
+          document.addEventListener("keydown", handleDocumentKeydown);
+        };
+
+        if (immediate) {
+          showTooltip();
+        } else {
+          showTimer = window.setTimeout(showTooltip, showDelay);
+        }
+
+        return this;
+      },
+
+      hide(immediate = false) {
+        // Clear any existing timers
+        if (hideTimer !== null) {
+          window.clearTimeout(hideTimer);
+          hideTimer = null;
+        }
+
+        if (showTimer !== null) {
+          window.clearTimeout(showTimer);
+          showTimer = null;
+        }
+
+        const hideTooltip = () => {
+          // Hide the tooltip
+          component.element.setAttribute("aria-hidden", "true");
+          component.element.classList.remove(
+            `${component.getClass("tooltip")}--visible`
+          );
+          isVisible = false;
+
+          // Remove resize and scroll listeners
+          window.removeEventListener("resize", handleWindowResize);
+          window.removeEventListener("scroll", handleWindowScroll);
+          document.removeEventListener("keydown", handleDocumentKeydown);
+
+          // Out of the top layer once the exit transition has run
+          if (topLayer) {
+            if (layerTimer !== null) window.clearTimeout(layerTimer);
+            layerTimer = window.setTimeout(() => {
+              layerTimer = null;
+              if (!isVisible) hideFromTopLayer(component.element);
+            }, EXIT_DURATION);
+          }
+        };
+
+        if (immediate) {
+          hideTooltip();
+        } else {
+          hideTimer = window.setTimeout(hideTooltip, hideDelay);
+        }
+
+        return this;
+      },
+
+      isVisible() {
+        return isVisible;
+      },
+
+      updatePosition() {
+        if (!target) return this;
+
+        // Calculate position
+        const { top, left, arrowPosition } = calculatePosition();
+
+        // Update tooltip position
+        component.element.style.top = `${Math.round(top)}px`;
+        component.element.style.left = `${Math.round(left)}px`;
+
+        // Update arrow position
+        if (arrowPosition) {
+          // Remove existing arrow position classes
+          arrowElement.className = `${component.getClass("tooltip")}__arrow`;
+          // Add new position class
+          arrowElement.classList.add(
+            `${component.getClass("tooltip")}__arrow--${arrowPosition}`
+          );
+        }
+
+        return this;
+      },
+
+      destroy() {
+        // Clear timers
+        if (showTimer !== null) {
+          window.clearTimeout(showTimer);
+        }
+
+        if (hideTimer !== null) {
+          window.clearTimeout(hideTimer);
+        }
+
+        if (layerTimer !== null) {
+          window.clearTimeout(layerTimer);
+        }
+
+        // Remove target events
+        if (target) {
+          removeTargetEvents(target);
+          undescribe(target);
+        }
+
+        // Remove window events
+        window.removeEventListener("resize", handleWindowResize);
+        window.removeEventListener("scroll", handleWindowScroll);
+        document.removeEventListener("keydown", handleDocumentKeydown);
+        component.element.removeEventListener("mouseenter", handleTooltipMouseEnter);
+        component.element.removeEventListener("mouseleave", handleTooltipMouseLeave);
+
+        // Remove from DOM
+        if (component.element.parentNode) {
+          component.element.parentNode.removeChild(component.element);
+        }
+
+        // Call lifecycle destroy
+        lifecycle.destroy();
+      },
+    };
+
+    // Window event handlers
+    const handleWindowResize = () => {
+      api.updatePosition();
+    };
+
+    const handleWindowScroll = () => {
+      api.updatePosition();
+    };
+
+    return api;
+  };
+
+export default withAPI;

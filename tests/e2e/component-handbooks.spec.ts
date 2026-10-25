@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { catalog, componentId } from '../../playground/catalog'
+import { catalog, overviewCatalog, componentId } from '../../playground/catalog'
 
 for (const item of catalog.filter(item => item.name !== 'AppleInput')) {
   test(`${item.name} handbook renders one configurable playground above its API`, async ({ page }) => {
@@ -26,8 +26,8 @@ for (const item of catalog.filter(item => item.name !== 'AppleInput')) {
 
 test('every gallery card links to its own handbook', async ({ page }) => {
   await page.goto('/components')
-  await expect(page.locator('.documentation-entry a')).toHaveCount(catalog.length)
-  for (const item of catalog) await expect(page.locator(`#${componentId(item.name)} .documentation-entry a`)).toHaveAttribute('href', `/component-docs/${componentId(item.name)}`)
+  await expect(page.locator('.documentation-entry a')).toHaveCount(overviewCatalog.length)
+  for (const item of overviewCatalog) await expect(page.locator(`#${componentId(item.name)} .documentation-entry a`)).toHaveAttribute('href', `/component-docs/${componentId(item.name)}`)
   await expect(page.locator('.component-source')).toHaveCount(0)
 })
 

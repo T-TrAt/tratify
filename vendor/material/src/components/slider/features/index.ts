@@ -1,0 +1,7 @@
+// src/components/slider/features/index.ts
+// Export slider-specific features
+export { withRange } from "./range";
+export { withStates } from "./states";
+export { withController } from "./controller";
+export { withTracks } from "./tracks";
+export { withDom } from "./dom";

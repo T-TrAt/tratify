@@ -1,0 +1,86 @@
+// src/styles/main.scss
+
+// Configure before any theme module is loaded.
+@forward "themes/base-theme" show $contrast-emit;
+
+// Import Sass modules
+@use "sass:map";
+@use "sass:list" as sasslist;
+@use "sass:math";
+
+// Abstract layer
+@use "abstract/base";
+@use "abstract/variables" as v;
+@use "abstract/functions" as f;
+@use "abstract/mixins" as m;
+@use "abstract/theme" as t;
+
+// Utilities
+@use "utilities/spacing";
+@use "utilities/visibility";
+@use "utilities/colors";
+@use "utilities/flexbox";
+@use "utilities/typography" as typo;
+
+// Themes
+@use "themes/index";
+
+// System tokens (shape and type as custom properties) then the reset
+@use "base/tokens";
+@use "base/reset";
+@use "base/typography";
+
+// Components
+@use "./components/text-field" as text-field;
+@use "./components/badge" as badge;
+@use "./components/bottom-app-bar" as bottom-app-bar;
+@use "./components/bottom-sheet" as bottom-sheet;
+@use "./components/side-sheet" as side-sheet;
+@use "./components/menu" as menu;
+@use "./components/slider" as slider;
+@use "./components/switch" as switch;
+@use "./components/select" as select;
+@use "./components/tabs" as tabs;
+@use "./components/top-app-bar" as top-app-bar;
+
+@use "./components/button" as button;
+@use "./components/button-group" as button-group;
+@use "./components/fab" as fab;
+@use "./components/fab-menu" as fab-menu;
+@use "./components/extended-fab" as extended-fab;
+@use "./components/icon-button" as icon-button;
+@use "./components/card" as card;
+@use "./components/carousel" as carousel;
+@use "./components/checkbox" as checkbox;
+@use "./components/chips" as chips;
+@use "./components/datepicker" as datepicker;
+@use "./components/dialog" as dialog;
+@use "./components/divider" as divider;
+@use "./components/drawer" as drawer;
+
+@use "./components/progress" as progress;
+@use "./components/loading-indicator" as loading-indicator;
+@use "./components/split-button" as split-button;
+
+@use "./components/radios" as radios;
+@use "./components/timepicker" as timepicker;
+@use "./components/search" as search;
+
+@use "./components/snackbar" as snackbar;
+@use "./components/navigation-bar" as navigation-bar;
+@use "./components/navigation-rail" as navigation-rail;
+@use "./components/list" as list;
+@use "./components/tooltip" as tooltip;
+@use "./components/toolbar" as toolbar;
+
+@use "./utilities/ripple" as ripple;
+@use "./utilities/layout" as layout;
+
+// // Dark mode support
+// @media (prefers-color-scheme: dark) {
+//   :root:not([data-theme]) {
+//     @include t.dark-theme;
+//   }
+// }
+
+@use "base/document";

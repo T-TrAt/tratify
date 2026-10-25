@@ -12,7 +12,7 @@ import CodeMirror from '@vue/repl/codemirror-editor'
 import ConfigurableEditor from './ConfigurableEditor.vue'
 import { AppleLink, AppleTooltip, useApple } from '../../src'
 import { Copy, RefreshCw, RotateCcw } from 'lucide-vue-next'
-const props = defineProps<{ files: Record<string, string>; activeFile?: string; resetLabel?: string; baselineFiles?: Record<string, string>; previewSurface?: boolean }>()
+const props = defineProps<{ files: Record<string, string>; activeFile?: string; resetLabel?: string; baselineFiles?: Record<string, string>; previewSurface?: boolean; material?: boolean }>()
 const emit = defineEmits<{ close: []; save: [files: Record<string, string>]; restore: [] }>()
 const slots = useSlots()
 const configuredEditor = defineComponent({
@@ -42,7 +42,7 @@ const editorRoot = ref<HTMLElement>()
 const copied = ref(false)
 let copyTimer: ReturnType<typeof setTimeout> | undefined
 const url = (name: string) => new URL(`${import.meta.env.BASE_URL}assets/editor/${name}`, location.origin).href
-const importMap = { imports: { vue: url('vue.js'), apptify: url('runtime.js'), 'lucide-vue-next': url('runtime.js') } }
+const importMap = { imports: { vue: url('vue.js'), apptify: url('runtime.js'), 'lucide-vue-next': url('runtime.js'), ...(props.material ? { 'apptify/material': url('material.js'), 'apptify/material/style.css': url('material-style.js') } : {}) } }
 const normalize = (name: string) => name.startsWith('src/') ? name : `src/${name}`
 const initialFiles: Record<string, File> = Object.fromEntries(Object.entries(props.files)
   .filter(([name]) => name.endsWith('.vue'))
@@ -60,7 +60,7 @@ const store = useStore({
 let disposed = false
 let applying = Promise.resolve(true)
 const previewOptions = computed(() => ({
-  headHTML: `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' blob: ${location.origin}; style-src 'unsafe-inline' blob: ${location.origin}; connect-src blob: ${location.origin}; img-src data: blob:; font-src data:; form-action 'none'; base-uri 'none'"><link rel="stylesheet" href="${url('runtime.css')}"><script>window.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); parent.postMessage({ action: 'apptify-workshop-close' }, '*') } })<\/script><style>body{margin:0;background:var(${props.previewSurface ? '--apple-surface' : '--apple-bg'});color:var(--apple-text);min-height:100vh}html{min-height:100%}</style>`,
+  headHTML: `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' blob: ${location.origin}; style-src 'unsafe-inline' blob: ${location.origin}; connect-src blob: ${location.origin}; img-src data: blob: ${props.material ? new URL(import.meta.env.BASE_URL + 'images/', location.origin).href : ''}; font-src data:; form-action 'none'; base-uri 'none'"><link rel="stylesheet" href="${url('runtime.css')}">${props.material ? `<link rel="stylesheet" href="${url('material.css')}">` : ''}<script>window.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); parent.postMessage({ action: 'apptify-workshop-close' }, '*') } })<\/script><style>body{margin:0;background:var(${props.previewSurface ? '--apple-surface' : '--apple-bg'});color:var(--apple-text);min-height:100vh}html{min-height:100%}</style>`,
   customCode: { importCode: "import { watchEffect } from 'vue'; import { createAppleUI, themeStyle, resolveMotion } from 'apptify'", useCode: `const ui = createAppleUI(${JSON.stringify({ theme: 'preview', themes: { preview: apple.theme.value.current }, persist: false, motion: apple.motion.value.mode })}); app.use(ui); ui.attach(); document.documentElement.classList.add('apple-provider'); const stopPreviewPreferences = watchEffect(() => { for (const [key, value] of Object.entries(themeStyle(ui))) document.documentElement.style.setProperty(key, value); document.documentElement.style.colorScheme = ui.theme.value.current.scheme; document.documentElement.dataset.appleMotion = resolveMotion('inherit', ui.motion.value.mode, ui.motion.value.reduced); }); app.onUnmount(() => { stopPreviewPreferences(); ui.detach(); });` },
   showRuntimeError: true, showRuntimeWarning: true,
 }))

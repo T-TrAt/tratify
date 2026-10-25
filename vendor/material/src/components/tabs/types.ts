@@ -1,0 +1,551 @@
+// src/components/tabs/types.ts
+import type { BadgeComponent } from '../badge';
+import type { ButtonComponent } from '../button/types';
+import type { ForwardedEventPayload } from '../../core/dom';
+
+/**
+ * Button methods the tab delegates to; each one is checked before use
+ */
+export type TabButton = Partial<
+  Pick<ButtonComponent, 'getValue' | 'setValue' | 'getText' | 'setText' | 'getIcon' | 'setIcon'>
+>;
+import { TabIndicator } from './indicator';
+
+/**
+ * Available tabs variants
+ */
+export type TabsVariant = 'primary' | 'secondary';
+
+/**
+ * Available tabs states
+ */
+
+export type TabStates = 'active' | 'inactive' | 'disabled';
+
+/**
+ * Configuration for the tab indicator
+ * @category Components
+ */
+export interface IndicatorConfig {
+  /** Height of the indicator in pixels */
+  height?: number;
+  /** 
+   * Width strategy for the indicator
+   * - 'fixed': Uses a fixed width defined by fixedWidth
+   * - 'dynamic': Uses half the tab width
+   * - 'content': Uses the text content width
+   * - 'auto': Adapts based on variant (primary: text width, secondary: full tab width)
+   */
+  widthStrategy?: 'fixed' | 'dynamic' | 'content' | 'auto';
+  /** Fixed width in pixels (when using fixed strategy) */
+  fixedWidth?: number;
+  /** Animation duration in milliseconds */
+  animationDuration?: number;
+  /** Animation timing function */
+  animationTiming?: string;
+  /** Custom color for the indicator */
+  color?: string;
+  /** Whether the indicator shows; hide() and show() change it later */
+  visible?: boolean;
+  /** Tab variant (primary or secondary) */
+  variant?: string;
+}
+
+/**
+ * Tab change event data interface
+ * @category Events
+ */
+export interface TabChangeEventData {
+  /**
+   * The tab component that was activated
+   */
+  tab: TabComponent;
+  
+  /**
+   * The value of the activated tab, as `TabComponent.getValue()` returns it.
+   * A group emits `change` only when a tab is selected, so this is a string
+   * even though `TabsComponent.getValue()` is `string | null` when none is.
+   */
+  value: string;
+}
+
+/**
+ * Events a single tab emits, and what each hands its handler.
+ *
+ * `click` is not the DOM click. The tab re-emits the payload its button
+ * already forwarded (`{ event, element, originalEvent }`). `focus` and `blur`
+ * are the native events from the button element.
+ */
+export interface TabEvents {
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLElement>) => void;
+  focus: (event: FocusEvent) => void;
+  blur: (event: FocusEvent) => void;
+}
+
+/**
+ * Events a tabs group emits. A click or a key selects a tab and emits
+ * `change`; selecting from code does not.
+ */
+export interface TabsEvents {
+  change: (event: TabChangeEventData) => void;
+}
+
+/**
+ * Configuration interface for a single Tab
+ * @category Components
+ */
+export interface TabConfig {
+  /**
+   * Id of the tab group this tab belongs to. Set by the group when it builds
+   * its tabs; a tab created on its own gets an empty one, which still yields
+   * a stable id. It is what makes tab ids unique across tablists.
+   * @internal
+   */
+  groupId?: string;
+
+  /**
+   * Accessible name for a tab with an icon and no text, which otherwise has
+   * none.
+   */
+  ariaLabel?: string;
+
+  /** 
+   * Tab state that determines if it's the active destination
+   * @default 'inactive'
+   */
+  state?: TabStates | string;
+  
+  /** 
+   * Whether the tab is initially disabled
+   * @default false
+   */
+  disabled?: boolean;
+  
+  /** 
+   * Initial tab text content (label)
+   * @example 'Home'
+   */
+  text?: string;
+  
+  /**
+   * Initial tab icon HTML content.
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
+   * @example '<svg>...</svg>'
+   */
+  icon?: string;
+  
+  /** 
+   * Badge text or value to display (if applicable)
+   * @example '5'
+   */
+  badge?: string | number;
+  
+  /**
+   * Badge configuration object
+   * Pass additional options for the badge component
+   */
+  badgeConfig?: {
+    variant?: string;
+    color?: string;
+    size?: string;
+    position?: string;
+    max?: number;
+  };
+  
+  /** 
+   * Icon size in pixels or other CSS units
+   * @default '24px'
+   */
+  iconSize?: string;
+  
+  /** 
+   * Additional CSS classes to add to the tab
+   * @example 'home-tab main-navigation'
+   */
+  class?: string;
+  
+  /** 
+   * Tab value attribute for identifying the selected tab
+   */
+  value?: string;
+  
+  /** 
+   * Whether to enable ripple effect
+   * @default true
+   */
+  ripple?: boolean;
+
+  /**
+   * Component prefix for class names
+   * @default 'mtrl'
+   */
+  prefix?: string;
+  
+  /**
+   * Component name used in class generation
+   */
+  componentName?: string;
+  
+  /** 
+   * Ripple effect configuration
+   */
+  rippleConfig?: {
+    /** How long, in milliseconds, a released wave lingers before it is removed */
+    duration?: number;
+  };
+  
+  /**
+   * Variant of the tab
+   */
+  variant?: string;
+}
+
+/**
+ * Configuration interface for the Tabs component
+ * @category Components
+ */
+export interface TabsConfig {
+  /**
+   * Id for this tab group, used to build each tab's element id as
+   * `tab-<groupId>-<value>` and to find panels as
+   * `tabpanel-<groupId>-<value>`; a value with characters outside
+   * `[A-Za-z0-9_-]` gets a derived id instead (`tabIdFor`, `tabPanelIdFor`,
+   * The group id itself is not encoded: keep a pinned one to
+   * `[A-Za-z0-9_]` (generated ones are), or `tabIdFor("a-b", "c")` and
+   * `tabIdFor("a", "b-c")` coincide and a space makes an unsafe id. Allocated
+   * automatically when omitted; pin it when a page needs ids that survive a
+   * re-render.
+   */
+  groupId?: string;
+
+  /**
+   * Whether an arrow key also selects the tab it moves to. By default it only
+   * moves focus, and Space or Enter selects, as m3.material.io's tabs
+   * accessibility guidance has it: "Don't use Space/Enter for navigating tabs".
+   * @default false
+   */
+  autoActivate?: boolean;
+
+  /**
+   * Tabs variant (primary or secondary)
+   * @default 'primary'
+   */
+  variant?: TabsVariant | string;
+  
+  /**
+   * Initial tabs to create
+   */
+  tabs?: TabConfig[];
+  
+  /**
+   * Whether to show the divider
+   * @default true
+   */
+  showDivider?: boolean;
+  
+  /**
+   * Whether to enable horizontal scrolling
+   * @default true
+   */
+  scrollable?: boolean;
+  
+  /**
+   * Additional CSS classes for the container
+   */
+  class?: string;
+  
+  /**
+   * Component prefix for class names
+   * @default 'mtrl'
+   */
+  prefix?: string;
+  
+  /**
+   * Event handlers registered when the tabs are created. A group emits
+   * `change` only.
+   */
+  on?: Partial<TabsEvents>;
+  
+  /**
+   * Tab indicator configuration
+   */
+  indicator?: IndicatorConfig;
+}
+
+/**
+ * Icon API interface for managing tab icons
+ * @category Components
+ */
+export interface IconAPI {
+  /**
+   * Sets the icon HTML content
+   * @param html - HTML string for the icon
+   * @returns The icon API for chaining
+   */
+  setIcon: (html: string) => IconAPI;
+  
+  /**
+   * Gets the current icon HTML content
+   * @returns HTML string for the icon
+   */
+  getIcon: () => string;
+  
+  /**
+   * Gets the icon DOM element
+   * @returns The icon element or null if not present
+   */
+  getElement: () => HTMLElement | null;
+}
+
+/**
+ * Text API interface for managing tab text
+ * @category Components
+ */
+export interface TextAPI {
+  /**
+   * Sets the text content
+   * @param content - Text content
+   * @returns The text API for chaining
+   */
+  setText: (content: string) => TextAPI;
+  
+  /**
+   * Gets the current text content
+   * @returns Tab text content
+   */
+  getText: () => string;
+  
+  /**
+   * Gets the text DOM element
+   * @returns The text element or null if not present
+   */
+  getElement: () => HTMLElement | null;
+}
+
+/**
+ * Tab component interface
+ * @category Components
+ */
+export interface TabComponent {
+  /** The tab's DOM element */
+  element: HTMLElement;
+  
+  /** The button the tab is built on */
+  button?: TabButton;
+  
+  /**
+   * The tab's badge component, or `undefined`. **It may be undefined until
+   * the badge is shown**, whatever the `badge` option said: the contract
+   * (3.0.0) is that a tab creates its badge no later than when it shows it,
+   * so that a later release can create it only then. Today it exists from
+   * the first `setBadge()`, or from creation with the `badge` option. To set,
+   * read, show or hide the badge, use `setBadge()`, `getBadge()`,
+   * `showBadge()` and `hideBadge()`, which work whether it exists yet or not;
+   * check this for `undefined` before reading it.
+   */
+  badge?: BadgeComponent | undefined;
+  
+  /** Gets a class name with the component's prefix */
+  getClass: (name: string) => string;
+  
+  /** Gets the tab's value attribute */
+  getValue: () => string;
+  
+  /** Sets the tab's value attribute */
+  setValue: (value: string) => TabComponent;
+  
+  /** Activates the tab (sets active state) */
+  activate: () => TabComponent;
+  
+  /** Deactivates the tab (sets inactive state) */
+  deactivate: () => TabComponent;
+  
+  /** Checks if the tab is active */
+  isActive: () => boolean;
+  
+  /** Enables the tab (removes disabled attribute) */
+  enable: () => TabComponent;
+  
+  /** Disables the tab (adds disabled attribute) */
+  disable: () => TabComponent;
+
+  /** Whether the tab is disabled */
+  isDisabled: () => boolean;
+  
+  /** Sets the tab's text content */
+  setText: (content: string) => TabComponent;
+  
+  /** Gets the tab's text content */
+  getText: () => string;
+  
+  /** Sets the tab's icon */
+  setIcon: (icon: string) => TabComponent;
+  
+  /** Gets the tab's icon HTML content */
+  getIcon: () => string;
+  
+  /** Sets the tab's badge */
+  setBadge: (content: string | number) => TabComponent;
+  
+  /** Gets the tab's badge content */
+  getBadge: () => string;
+  
+  /** Shows the tab's badge */
+  showBadge: () => TabComponent;
+  
+  /** Hides the tab's badge */
+  hideBadge: () => TabComponent;
+  
+  /**
+   * Gets the badge component instance, or `undefined`: it may not exist
+   * until the badge is shown (see `badge`)
+   */
+  getBadgeComponent: () => BadgeComponent | undefined;
+  
+  /** Updates the tab's layout style based on content */
+  updateLayoutStyle: () => void;
+  
+  /**
+   * Adds an event listener to the tab.
+   * Declared on the component, not picked off the events feature: `Pick`
+   * rebinds a polymorphic `this`.
+   * @param event - One of the events in {@link TabEvents}
+   * @param handler - Receives the payload declared for that event
+   * @returns The tab for chaining
+   */
+  on: <K extends keyof TabEvents>(event: K, handler: TabEvents[K]) => TabComponent;
+
+  /**
+   * Removes an event listener from the tab
+   * @param event - One of the events in {@link TabEvents}
+   * @param handler - The same handler that was passed to `on`
+   * @returns The tab for chaining
+   */
+  off: <K extends keyof TabEvents>(event: K, handler: TabEvents[K]) => TabComponent;
+  
+  /** Destroys the tab component and cleans up resources */
+  destroy: () => void;
+  
+  /** API for managing disabled state */
+  disabled?: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  
+  /** API for managing component lifecycle */
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
+ * Tabs component interface
+ * @category Components
+ */
+export interface TabsComponent {
+  /**
+   * Container element
+   */
+  element: HTMLElement;
+  
+  /**
+   * Gets a class name with the component's prefix
+   * @param name - Base class name
+   * @returns Prefixed class name
+   */
+  getClass: (name: string) => string;
+  
+  /**
+   * Creates and adds a new tab to the tabs component
+   * @param config - Tab configuration
+   * @returns The created tab component
+   */
+  addTab: (config: TabConfig) => TabComponent;
+  
+  /**
+   * Adds a pre-created tab to the tabs component
+   * @param tab - Tab component to add
+   * @returns Tabs component for chaining
+   */
+  add: (tab: TabComponent) => TabsComponent;
+  
+  /**
+   * Gets all tabs in the container
+   * @returns Array of tab components
+   */
+  getTabs: () => TabComponent[];
+  
+  /**
+   * Gets the active tab
+   * @returns Active tab or null if none
+   */
+  getActiveTab: () => TabComponent | null;
+  /** Reads the current model value without changing selection. */
+  getValue: () => string | null;
+  
+  /**
+   * Gets the indicator component
+   * @returns Tab indicator component
+   */
+  getIndicator?: () => TabIndicator;
+  
+  /**
+   * Sets a tab as active. Silent: only a click or a key emits `change`
+   * @param tabOrValue - Tab component or tab value
+   * @returns Tabs component for chaining
+   */
+  setActiveTab: (tabOrValue: TabComponent | string) => TabsComponent;
+  
+  /**
+   * Removes a tab from the container
+   * @param tabOrValue - Tab component or tab value
+   * @returns Tabs component for chaining
+   */
+  removeTab: (tabOrValue: TabComponent | string) => TabsComponent;
+  
+  /**
+   * Adds an event listener.
+   * Declared on the component, not picked off the events feature: `Pick`
+   * rebinds a polymorphic `this`.
+   * @param event - One of the events in {@link TabsEvents}
+   * @param handler - Receives the payload declared for that event
+   * @returns Tabs component for chaining
+   */
+  on: <K extends keyof TabsEvents>(event: K, handler: TabsEvents[K]) => TabsComponent;
+
+  /**
+   * Removes an event listener
+   * @param event - One of the events in {@link TabsEvents}
+   * @param handler - The same handler that was passed to `on`
+   * @returns Tabs component for chaining
+   */
+  off: <K extends keyof TabsEvents>(event: K, handler: TabsEvents[K]) => TabsComponent;
+  
+  /**
+   * Emit one of the group's own events ({@link TabsEvents}), with its payload:
+   * the names and payloads `on` and `off` accept.
+   * @param event - One of the events in {@link TabsEvents}
+   * @param data - The payload declared for that event
+   * @returns Tabs component for chaining
+   */
+  emit?<K extends keyof TabsEvents>(event: K, data: Parameters<TabsEvents[K]>[0]): this;
+  
+  /**
+   * Destroys the tabs component and all tabs
+   */
+  destroy: () => void;
+  
+  /**
+   * Activation handler shared by the component's click and keyboard paths.
+   * Use setActiveTab() to select a tab from application code.
+   * @internal
+   */
+  handleTabClick: (event: Event | null, tab: TabComponent) => void;
+  
+  /**
+   * Scroll container owned by the scrollable feature.
+   * @internal
+   */
+  scrollContainer?: HTMLElement;
+}

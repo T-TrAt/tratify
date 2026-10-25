@@ -1,0 +1,194 @@
+// src/core/config/component-config.ts
+import { PREFIX } from "../config";
+import { getComponentDefaults, type ComponentConfigMap } from "./global";
+import type { EventCondition } from "../dom/create";
+
+/**
+ * Base component configuration interface
+ * Common configuration properties shared by all components
+ */
+export interface BaseComponentConfig {
+  componentName?: string;
+  // No `prefix`. It was accepted here and then overwritten with the PREFIX
+  // constant in the force-these-values block below, so a consumer could set
+  // it and nothing would change. The prefix is fixed at build time: the class
+  // helpers read it from a module constant, and honouring a per-instance
+  // prefix would mean threading it through the hottest path in the library.
+  // It reopens at 3.0.0 with the `mtrl` to `material` rename.
+  class?: string | string[]; // Support both string and array
+  className?: string | string[]; // Alternative to class
+  parent?: HTMLElement | string | null; // Parent element to append to (element or selector)
+  // Common HTML attributes
+  id?: string; // Element ID
+  name?: string; // Form element name
+  title?: string; // Tooltip text (native browser tooltip on hover)
+  tabIndex?: number; // Keyboard navigation order (-1 to remove from tab order, 0+ for custom order)
+  // Inline styles. Object only: a style string is written verbatim to the
+  // style attribute, so one interpolated value can carry extra declarations
+  // Assigning per property confines a value to that property.
+  style?: Partial<CSSStyleDeclaration>;
+  // Data attributes
+  data?: Record<string, string>; // Data attributes (e.g., { name: 'value' } → data-name="value")
+  // ARIA attributes for accessibility
+  role?: string; // ARIA role (e.g., 'button', 'menuitem', 'dialog')
+  ariaLabel?: string; // Accessible label for screen readers
+  ariaDescribedBy?: string; // ID of element that describes this element
+  ariaLabelledBy?: string; // ID of element that labels this element
+  ariaHidden?: boolean; // Hide from screen readers
+}
+
+/**
+ * Creates a base configuration for any component
+ * Automatically merges global defaults if available
+ *
+ * @param {T} defaults - Default configuration for the component
+ * @param {Partial<T>} userConfig - User provided configuration
+ * @param {string} componentName - The name of the component
+ * @returns {T} Complete configuration with defaults applied
+ *
+ * @example
+ * // In button/config.ts
+ * export const createBaseConfig = (config: ButtonConfig = {}) =>
+ *   createComponentConfig(defaultConfig, config, 'button');
+ */
+export const createComponentConfig = <T extends BaseComponentConfig & object>(
+  defaults: T,
+  userConfig: Partial<T> = {},
+  componentName: string,
+): T & { componentName: string; prefix: string } => {
+  // Get global defaults for this component (if any)
+  const globalDefaults = getComponentDefaults(
+    componentName as keyof ComponentConfigMap,
+  );
+
+  // First check for className, fall back to class
+  const userClassName =
+    userConfig.className !== undefined
+      ? userConfig.className
+      : userConfig.class;
+  const defaultClassName =
+    defaults.className !== undefined ? defaults.className : defaults.class;
+
+  // Create a new object with proper precedence:
+  // 1. Component defaults (lowest priority)
+  // 2. Global defaults (medium priority)
+  // 3. User config (highest priority)
+  const config = {
+    ...defaults,
+    ...globalDefaults,
+    ...userConfig,
+    // Force these values to ensure consistency
+    componentName,
+    prefix: PREFIX,
+    // Use className as the canonical property, falling back to alternatives
+    className: userClassName !== undefined ? userClassName : defaultClassName,
+  };
+
+  // Remove potentially confusing duplicate class property
+  if ("class" in config && config.className !== undefined) {
+    delete config.class;
+  }
+
+  return config;
+};
+
+
+/**
+ * Processes class names for an element, handling arrays, nulls and conditional classes
+ *
+ * @param {string | string[] | null} classNames - Class names to process
+ * @returns {string} Space-separated class names as a string
+ *
+ * @example
+ * // Returns 'mtrl-card mtrl-card--elevated custom-class'
+ * processClassNames(['mtrl-card', 'mtrl-card--elevated', 'custom-class']);
+ *
+ * // Returns 'mtrl-card'
+ * processClassNames(['mtrl-card', null, undefined]);
+ */
+export const processClassNames = (
+  classNames: string | string[] | null,
+): string => {
+  if (!classNames) return "";
+
+  if (typeof classNames === "string") return classNames;
+
+  return classNames
+    .filter(Boolean) // Remove null, undefined, empty strings
+    .join(" ");
+};
+
+/**
+ * Creates a configuration object for withElement HOC
+ *
+ * @param {BaseComponentConfig} config - Component configuration
+ * @param {Object} options - Element options
+ * @returns {Object} Configuration object for withElement
+ */
+export const createElementConfig = (
+  config: BaseComponentConfig,
+  options: {
+    tag: string;
+    attributes?: Record<string, unknown>;
+    className?: string | (string | null | undefined)[] | null;
+    /**
+     * Styles the component computes for itself, as properties. Merged under
+     * `config.style`, so a consumer's own style still wins. Added with
+     * Menu built these into the style *attribute* as a joined
+     * string, where CSS text has no camelCase and `maxHeight` was silently
+     * dropped by the parser.
+     */
+    style?: Partial<CSSStyleDeclaration>;
+    html?: string;
+    text?: string;
+    forwardEvents?: Record<
+      string,
+      EventCondition
+    >;
+    interactive?: boolean;
+  },
+) => {
+  // Handle class and className from both sources
+  const configClasses = config.className || config.class;
+  const optionsClasses = options.className;
+
+  // Combine all classes
+  // The guard narrows the array to strings: a plain Boolean filter keeps the
+  // element type, so under strictNullChecks every component's element config
+  // failed to type-check against withElement
+  const combinedClassNames = [
+    ...(Array.isArray(configClasses) ? configClasses : [configClasses]),
+    ...(Array.isArray(optionsClasses) ? optionsClasses : [optionsClasses]),
+  ].filter((name): name is string => Boolean(name));
+
+  // Set up element attributes
+  const elementAttributes = options.attributes || {};
+
+  return {
+    tag: options.tag,
+    componentName: config.componentName,
+    attributes: elementAttributes,
+    className: combinedClassNames.length > 0 ? combinedClassNames : undefined,
+    // Common HTML attributes
+    id: config.id,
+    name: config.name,
+    title: config.title,
+    tabIndex: config.tabIndex,
+    style:
+      options.style || config.style
+        ? { ...options.style, ...config.style }
+        : undefined,
+    // Data attributes
+    data: config.data,
+    // ARIA attributes
+    role: config.role,
+    ariaLabel: config.ariaLabel,
+    ariaDescribedBy: config.ariaDescribedBy,
+    ariaLabelledBy: config.ariaLabelledBy,
+    ariaHidden: config.ariaHidden,
+    html: options.html,
+    text: options.text,
+    forwardEvents: options.forwardEvents || {},
+    interactive: options.interactive,
+  };
+};

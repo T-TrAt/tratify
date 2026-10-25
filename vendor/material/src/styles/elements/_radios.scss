@@ -1,0 +1,46 @@
+// src/styles/elements/_radios.scss
+// <m-radios> before upgrade: a row per <m-radio>, which is drawn on upgrade.
+@use '../abstract/mixins' as m;
+@use 'config' as c;
+
+@include c.host('radios') {
+  display: flex;
+  flex-direction: column;
+  @include m.typography('body-large');
+
+  &[direction='horizontal'] {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  // On upgrade the host's baseline is its first row's: the 20px circle's
+  // bottom edge, 14px down a 48px row (4px of label padding and 10px of the
+  // control around the circle). The column's first item is a strut that ends
+  // on that edge, so a baseline-aligned row holds the host in place; 0 wide
+  // and -34 below itself, it moves nothing. Without it the baseline was the
+  // label text's, 5px higher, and the host moved up 5px at upgrade
+  // (floor/material#109).
+  //
+  // Only a group with an option reserves that baseline: an empty host is 0
+  // tall after upgrade and exposes no baseline, so the strut would synthesize
+  // one 34px below its top and lift the text after it 24px at upgrade. The
+  // guard follows an actual option, not the absence of children: `:empty`
+  // counts the newline and spaces of indented markup as content, and that
+  // indented group has no option and no upgraded baseline either.
+  &:has(> #{c.tag('radio')})::before {
+    content: '';
+    flex: none;
+    height: 34px;
+    margin-block-end: -34px;
+  }
+}
+
+// As components/_radios.scss: a row at least 48px, the 40px control and 8px
+// before the text. A wrapping label grows the row.
+@include c.declarations('radios') {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding-inline-start: 48px;
+}

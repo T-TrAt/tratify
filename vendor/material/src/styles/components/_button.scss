@@ -1,0 +1,499 @@
+// src/styles/components/_button.scss
+@use 'sass:map';
+@use 'sass:list';
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-button';
+
+// =============================================================================
+// BUTTON COMPONENT STYLES
+// =============================================================================
+// Material Design 3 common button.
+//
+// Measurements, shapes and colour roles follow the Compose Material 3 token
+// files (ButtonXSmallTokens.kt … ButtonXLargeTokens.kt, FilledButtonTokens.kt,
+// ElevatedButtonTokens.kt, TonalButtonTokens.kt, OutlinedButtonTokens.kt,
+// TextButtonTokens.kt) and ButtonDefaults in Button.kt. Values live in the
+// $button map in abstract/_variables.scss.
+//
+// Supports:
+// - Five colour styles (filled, elevated, tonal, outlined, text)
+// - Five sizes (xs, s, m, l, xl) and two shapes (round, square)
+// - Leading icon, integrated progress indicator
+// - State layers, focus ring, pressed shape morph
+// - 48dp touch target on the xs and s sizes
+//
+// Shape hooks: a container (button group, split button) can override the
+// resting, pressed and selected corner shapes through the custom properties
+// --<prefix>-button-shape, --<prefix>-button-shape-pressed and
+// --<prefix>-button-shape-selected, without fighting the rules below.
+// =============================================================================
+
+$sizes: xs, s, m, l, xl;
+
+// Label typescale per size (ButtonDefaults.textStyleFor)
+$label-typescale: (
+  'xs': 'label-large',
+  's': 'label-large',
+  'm': 'title-medium',
+  'l': 'headline-small',
+  'xl': 'headline-large'
+);
+
+// Colour of the icon and label per colour style. The state layer is drawn in
+// currentColor, so it takes the same role: M3 tints a button's state layer
+// with its content colour, for every style, selected or not.
+$content-color: (
+  'filled': 'on-primary',
+  'elevated': 'primary',
+  'tonal': 'on-secondary-container',
+  'outlined': 'on-surface-variant',
+  'text': 'primary'
+);
+
+.#{$component} {
+  // Base styles (the s size is the default)
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: v.button('icon-gap-s');
+  min-width: v.button('min-width');
+  height: v.button('height-s');
+  padding: 0 v.button('padding-s');
+  border: none;
+  border-radius: var(--#{base.$prefix}-button-shape, v.button('shape-round-s'));
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  will-change: border-radius;
+
+  // Typography
+  @include m.typography('label-large');
+
+  // Colours follow the default effects spring, the shape morph the fast
+  // spatial spring (Compose Button and ToggleButton animation specs)
+  transition:
+    background-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    box-shadow v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    border-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    border-radius v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
+
+  // Focus indicator: 3dp secondary ring, 2dp outside the container
+  // (material-web tokens/_md-comp-focus-ring.scss)
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 3px solid t.color('secondary');
+    outline-offset: 2px;
+  }
+
+  // Disabled: container on-surface 10%, label and icon on-surface-variant 38%
+  // (FilledButtonTokens.Disabled*)
+  &:disabled {
+    pointer-events: none;
+    color: t.alpha('on-surface-variant', 0.38);
+    background-color: t.alpha('on-surface', 0.1);
+    box-shadow: none;
+
+    .#{$component}__icon {
+      color: t.alpha('on-surface-variant', 0.38);
+    }
+  }
+
+  // State layer: one ::before in currentColor, the content role each colour
+  // style and toggle state sets as `color`. Hover, focus and pressed change
+  // only its opacity (m3.material.io state layers: 0.08, 0.10, 0.10). The
+  // ripple is the press: a button that carries one leaves its
+  // pressed layer to the wave, as m.state-layer does.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    transition: opacity v.motion('duration-short2') v.motion('easing-standard');
+  }
+
+  &:hover::before {
+    opacity: f.get-state-opacity('hover');
+  }
+
+  &:focus-visible::before {
+    opacity: f.get-state-opacity('focus');
+  }
+
+  &:active:not(:has(> .#{base.$prefix}-ripple))::before,
+  &--active:not(:has(> .#{base.$prefix}-ripple))::before {
+    opacity: f.get-state-opacity('pressed');
+  }
+
+  // Icon
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: v.button('icon-size-s');
+    height: v.button('icon-size-s');
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  // Progress indicator: takes the icon slot
+  &__progress {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: v.button('icon-size-s');
+    height: v.button('icon-size-s');
+
+    &.#{base.$prefix}-progress {
+      width: v.button('icon-size-s');
+      height: v.button('icon-size-s');
+      transition: opacity v.motion('duration-short2') v.motion('easing-standard');
+    }
+
+    .#{base.$prefix}-progress__canvas {
+      color: currentColor;
+    }
+  }
+
+  &__text {
+    @include m.truncate;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sizes
+  // ---------------------------------------------------------------------------
+  @each $size in $sizes {
+    &--#{$size} {
+      height: v.button('height-#{$size}');
+      padding: 0 v.button('padding-#{$size}');
+      gap: v.button('icon-gap-#{$size}');
+      @include m.typography(map.get($label-typescale, $size));
+
+      .#{$component}__icon,
+      .#{$component}__progress,
+      .#{$component}__progress.#{base.$prefix}-progress {
+        width: v.button('icon-size-#{$size}');
+        height: v.button('icon-size-#{$size}');
+      }
+
+      // Round shape at rest: half the height, so the pressed shape is a
+      // morph rather than a snap. See shape-round-* in $button.
+      border-radius: var(--#{base.$prefix}-button-shape, v.button('shape-round-#{$size}'));
+
+      // Square shape at rest
+      &.#{$component}--square {
+        border-radius: var(--#{base.$prefix}-button-shape, v.button('shape-square-#{$size}'));
+      }
+
+      // Outlined outline width
+      &.#{$component}--outlined {
+        border-width: v.button('outline-width-#{$size}');
+      }
+    }
+  }
+
+  // Small button next to an icon: 12dp on the icon side on pointer devices
+  // (ButtonDefaults.getSmallContentPadding). Logical, so the start side follows
+  // direction. Direction inherits into a shadow root; a [dir] selector does not
+  // see a direction set outside one, which is how the icon already mirrors.
+  &--s.#{$component}--icon {
+    padding-inline-start: v.button('padding-icon');
+
+    &:has(.#{$component}__icon--end) {
+      padding-inline-start: v.button('padding-s');
+      padding-inline-end: v.button('padding-icon');
+    }
+  }
+
+  // The xs and s sizes keep a 48dp touch target (m3.material.io button specs,
+  // target areas): the hit area extends above and below the container.
+  &--xs,
+  &--s {
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: v.button('touch-target');
+      transform: translateY(-50%);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pressed shape: the container squares off while pressed, for both shapes
+  // (Button*Tokens.PressedContainerShape). Declared after the size and shape
+  // rules so it wins at equal specificity.
+  // ---------------------------------------------------------------------------
+  &:active,
+  &--active {
+    border-radius: var(--#{base.$prefix}-button-shape-pressed, v.button('shape-pressed-s'));
+    box-shadow: none;
+  }
+
+  @each $size in $sizes {
+    &--#{$size} {
+      &:active,
+      &.#{$component}--active {
+        border-radius: var(--#{base.$prefix}-button-shape-pressed, v.button('shape-pressed-#{$size}'));
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Colour styles
+  // ---------------------------------------------------------------------------
+  @each $variant, $role in $content-color {
+    &--#{$variant} {
+      @if $variant == 'text' {
+        // A container can recolour its text buttons, into the element's shadow
+        // root: the vibrant toolbar's "standard button" is on-primary-container.
+        color: var(--#{base.$prefix}-button-text-color, #{t.color($role)});
+      } @else {
+        color: t.color($role);
+      }
+    }
+  }
+
+  // Filled: primary container, level 1 on hover (FilledButtonTokens)
+  &--filled {
+    background-color: t.color('primary');
+
+    &:hover {
+      @include m.elevation(1);
+    }
+
+    &:active,
+    &.#{$component}--active,
+    &:disabled {
+      @include m.elevation(0);
+    }
+  }
+
+  // Elevated: surface-container-low, level 1 at rest, 2 on hover, 0 disabled
+  // (ElevatedButtonTokens)
+  &--elevated {
+    background-color: t.color('surface-container-low');
+    @include m.elevation(1);
+
+    &:hover {
+      @include m.elevation(2);
+    }
+
+    &:active,
+    &.#{$component}--active {
+      @include m.elevation(1);
+    }
+
+    &:disabled {
+      box-shadow: none;
+    }
+  }
+
+  // Tonal: secondary container, level 1 on hover (TonalButtonTokens)
+  &--tonal {
+    background-color: t.color('secondary-container');
+
+    &:hover {
+      @include m.elevation(1);
+    }
+
+    &:active,
+    &.#{$component}--active,
+    &:disabled {
+      @include m.elevation(0);
+    }
+  }
+
+  // Outlined: outline-variant outline, on-surface-variant content
+  // (OutlinedButtonTokens, ButtonDefaults.outlinedButtonBorder)
+  &--outlined {
+    border: v.button('outline-width-s') solid t.color('outline-variant');
+
+    &:disabled {
+      background-color: transparent;
+      border-color: t.alpha('outline-variant', 0.1);
+    }
+  }
+
+  // Text: no container, 12dp horizontal padding, 16dp beside the label when
+  // there is an icon (ButtonDefaults.TextButtonContentPadding,
+  // TextButtonWithIconContentPadding). The icon insets are logical, for the
+  // same reason as the small button. Larger sizes use the size's spacing.
+  &--text {
+    padding: 0 v.button('padding-horizontal-small');
+
+    &.#{$component}--icon {
+      padding-inline: v.button('padding-horizontal-small') v.button('padding-s');
+
+      &:has(.#{$component}__icon--end) {
+        padding-inline: v.button('padding-s') v.button('padding-horizontal-small');
+      }
+    }
+
+    @each $size in m, l, xl {
+      &.#{$component}--#{$size} {
+        padding: 0 v.button('padding-#{$size}');
+      }
+    }
+
+    &:disabled {
+      background-color: transparent;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Toggle buttons (ToggleButtonDefaults in ToggleButton.kt, *ButtonTokens
+  // Unselected*/Selected* roles). Unselected filled buttons drop to
+  // surface-container; selected buttons take the selected roles and swap
+  // the resting shape: round becomes square, square becomes round
+  // (m3.material.io button specs, "When selected").
+  // ---------------------------------------------------------------------------
+  &--toggle {
+    // A toggle's states are state layers, not elevation: ToggleButtonDefaults
+    // carries colours and shapes only, and every state below is a layer. As a
+    // standalone button the filled and tonal containers still rise on hover
+    // (ButtonDefaults.buttonElevation); as toggles they stay flat, which also
+    // keeps a connected group's segment from casting a shadow over the
+    // neighbour 2dp away. An elevated toggle keeps its elevation: that is what
+    // its container is.
+    &.#{$component}--filled,
+    &.#{$component}--tonal {
+      &,
+      &:hover,
+      &:active,
+      &.#{$component}--active {
+        box-shadow: none;
+      }
+    }
+
+    &.#{$component}--filled {
+      background-color: t.color('surface-container');
+      color: t.color('on-surface-variant');
+    }
+
+    &.#{$component}--selected {
+      $selected: (
+        'filled': ('primary', 'on-primary'),
+        'elevated': ('primary', 'on-primary'),
+        'tonal': ('secondary', 'on-secondary'),
+        'outlined': ('inverse-surface', 'inverse-on-surface')
+      );
+
+      @each $variant, $roles in $selected {
+        $container: list.nth($roles, 1);
+        $content: list.nth($roles, 2);
+
+        &.#{$component}--#{$variant} {
+          background-color: t.color($container);
+          color: t.color($content);
+        }
+      }
+
+      &.#{$component}--outlined {
+        border-color: transparent;
+      }
+
+      // Shape swap: a round toggle squares off, a square one rounds
+      @each $size in $sizes {
+        &.#{$component}--#{$size} {
+          border-radius: var(--#{base.$prefix}-button-shape-selected, v.button('shape-square-#{$size}'));
+        }
+      }
+
+      @each $size in $sizes {
+        &.#{$component}--square.#{$component}--#{$size} {
+          border-radius: var(--#{base.$prefix}-button-shape-selected, v.button('shape-round-#{$size}'));
+        }
+      }
+
+      @each $size in $sizes {
+        &.#{$component}--#{$size}:active,
+        &.#{$component}--#{$size}.#{$component}--active {
+          border-radius: var(--#{base.$prefix}-button-shape-pressed, v.button('shape-pressed-#{$size}'));
+        }
+      }
+    }
+
+    // Disabled keeps the common disabled roles whatever the selection
+    &:disabled,
+    &.#{$component}--selected:disabled {
+      color: t.alpha('on-surface-variant', 0.38);
+      background-color: t.alpha('on-surface', 0.1);
+      border-color: t.alpha('outline-variant', 0.1);
+      box-shadow: none;
+    }
+
+    &.#{$component}--outlined:disabled {
+      background-color: transparent;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Circular buttons
+  // ---------------------------------------------------------------------------
+  &--circular {
+    flex: none !important;
+    border-radius: 50%;
+    padding: 8px;
+    min-width: unset;
+    width: v.button('height-s') !important;
+    height: v.button('height-s');
+
+    &:active,
+    &.#{$component}--active {
+      border-radius: 50%;
+
+      &.#{$component}--square {
+        border-radius: v.shape('medium') !important; // ButtonSmallTokens square: corner-medium
+      }
+    }
+
+    &.#{$component}--square {
+      border-radius: v.shape('medium');
+    }
+
+    @each $size in $sizes {
+      &.#{$component}--#{$size} {
+        width: v.button('height-#{$size}');
+        height: v.button('height-#{$size}');
+        padding: 0;
+      }
+    }
+
+    .#{$component}__text {
+      display: none;
+    }
+
+    &.#{$component}--progress {
+      padding: 0 !important;
+    }
+  }
+
+  // Progress showing while disabled (loading state)
+  &[disabled].#{$component}--progress .#{$component}__progress {
+    opacity: 0.7;
+  }
+}

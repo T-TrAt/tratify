@@ -1,0 +1,12 @@
+{
+  "name": "@ziyarago/glass-ui-kit",
+  "version": "1.32.0",
+  "repository": "https://github.com/ziyarago/glass-ui-kit",
+  "revision": "60d4f3d235d5bbb62161a910de77b04016af78d3",
+  "website": "https://ui-kit.ziyarago.com/colors",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2024-2026 ZiyaraGo Technologies LLC",
+  "source": "src/styles/main.css",
+  "sourceSha256": "684b52341cc91e34b9b836f09c485dd01b9cf4e5a40af7747dd6eb939aab4dbb",
+  "extraction": "Original OKLCH values and semantic palette overrides resolved into primary, secondary, error, surface and ink scales. The complementary tertiary accent is selected from the original tonal scales. Material role mapping is implemented in tooling/material-glass-themes.mjs."
+}

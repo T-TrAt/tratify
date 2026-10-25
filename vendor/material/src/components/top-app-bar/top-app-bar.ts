@@ -1,0 +1,295 @@
+// src/components/top-app-bar/top-app-bar.ts
+/**
+ * @module components/top-app-bar
+ * @description Top app bar implementation
+ */
+
+import { processClassNames, type BaseComponentConfig } from "../../core/config/component";
+import {
+  createBase,
+  withElement,
+  withEvents,
+  withLifecycle,
+} from "../../core/compose";
+
+import { createConfig } from "./config";
+import type { TopAppBarComponent, TopAppBarConfig, TopAppBarType } from "./types";
+import { TOP_APP_BAR_DEFAULTS } from "./constants";
+
+// The one TopAppBarComponent declaration is the public one in types.ts; this
+// module re-exports it for the element, which imports it from here.
+export type { TopAppBarComponent };
+
+/**
+ * Creates a top app bar component
+ *
+ * @param {TopAppBarConfig} config - Configuration options
+ * @returns {TopAppBarComponent} Top app bar component instance
+ */
+export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBarComponent => {
+  // Process configuration with defaults
+  const componentConfig = createConfig(config);
+
+  // Create base component
+  const component = createBase(componentConfig);
+
+  // Create containers for the top app bar structure
+  const createContainers = () => {
+    // Leading section container
+    const leadingContainer = document.createElement("div");
+    leadingContainer.className = `${component.getClass("top-app-bar")}__leading`;
+
+    // Headline element
+    const headlineElement = document.createElement("h1");
+    headlineElement.className = `${component.getClass("top-app-bar")}__headline`;
+    if (componentConfig.title) {
+      headlineElement.textContent = componentConfig.title;
+    }
+
+    // Trailing section container
+    const trailingContainer = document.createElement("div");
+    trailingContainer.className = `${component.getClass(
+      "top-app-bar"
+    )}__trailing`;
+
+    return { leadingContainer, headlineElement, trailingContainer };
+  };
+
+  // Create the main containers
+  const { leadingContainer, headlineElement, trailingContainer } =
+    createContainers();
+
+  // Determine initial classes based on type
+  const getInitialClasses = () => {
+    const classes = [processClassNames((componentConfig as BaseComponentConfig).className || "")];
+
+    // Add type class if not the default 'small' type
+    if (componentConfig.type !== "small") {
+      classes.push(
+        `${component.getClass("top-app-bar")}--${componentConfig.type}`
+      );
+    }
+
+    // Add compressible class if enabled and type is medium or large
+    if (
+      componentConfig.compressible &&
+      (componentConfig.type === "medium" || componentConfig.type === "large")
+    ) {
+      classes.push(`${component.getClass("top-app-bar")}--compressible`);
+    }
+
+    return classes.filter((name): name is string => Boolean(name));
+  };
+
+  // Apply Element enhancer
+  const enhancedComponent = withElement({
+    tag: componentConfig.tag,
+    componentName: "top-app-bar",
+    className: getInitialClasses(),
+    attributes: {
+      role: "banner",
+      "aria-label": "Top app bar",
+    },
+    interactive: true,
+  })(component);
+
+  // Apply events enhancer for component events
+  const withEventsComponent = withEvents()(enhancedComponent);
+
+  // Apply lifecycle enhancer for cleanup
+  const withLifecycleComponent = withLifecycle()(withEventsComponent);
+
+  // Create the DOM structure based on the type
+  const setupDomStructure = () => {
+    if (componentConfig.type === "medium" || componentConfig.type === "large") {
+      // For medium and large, create rows
+      const topRow = document.createElement("div");
+      topRow.className = `${component.getClass("top-app-bar")}__row`;
+      topRow.appendChild(leadingContainer);
+      topRow.appendChild(trailingContainer);
+
+      const bottomRow = document.createElement("div");
+      bottomRow.className = `${component.getClass("top-app-bar")}__row`;
+      bottomRow.appendChild(headlineElement);
+
+      withLifecycleComponent.element.appendChild(topRow);
+      withLifecycleComponent.element.appendChild(bottomRow);
+    } else {
+      // For small and center-aligned
+      withLifecycleComponent.element.appendChild(leadingContainer);
+      withLifecycleComponent.element.appendChild(headlineElement);
+      withLifecycleComponent.element.appendChild(trailingContainer);
+    }
+  };
+
+  // Set up the initial DOM structure
+  setupDomStructure();
+
+  // Track scrolled state
+  let isScrolled = false;
+
+  // Handle scrolling behavior if enabled
+  if (componentConfig.scrollable) {
+    const handleScroll = () => {
+      const shouldBeScrolled =
+        window.scrollY > (componentConfig.scrollThreshold ?? TOP_APP_BAR_DEFAULTS.SCROLL_THRESHOLD);
+
+      if (isScrolled !== shouldBeScrolled) {
+        isScrolled = shouldBeScrolled;
+
+        // Toggle scrolled class
+        if (isScrolled) {
+          withLifecycleComponent.element.classList.add(
+            `${component.getClass("top-app-bar")}--scrolled`
+          );
+        } else {
+          withLifecycleComponent.element.classList.remove(
+            `${component.getClass("top-app-bar")}--scrolled`
+          );
+        }
+
+        // Call the onScroll callback if provided
+        componentConfig.onScroll?.(isScrolled);
+      }
+    };
+
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Initial check
+    handleScroll();
+
+    // Clean up event listener on destroy
+    const originalDestroy = withLifecycleComponent.lifecycle.destroy;
+    withLifecycleComponent.lifecycle.destroy = () => {
+      window.removeEventListener("scroll", handleScroll);
+      originalDestroy();
+    };
+  }
+
+  // Reorganize the DOM for the given type
+  const reorganizeDom = (type: TopAppBarType) => {
+    // Clear existing content
+    while (withLifecycleComponent.element.firstChild) {
+      withLifecycleComponent.element.removeChild(
+        withLifecycleComponent.element.firstChild
+      );
+    }
+
+    // Update component type class
+    ["small", "medium", "large", "center"].forEach((t) => {
+      withLifecycleComponent.element.classList.remove(
+        `${component.getClass("top-app-bar")}--${t}`
+      );
+    });
+
+    if (type !== "small") {
+      withLifecycleComponent.element.classList.add(
+        `${component.getClass("top-app-bar")}--${type}`
+      );
+    }
+
+    // Update compressible class
+    withLifecycleComponent.element.classList.toggle(
+      `${component.getClass("top-app-bar")}--compressible`,
+      componentConfig.compressible && (type === "medium" || type === "large")
+    );
+
+    // Rebuild the DOM structure
+    if (type === "medium" || type === "large") {
+      // For medium and large, create rows
+      const topRow = document.createElement("div");
+      topRow.className = `${component.getClass("top-app-bar")}__row`;
+      topRow.appendChild(leadingContainer);
+      topRow.appendChild(trailingContainer);
+
+      const bottomRow = document.createElement("div");
+      bottomRow.className = `${component.getClass("top-app-bar")}__row`;
+      bottomRow.appendChild(headlineElement);
+
+      withLifecycleComponent.element.appendChild(topRow);
+      withLifecycleComponent.element.appendChild(bottomRow);
+    } else {
+      // For small and center-aligned
+      withLifecycleComponent.element.appendChild(leadingContainer);
+      withLifecycleComponent.element.appendChild(headlineElement);
+      withLifecycleComponent.element.appendChild(trailingContainer);
+    }
+  };
+
+  // Create the top app bar interface
+  const topAppBar: TopAppBarComponent = {
+    ...withLifecycleComponent,
+
+    // Spreading a component copies `addClass` but not the `this` it returns:
+    // the copy still reports the pipeline object it was built on, not this bar.
+    // Re-declaring it here is what puts the bar back on the end of a chain.
+    addClass(...classes: string[]) {
+      withLifecycleComponent.addClass(...classes);
+      return this;
+    },
+
+    // destroy() goes through the lifecycle. The one spread in above comes from
+    // withElement and only removes the element, so the scroll listener this bar
+    // registers -- removed in lifecycle.destroy -- stayed on window and kept
+    // calling back after the bar was gone.
+    destroy() {
+      withLifecycleComponent.lifecycle.destroy();
+    },
+
+    setTitle(title: string) {
+      headlineElement.textContent = title;
+      return this;
+    },
+
+    getTitle() {
+      return headlineElement.textContent || "";
+    },
+
+    addLeadingElement(element: HTMLElement) {
+      leadingContainer.appendChild(element);
+      return this;
+    },
+
+    addTrailingElement(element: HTMLElement) {
+      trailingContainer.appendChild(element);
+      return this;
+    },
+
+    setType(type: TopAppBarType) {
+      componentConfig.type = type;
+      reorganizeDom(type);
+      return this;
+    },
+
+    setScrollState(scrolled: boolean) {
+      isScrolled = scrolled;
+
+      if (scrolled) {
+        this.element.classList.add(
+          `${component.getClass("top-app-bar")}--scrolled`
+        );
+      } else {
+        this.element.classList.remove(
+          `${component.getClass("top-app-bar")}--scrolled`
+        );
+      }
+
+      return this;
+    },
+
+    getHeadlineElement() {
+      return headlineElement;
+    },
+
+    getLeadingContainer() {
+      return leadingContainer;
+    },
+
+    getTrailingContainer() {
+      return trailingContainer;
+    },
+  };
+
+  return topAppBar;
+};

@@ -1,0 +1,280 @@
+// src/styles/components/_side-sheet.scss
+@use "../abstract/base" as base;
+@use "../abstract/functions" as f;
+@use "../abstract/variables" as v;
+@use "../abstract/mixins" as m;
+@use "../abstract/theme" as t;
+
+$component: "#{base.$prefix}-side-sheet";
+
+// -----------------------------------------------------------------------------
+// Side sheet (m3.material.io/components/side-sheets and the Android
+// implementation, MDC-Android docs/components/SideSheet.md)
+//
+// A surface docked to a vertical edge. Standard sheets sit on `surface` beside
+// the page; modal sheets sit on `surface-container-low` over a scrim. Only the
+// corners facing the page round off, at CornerLarge, so the docked edge stays
+// flush with the screen.
+//
+// Positions are logical: `end` is the trailing edge, which follows the writing
+// direction rather than needing a second configuration for right-to-left.
+// -----------------------------------------------------------------------------
+.#{$component} {
+    position: fixed;
+    inset: 0;
+    z-index: v.z-index("modal");
+    display: flex;
+    pointer-events: none;
+
+    // Share the physical offset's sign between the slide and overshoot cover.
+    --#{$component}-direction: 1;
+
+    @include m.rtl {
+        --#{$component}-direction: -1;
+    }
+
+    &--open {
+        pointer-events: auto;
+    }
+
+    &__scrim {
+        position: absolute;
+        inset: 0;
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        visibility: hidden;
+        // Match the opening fade and hide the scrim only when it finishes.
+        transition:
+            m.spring(opacity, default-spatial),
+            visibility 0s linear m.spring-duration(default-spatial);
+    }
+
+    &__container {
+        position: relative;
+        height: 100%;
+        max-width: 400px; // side sheet specs, container maximum width
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        pointer-events: auto;
+        color: t.color("on-surface");
+        // Slide back to the docked edge using the same motion as entry.
+        transition: m.spring(transform, default-spatial);
+
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 3px solid t.color("secondary");
+            outline-offset: -3px;
+        }
+    }
+
+    // 24dp either side, 12dp between the elements along the top
+    &__header {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        min-height: 72px;
+        box-sizing: border-box;
+    }
+
+    &__title {
+        margin: 0;
+        flex: 1 1 auto;
+        min-width: 0;
+        color: t.color("on-surface");
+        @include m.typography("title-large");
+    }
+
+    // 16dp on the icon side, per the specs' start padding with an icon
+    &__close {
+        // The button is the layer's and the 48px target's containing block. That
+        // cannot come from the state layer's `:where()` rule alone: it adds no
+        // specificity, so a page reset like `button { position: static }` would
+        // win, and the layer and the target would anchor to the sheet's
+        // container instead.
+        position: relative;
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        margin-inline-end: -8px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: t.color("on-surface-variant");
+        cursor: pointer;
+
+        @include m.state-layer(t.color("on-surface-variant"), "hover");
+
+        &:focus-visible {
+            outline: 3px solid t.color("secondary");
+            outline-offset: 2px;
+        }
+
+        // The 40px button carries a 48px target, the icon button's own
+        // mechanism (its --xs/--s ::after): the box reaches 4px past each edge.
+        // The `position: relative` above is the button's own, so the box anchors
+        // to the button whatever the page does to buttons.
+        // m3.material.io, Density: "The default target size should be at least
+        // 48x48 CSS pixels".
+        &::after {
+            content: "";
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    &__content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 24px 24px;
+        @include m.typography("body-medium");
+        color: t.color("on-surface-variant");
+    }
+
+    // ---------------------------------------------------------------------
+    // Variants: they differ in colour, not only in behaviour
+    // ---------------------------------------------------------------------
+    &--standard {
+        pointer-events: none;
+
+        .#{$component}__container {
+            background-color: t.color("surface");
+            pointer-events: auto;
+        }
+
+        // Cover the gap the spring's overshoot opens at the docked edge
+        &.#{$component}--end .#{$component}__container {
+            box-shadow: calc(m.$sheet-overshoot-guard * var(--#{$component}-direction)) 0 0 0 t.color("surface");
+        }
+
+        &.#{$component}--start .#{$component}__container {
+            box-shadow: calc(-1 * m.$sheet-overshoot-guard * var(--#{$component}-direction)) 0 0 0 t.color("surface");
+        }
+    }
+
+    &--modal {
+        .#{$component}__container {
+            background-color: t.color("surface-container-low");
+            @include m.elevation(1);
+        }
+
+        // Only the modal sheet rounds, on its inner edge: CornerLarge where it
+        // faces the page. The standard one is square (MDC
+        // Sheet.Side.Docked.Container.Shape = Corner.None),
+        &.#{$component}--end .#{$component}__container {
+            box-shadow: f.get-elevation(1), calc(m.$sheet-overshoot-guard * var(--#{$component}-direction)) 0 0 0 t.color("surface-container-low");
+            border-start-start-radius: v.shape("large");
+            border-end-start-radius: v.shape("large");
+        }
+
+        &.#{$component}--start .#{$component}__container {
+            box-shadow: f.get-elevation(1), calc(-1 * m.$sheet-overshoot-guard * var(--#{$component}-direction)) 0 0 0 t.color("surface-container-low");
+            border-start-end-radius: v.shape("large");
+            border-end-end-radius: v.shape("large");
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Which edge it docks to, and which corners round
+    // ---------------------------------------------------------------------
+    &--end {
+        justify-content: flex-end;
+
+        .#{$component}__container {
+            transform: translateX(calc(100% * var(--#{$component}-direction)));
+        }
+    }
+
+    &--start {
+        justify-content: flex-start;
+
+        .#{$component}__container {
+            transform: translateX(calc(-100% * var(--#{$component}-direction)));
+        }
+    }
+
+    &--open {
+        .#{$component}__container {
+            transform: translateX(0);
+            transition: m.spring(transform, default-spatial);
+        }
+
+        // Opacity past 1 is clamped, so the scrim takes the sheet's timing
+        // without overshooting
+        .#{$component}__scrim {
+            opacity: 1;
+            visibility: visible;
+            transition: m.spring(opacity, default-spatial), visibility 0s;
+        }
+    }
+
+    @include m.reduced-motion {
+        .#{$component}__container,
+        .#{$component}__scrim,
+        &--open .#{$component}__container,
+        &--open .#{$component}__scrim {
+            transition: none;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// layer: "top": a modal sheet's root is a <dialog> the browser shows in the top
+// layer with showModal(). It stays the fixed layer over the page it is without
+// it, so this undoes the user agent's dialog box, and the scrim is its
+// ::backdrop, faded as the scrim was. Keep display and the top-layer overlay
+// until the sheet finishes sliding out.
+// -----------------------------------------------------------------------------
+dialog.#{$component} {
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+    transition:
+        display m.spring-duration(default-spatial) allow-discrete,
+        overlay m.spring-duration(default-spatial) allow-discrete;
+
+    &:not([open]) {
+        display: none;
+    }
+
+    &::backdrop {
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        transition: m.spring(opacity, default-spatial);
+    }
+
+    // Opacity past 1 is clamped, so the backdrop takes the sheet's timing
+    // without overshooting
+    &.#{$component}--open::backdrop {
+        opacity: 1;
+        transition: m.spring(opacity, default-spatial);
+    }
+
+    @include m.reduced-motion {
+        &,
+        &::backdrop {
+            transition: none;
+        }
+    }
+}

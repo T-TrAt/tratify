@@ -29,6 +29,7 @@ for (const width of [320, 1440, 1920]) {
   test(`tag demo wraps and centers the add button within its card at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/components#apple-tag')
+    await expect(page).toHaveURL(/\/tags$/)
     const card = page.locator('#apple-tag')
     const row = card.locator('.demo-tag-row')
     await card.getByRole('button', { name: '移除设计系统', exact: true }).click()

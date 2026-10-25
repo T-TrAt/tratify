@@ -1,0 +1,461 @@
+// src/components/tabs/features.ts
+import { createTab } from "./tab";
+import { TabConfig, TabComponent } from "./types";
+import { allocateTabsGroupId, updateTabPanels } from "./utils";
+import { createTabIndicator, TabIndicator } from "./indicator";
+import { TABS_DEFAULTS } from "./constants";
+
+// All component interfaces that are extended
+interface ComponentBase {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  scrollContainer?: HTMLElement;
+  emit?: (event: string, data?: unknown) => unknown;
+  destroy?: () => void;
+  tabs?: TabComponent[];
+  handleTabClick?: (event: Event | null, tab: TabComponent) => void;
+  variant?: string;
+}
+
+/**
+ * Narrows a click payload to a real DOM event.
+ *
+ * Keyboard activation in `utils.ts` calls `handleTabClick(null, tab)` on
+ * purpose -- it routes an arrow key through the same path as a click, and
+ * there is no event to cancel. That null is what this guard is for, so the
+ * signature says so rather than taking `unknown`. The `preventDefault` check
+ * stays because a tab's `click` listener is handed the button's wrapped
+ * payload, which has no `preventDefault`. The DOM fallback passes a real
+ * event, and keyboard activation passes null.
+ */
+const isCancelable = (event: Event | null): event is Event =>
+  !!event && typeof event.preventDefault === "function";
+
+/**
+ * Configuration for tabs management feature
+ */
+export interface TabsManagementConfig {
+  /** Initial tabs to create */
+  tabs?: TabConfig[];
+  /** Id for this tab group; allocated when omitted. */
+  groupId?: string;
+  /** Tab variant */
+  variant?: string;
+  /** Component prefix */
+  prefix?: string;
+}
+
+/**
+ * Component with tabs management capabilities
+ */
+export interface TabsManagementComponent {
+  /** Array of tab components */
+  tabs: TabComponent[];
+
+  /** Target container for tabs */
+  tabsContainer: HTMLElement;
+
+  /** Tab click handler */
+  handleTabClick: (event: Event | null, tab: TabComponent) => void;
+
+  /** This tablist's id, carried by every tab it builds, including added ones */
+  groupId: string;
+
+  /** Get all tabs */
+  getTabs?: () => TabComponent[];
+
+  /** Get the active tab */
+  getActiveTab?: () => TabComponent | null;
+}
+
+/**
+ * Adds tabs management capabilities to a component
+ * @param {TabsManagementConfig} config - Tabs configuration
+ * @returns {Function} Component enhancer with tabs management
+ */
+export const withTabsManagement =
+  <T extends TabsManagementConfig & object>(config: T) =>
+  <C extends ComponentBase>(component: C): C & TabsManagementComponent => {
+    // One id per tablist. A page may pin it with `groupId` so ids stay
+    // stable across renders; otherwise it is allocated.
+    const groupId = config.groupId ?? allocateTabsGroupId();
+
+    const tabs: TabComponent[] = [];
+
+    // Store the target container for tabs
+    const tabsContainer = component.scrollContainer || component.element;
+
+    // Create initial tabs if provided in config
+    if (Array.isArray(config.tabs)) {
+      config.tabs.forEach((tabConfig) => {
+        // Create a merged config that inherits from tabs component
+        const mergedConfig = {
+          ...tabConfig,
+          prefix: config.prefix,
+          variant: tabConfig.variant || config.variant,
+          // Every tab in this group carries the group's id, which is what
+          // makes its element id unique across tablists.
+          groupId,
+        };
+
+        // Create the tab
+        const tab = createTab(mergedConfig);
+
+        // Add to internal tabs array
+        tabs.push(tab);
+
+        // Add to DOM
+        tabsContainer.appendChild(tab.element);
+      });
+    }
+
+    /**
+     * Gets all tabs
+     */
+    const getTabs = () => {
+      return [...tabs];
+    };
+
+    /**
+     * Gets the active tab
+     */
+    const getActiveTab = () => {
+      return tabs.find((tab) => tab.isActive()) || null;
+    };
+
+    /**
+     * Handles tab click events
+     */
+    const handleTabClick = (event: Event | null, tab: TabComponent) => {
+      // Check if event is a DOM event with preventDefault
+      if (isCancelable(event)) {
+        event.preventDefault();
+      }
+
+      // Skip if tab is disabled. A tab exposes no disabled manager, so the check
+      // this replaces never matched; read the button the tab is rendered as.
+      if ((tab.element as HTMLButtonElement).disabled) {
+        return;
+      }
+
+      // Deactivate all tabs first
+      tabs.forEach((t) => t.deactivate());
+
+      // Activate the clicked tab
+      tab.activate();
+
+      // Get the tab value
+      const value = tab.getValue();
+
+      // Update tab panels
+      updateTabPanels({
+        tabs,
+        getActiveTab: () => tabs.find((t) => t.isActive()) || null,
+      });
+
+      // Emit change event if component has emit method
+      if (typeof component["emit"] === "function") {
+        component["emit"]("change", {
+          tab,
+          value,
+        });
+      }
+    };
+
+    // Add click handlers to existing tabs
+    tabs.forEach((tab) => {
+      // One listener. A tab forwards its button's click through on(); adding a
+      // DOM listener as well ran handleTabClick twice per click, so every
+      // selection emitted change twice. The DOM listener is only for tabs
+      // without on().
+      if (tab.on && typeof tab.on === "function") {
+        // Same value the tab emitted: the button's wrapped click, not a DOM
+        // event. The guard below no-ops when preventDefault is absent.
+        tab.on("click", (event) => handleTabClick(event as unknown as Event, tab));
+      } else {
+        tab.element.addEventListener("click", (event) =>
+          handleTabClick(event, tab)
+        );
+      }
+    });
+
+    return {
+      ...component,
+      tabs,
+      tabsContainer,
+      handleTabClick,
+      groupId,
+      getTabs,
+      getActiveTab,
+    };
+  };
+
+/**
+ * Configuration for scrollable feature
+ */
+export interface ScrollableConfig {
+  /** Whether tabs are scrollable horizontally */
+  scrollable?: boolean;
+}
+
+/**
+ * Component with scrollable capabilities
+ */
+export interface ScrollableComponent {
+  /** Scroll container element */
+  scrollContainer?: HTMLElement;
+}
+
+/**
+ * Adds scrollable capabilities to a component
+ * @param {ScrollableConfig} config - Scrollable configuration
+ * @returns {Function} Component enhancer with scrollable container
+ */
+export const withScrollable =
+  <T extends ScrollableConfig & object>(config: T) =>
+  <C extends ComponentBase>(component: C): C & ScrollableComponent => {
+    // Skip if scrollable is explicitly false
+    if (config.scrollable === false) {
+      return component as C & ScrollableComponent;
+    }
+
+    // Add scrollable class
+    component.element.classList.add(
+      `${component.getClass("tabs")}--scrollable`
+    );
+
+    // Create container for tabs that can scroll
+    const scrollContainer = document.createElement("div");
+    scrollContainer.className = `${component.getClass("tabs")}__scroll`;
+
+    // Move any existing children to scroll container
+    while (component.element.firstChild) {
+      scrollContainer.appendChild(component.element.firstChild);
+    }
+
+    // Add scroll container to the main element
+    component.element.appendChild(scrollContainer);
+
+    return {
+      ...component,
+      scrollContainer,
+    };
+  };
+
+/**
+ * Configuration for divider feature
+ */
+export interface DividerConfig {
+  /** Whether to show a divider below the tabs */
+  showDivider?: boolean;
+}
+
+/**
+ * Adds a divider to a component
+ * @param {DividerConfig} config - Divider configuration
+ * @returns {Function} Component enhancer with divider
+ */
+export const withDivider =
+  <T extends DividerConfig & object>(config: T) =>
+  <C extends ComponentBase>(component: C): C => {
+    // Skip if divider is explicitly disabled
+    if (config.showDivider === false) {
+      return component;
+    }
+
+    // Create the divider element
+    const divider = document.createElement("div");
+    divider.className = `${component.getClass("tabs")}__divider`;
+
+    // Add the divider to the main element
+    component.element.appendChild(divider);
+
+    return component;
+  };
+
+/**
+ * Configuration for indicator feature
+ */
+export interface IndicatorFeatureConfig {
+  /** Component prefix */
+  prefix?: string;
+  /** Tabs variant passed to the indicator */
+  variant?: string;
+  /** Width strategy for the indicator */
+  widthStrategy?: "fixed" | "dynamic" | "content" | "auto";
+  /** Height of the indicator in pixels */
+  height?: number;
+  /** Fixed width in pixels (when using fixed strategy) */
+  fixedWidth?: number;
+  /** Animation duration in milliseconds */
+  animationDuration?: number;
+  /** Animation timing function */
+  animationTiming?: string;
+  /** Custom color for the indicator */
+  color?: string;
+  /** Indicator configuration object */
+  indicator?: {
+    widthStrategy?: "fixed" | "dynamic" | "content" | "auto";
+    height?: number;
+    fixedWidth?: number;
+    animationDuration?: number;
+    animationTiming?: string;
+    color?: string;
+    visible?: boolean;
+  };
+}
+
+/**
+ * Component with indicator capability
+ */
+export interface IndicatorComponent {
+  /** The indicator instance */
+  indicator: TabIndicator;
+  /** Get the indicator instance */
+  getIndicator: () => TabIndicator;
+}
+
+/**
+ * Enhances a component with tab indicator functionality
+ * @param config - Indicator configuration
+ * @returns Component enhancer with indicator functionality
+ */
+export const withIndicator =
+  <T extends IndicatorFeatureConfig>(config: T) =>
+  <
+    C extends ComponentBase & {
+      tabs: TabComponent[];
+      // Required, not optional: this feature wraps the handler, and
+      // withTabsManagement installs it earlier in the pipe. Reading it off an
+      // optional member meant a click could call undefined.
+      handleTabClick: (event: Event | null, tab: TabComponent) => void;
+    },
+  >(
+    component: C
+  ): C & IndicatorComponent => {
+    // Create indicator with proper config
+    const indicatorConfig = config.indicator || {};
+    const indicator: TabIndicator = createTabIndicator({
+      prefix: config.prefix,
+      widthStrategy: indicatorConfig.widthStrategy || TABS_DEFAULTS.INDICATOR_WIDTH_STRATEGY,
+      // Left undefined, the indicator takes its variant's height and the stylesheet's
+      // spring; given, they override them.
+      height: indicatorConfig.height,
+      fixedWidth: indicatorConfig.fixedWidth || TABS_DEFAULTS.INDICATOR_FIXED_WIDTH,
+      animationDuration: indicatorConfig.animationDuration,
+      animationTiming: indicatorConfig.animationTiming,
+      color: indicatorConfig.color,
+      // Accepted and never passed on.
+      visible: indicatorConfig.visible,
+      // Pass the tabs variant to the indicator
+      variant: config.variant ?? "primary",
+    });
+
+    // Find the scroll container and add the indicator to it
+    const scrollContainer = component.scrollContainer || component.element;
+    if (!scrollContainer) {
+      console.error("No scroll container found - cannot add indicator");
+      throw new Error("Failed to create tabs: No scroll container found");
+    }
+
+    // Add the indicator to the scroll container
+    scrollContainer.appendChild(indicator.element);
+
+    // Store the original handlers to enhance
+    const originalHandleTabClick = component.handleTabClick;
+
+    // Replace tab click handler to ensure indicator updates
+    component.handleTabClick = function (event, tab) {
+      // Skip if tab is disabled. A tab exposes no disabled manager, so the check
+      // this replaces never matched; read the button the tab is rendered as.
+      if ((tab.element as HTMLButtonElement).disabled) {
+        return;
+      }
+
+      // Call original handler
+      originalHandleTabClick.call(this, event, tab);
+
+      // Move indicator with a slight delay to ensure DOM updates
+      setTimeout(() => {
+        indicator.moveToTab(tab);
+      }, 10);
+    };
+
+    // Keep the indicator on the active tab after initial layout, scroll or resize.
+    const updateIndicator = () => {
+      const activeTab = component.tabs.find((tab) => tab.isActive());
+      if (activeTab) {
+        indicator.moveToTab(activeTab, true);
+      }
+    };
+
+    // The synchronous call is what a server records. The timeout still covers
+    // the first layout in a browser; measurement only runs when anchors are absent.
+    updateIndicator();
+    setTimeout(updateIndicator, 50);
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", updateIndicator);
+    }
+
+    // Watch for window resize to update indicator
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateIndicator) : null;
+
+    resizeObserver?.observe(scrollContainer);
+
+    // Add MutationObserver to detect tab state changes
+    const mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "class" &&
+          (mutation.target as HTMLElement).classList.contains(
+            `${config.prefix}-tab--active`
+          )
+        ) {
+          // Find the corresponding tab component
+          const tabElement = mutation.target as HTMLElement;
+          const activeTab = component.tabs.find(
+            (tab) => tab.element === tabElement
+          );
+          if (activeTab) {
+            indicator.moveToTab(activeTab);
+          }
+        }
+      }
+    });
+
+    // Observe all tabs for class changes
+    if (Array.isArray(component.tabs)) {
+      component.tabs.forEach((tab) => {
+        if (tab.element) {
+          mutationObserver.observe(tab.element, { attributes: true });
+        }
+      });
+    }
+
+    // Enhance component's destroy method
+    const originalDestroy = component.destroy || (() => {});
+
+    // Override destroy to clean up resources
+    component.destroy = function () {
+      indicator.destroy();
+      resizeObserver?.disconnect();
+      mutationObserver.disconnect();
+
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", updateIndicator);
+      }
+
+      // Call original destroy if it exists
+      if (typeof originalDestroy === "function") {
+        originalDestroy.call(this);
+      }
+    };
+
+    return {
+      ...component,
+      indicator,
+      getIndicator: () => indicator,
+    };
+  };

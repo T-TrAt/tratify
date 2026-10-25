@@ -1,0 +1,483 @@
+// src/components/search/features/input.ts
+
+import type { SearchComponent } from "../types";
+import { SearchConfig, SearchStructure, SearchSuggestion, SearchViewMode } from "../types";
+import { SEARCH_CLASSES, SEARCH_EVENTS } from "../constants";
+import { activeElementOf } from "../../../core/dom/focus";
+
+/**
+ * Normalizes suggestions to SearchSuggestion[] format
+ */
+const normalizeSuggestions = (
+  suggestions: SearchSuggestion[] | string[] | undefined
+): SearchSuggestion[] => {
+  if (!suggestions) {
+    return [];
+  }
+
+  return suggestions.map((item) => {
+    if (typeof item === "string") {
+      return { text: item, value: item };
+    }
+    return { ...item, value: item.value ?? item.text };
+  });
+};
+
+/**
+ * Adds input handling features to the search component
+ * Manages value, placeholder, and input events
+ *
+ * @param config Search configuration
+ * @returns Component enhancer with input features
+ */
+/** What this feature reads off the component it is handed. */
+interface InputHost {
+  getClass: (name: string) => string;
+  // SearchStructure, not a loose record of elements. The record said
+  // `HTMLElement | undefined` where the real thing has `HTMLElement | null`,
+  // so what withStructure produces did not satisfy it -- which is what stopped
+  // the pipe binding C here once the stage before was typed.
+  structure?: SearchStructure;
+  // Mirrors what search/features/states actually returns, rather than only
+  // the members this file happens to call — typing against the producer is
+  // what stops the two drifting. Required, because withStates runs before
+  // withInput in the pipe.
+  states: {
+    expand: () => void;
+    collapse: () => void;
+    getState: () => string;
+    isExpanded: () => boolean;
+    // `SearchViewMode`, not `string`. The producer in features/states.ts
+    // takes and returns the union, and a host declaring the wider `string`
+    // promises to call `setViewMode` with values -- any string -- that the
+    // producer does not accept. Under strictFunctionTypes that is the
+    // parameter position, so it is contravariant and unsound: it is what
+    // stopped the pipe at search.ts:54 resolving, and the two `unknown`
+    // errors after it were that one failure cascading.
+    setViewMode: (mode: SearchViewMode) => void;
+    getViewMode: () => SearchViewMode;
+    updatePopulatedState: (hasValue: boolean) => void;
+    updateFocusedState: (isFocused: boolean) => void;
+  };
+  disabled?: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  emit?: (event: string, data?: unknown) => unknown;
+}
+
+export const withInput =
+  (config: SearchConfig, getComponent: () => SearchComponent) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // text field's withDensity (#109).
+  <C extends InputHost>(component: C) => {
+  // Initialize state
+  let currentValue = config.value || "";
+  let currentPlaceholder = config.placeholder || "Search";
+  let suggestions: SearchSuggestion[] = normalizeSuggestions(config.suggestions);
+
+  // Helper to get prefixed class names
+  const getClass = (className: string): string => {
+    return component.getClass ? component.getClass(className) : className;
+  };
+
+  /**
+   * Creates an event data object
+   */
+  const createEventData = (
+    eventType: string,
+    originalEvent: Event | null = null,
+    extra: Record<string, unknown> = {}
+  ) => {
+    const eventData = {
+      component: getComponent(),
+      value: currentValue,
+      originalEvent,
+      preventDefault: () => {
+        eventData.defaultPrevented = true;
+      },
+      defaultPrevented: false,
+      ...extra,
+    };
+    return eventData;
+  };
+
+  /** Emits an event. Config on* options are listeners registered at creation. */
+  const emitEvent = (
+    eventType: string,
+    originalEvent: Event | null = null,
+    extra: Record<string, unknown> = {}
+  ) => {
+    const eventData = createEventData(eventType, originalEvent, extra);
+
+    if (component.emit) {
+      component.emit(eventType, eventData);
+    }
+
+    return eventData;
+  };
+
+  /**
+   * Updates the clear button visibility
+   */
+  const updateClearButton = (hasValue: boolean): void => {
+    const clearButton = component.structure?.clearButton;
+    if (!clearButton) return;
+
+    if (hasValue) {
+      clearButton.classList.remove(getClass(SEARCH_CLASSES.CLEAR_BUTTON_HIDDEN));
+      if (!component.disabled?.isDisabled()) {
+        clearButton.tabIndex = 0;
+      }
+    } else {
+      clearButton.classList.add(getClass(SEARCH_CLASSES.CLEAR_BUTTON_HIDDEN));
+      clearButton.tabIndex = -1;
+    }
+  };
+
+  /**
+   * Sets the input value
+   */
+  const setValue = (value: string, triggerEvent = true): void => {
+    const previousValue = currentValue;
+    currentValue = value;
+
+    // Update DOM
+    const input = component.structure?.input;
+    if (input && input.value !== value) {
+      input.value = value;
+    }
+
+    // Update clear button visibility
+    updateClearButton(!!value);
+
+    // Update populated state
+    if (component.states?.updatePopulatedState) {
+      component.states.updatePopulatedState(!!value);
+    }
+
+    // Emit input event if value changed and triggering is enabled
+    if (triggerEvent && value !== previousValue) {
+      emitEvent(SEARCH_EVENTS.INPUT);
+    }
+  };
+
+  /**
+   * Gets the current value
+   */
+  const getValue = (): string => {
+    return currentValue;
+  };
+
+  /**
+   * Sets the placeholder text
+   */
+  const setPlaceholder = (text: string): void => {
+    currentPlaceholder = text;
+
+    const input = component.structure?.input;
+    if (input) {
+      input.placeholder = text;
+      input.setAttribute("aria-label", text);
+    }
+  };
+
+  /**
+   * Gets the current placeholder
+   */
+  const getPlaceholder = (): string => {
+    return currentPlaceholder;
+  };
+
+  /**
+   * Clears the input value
+   */
+  const clear = (triggerEvent = true): void => {
+    // Emptying the query is an input, as in a native field, then a clear: a
+    // consumer filtering on input kept its results.
+    setValue("", triggerEvent);
+
+    // Focus input after clearing
+    const input = component.structure?.input;
+    if (input && !component.disabled?.isDisabled()) {
+      input.focus();
+    }
+
+    if (triggerEvent) {
+      emitEvent(SEARCH_EVENTS.CLEAR);
+    }
+  };
+
+  /**
+   * Submits the current search value
+   */
+  const submit = (): void => {
+    if (currentValue) {
+      emitEvent(SEARCH_EVENTS.SUBMIT);
+    }
+  };
+
+  /**
+   * Focuses the input element
+   */
+  const focus = (): void => {
+    const input = component.structure?.input;
+    if (input && !component.disabled?.isDisabled()) {
+      input.focus();
+    }
+  };
+
+  /**
+   * Blurs the input element
+   */
+  const blur = (): void => {
+    const input = component.structure?.input;
+    if (input) {
+      input.blur();
+    }
+  };
+
+  /**
+   * Sets the suggestions
+   */
+  const setSuggestions = (
+    newSuggestions: SearchSuggestion[] | string[]
+  ): void => {
+    suggestions = normalizeSuggestions(newSuggestions);
+  };
+
+  /**
+   * Gets the current suggestions
+   */
+  const getSuggestions = (): SearchSuggestion[] => {
+    return [...suggestions];
+  };
+
+  /**
+   * Clears all suggestions
+   */
+  const clearSuggestions = (): void => {
+    suggestions = [];
+  };
+
+  /**
+   * Selects a suggestion
+   */
+  const selectSuggestion = (suggestion: SearchSuggestion): void => {
+    setValue(suggestion.value ?? suggestion.text, false);
+    emitEvent(SEARCH_EVENTS.SUGGESTION_SELECT, null, { suggestion });
+  };
+
+  /**
+   * Sets up input event listeners
+   */
+  const setupEventListeners = (): void => {
+    const input = component.structure?.input;
+    const clearButton = component.structure?.clearButton;
+    const leadingIcon = component.structure?.leadingIcon;
+
+    if (!input) return;
+
+    // Opens the view where focus alone cannot: the input already has focus
+    // after a suggestion was chosen.
+    // Only with focus: a script setting the value and dispatching `input` is
+    // not someone typing.
+    const reopen = (): void => {
+      if (config.expandOnFocus !== false && !component.states?.isExpanded() && activeElementOf(input) === input) component.states?.expand();
+    };
+
+    // Input event - value changes; typing reopens a closed view
+    input.addEventListener("input", (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      setValue(target.value, true);
+      reopen();
+    });
+    input.addEventListener("click", reopen);
+
+    // Focus event
+    input.addEventListener("focus", (e: FocusEvent) => {
+      if (component.states?.updateFocusedState) {
+        component.states.updateFocusedState(true);
+      }
+      emitEvent(SEARCH_EVENTS.FOCUS, e);
+
+      // Auto-expand on focus if configured
+      if (config.expandOnFocus !== false && component.states?.expand) {
+        component.states.expand();
+      }
+    });
+
+    // Blur event
+    input.addEventListener("blur", (e: FocusEvent) => {
+      if (component.states?.updateFocusedState) {
+        component.states.updateFocusedState(false);
+      }
+      emitEvent(SEARCH_EVENTS.BLUR, e);
+
+      // Auto-collapse on blur if configured (with delay for click handling)
+      if (config.collapseOnBlur !== false && component.states?.collapse) {
+        const delay = config.collapseDelay ?? 150;
+        setTimeout(() => {
+          // Only once focus has left the search: moving to its own back or
+          // clear button, or a suggestion, closed the view under the person
+          // using it, so the keyboard could never reach them.
+          const root = component.structure?.surface ?? input;
+          if (!root.contains(activeElementOf(input))) {
+            component.states.collapse();
+          }
+        }, delay);
+      }
+    });
+
+    // Keydown event - Enter to submit, Escape to clear/collapse
+    input.addEventListener("keydown", (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Enter":
+          e.preventDefault();
+          // Enter on the suggestion the arrows reached selects it (the
+          // suggestions feature does); it submitted the typed text first.
+          if (!input.hasAttribute("aria-activedescendant")) submit();
+          break;
+
+        case "Escape":
+          e.preventDefault();
+          if (currentValue) {
+            clear();
+          } else if (component.states?.isExpanded?.()) {
+            component.states.collapse();
+          }
+          break;
+
+        case "ArrowDown":
+          // Handled by suggestions feature
+          break;
+
+        case "ArrowUp":
+          // Handled by suggestions feature
+          break;
+      }
+    });
+
+    // Clear button click
+    if (clearButton) {
+      clearButton.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        clear();
+      });
+
+      // Keyboard support for clear button
+      clearButton.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          clear();
+        }
+      });
+    }
+
+    // Leading icon click - expand or collapse
+    if (leadingIcon) {
+      leadingIcon.addEventListener("click", (e: MouseEvent) => {
+        e.preventDefault();
+
+        if (component.states?.isExpanded?.()) {
+          component.states.collapse();
+        } else {
+          component.states?.expand();
+        }
+      });
+
+      // Keyboard support for leading icon
+      leadingIcon.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+
+          if (component.states?.isExpanded?.()) {
+            component.states.collapse();
+          } else {
+            component.states?.expand();
+          }
+        }
+      });
+    }
+  };
+
+  // Initialize event listeners after structure is ready
+  setTimeout(() => {
+    setupEventListeners();
+  }, 0);
+
+  // Return enhanced component with input features
+  return {
+    ...component,
+
+    input: {
+      /**
+       * Sets the input value
+       */
+      setValue,
+
+      /**
+       * Gets the current value
+       */
+      getValue,
+
+      /**
+       * Sets the placeholder text
+       */
+      setPlaceholder,
+
+      /**
+       * Gets the current placeholder
+       */
+      getPlaceholder,
+
+      /**
+       * Clears the input
+       */
+      clear,
+
+      /**
+       * Submits the search
+       */
+      submit,
+
+      /**
+       * Focuses the input
+       */
+      focus,
+
+      /**
+       * Blurs the input
+       */
+      blur,
+
+      /**
+       * Sets suggestions
+       */
+      setSuggestions,
+
+      /**
+       * Gets suggestions
+       */
+      getSuggestions,
+
+      /**
+       * Clears suggestions
+       */
+      clearSuggestions,
+
+      /**
+       * Selects a suggestion
+       */
+      selectSuggestion,
+
+      /**
+       * Emits an event (for use by other features)
+       */
+      emitEvent,
+    },
+  };
+};

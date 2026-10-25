@@ -9,7 +9,7 @@ const router = createRouter({
   routes,
   async scrollBehavior(to, from, savedPosition) {
     await nextTick()
-    if (to.path === '/components' && to.hash && to.path !== from.path) {
+    if (['/components', '/material'].includes(to.path) && to.hash && to.path !== from.path) {
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
       await Promise.allSettled(document.getAnimations().filter(animation =>
         Number.isFinite(Number(animation.effect?.getComputedTiming().endTime)),
@@ -30,10 +30,13 @@ const router = createRouter({
   },
 })
 
-router.beforeEach(() => { cancelMotionScroll(window) })
+router.beforeEach(to => {
+  cancelMotionScroll(window)
+  if (to.path === '/components' && to.hash === '#apple-tag') return { path: '/tags', query: to.query, replace: true }
+})
 
 router.afterEach(to => {
-  const titles: Record<string, string> = { '/': '首页', '/components': '组件', '/settings': '设置' }
+  const titles: Record<string, string> = { '/': '首页', '/components': '组件', '/material': 'Material', '/tags': '材质实验室', '/settings': '设置' }
   const handbook = to.path.startsWith('/component-docs/') ? componentDocuments[String(to.params.component)] : undefined
   document.title = `${handbook ? `${handbook.label} ${handbook.name}` : to.meta.title ?? titles[to.path] ?? '页面不存在'} · Apptify`
 })

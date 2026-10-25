@@ -37,7 +37,7 @@
 import { imageUrl } from '../images'
 import { defineComponent, markRaw } from 'vue'
 import { ArrowRight, ArrowUpRight, Download, Heart, Plus } from 'lucide-vue-next'
-import { catalog } from '../catalog'
+import { overviewCatalog as catalog } from '../catalog'
 
 export default defineComponent({
   components: { ArrowRight, ArrowUpRight },

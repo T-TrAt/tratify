@@ -1,0 +1,55 @@
+// src/components/menu/index.ts
+
+/**
+ * Menu component module
+ * 
+ * The Menu component provides a Material Design 3 compliant dropdown menu
+ * system with support for nested menus, keyboard navigation, and accessibility.
+ * 
+ * @module components/menu
+ * @category Components
+ */
+
+// Export main component factory
+export { default, default as createMenu } from './menu';
+// The event map `on` and `off` are typed with
+export type { MenuEvents } from './types';
+
+// Export types and interfaces
+export type { 
+  MenuConfig, 
+  MenuVariant,
+  MenuComponent, 
+  MenuItem, 
+  MenuDivider,
+  MenuGap,
+  MenuContent,
+  MenuEvent,
+  MenuSelectEvent,
+  MenuPosition
+} from './types';
+
+/**
+ * Constants for menu position values - use these instead of string literals
+ * for better code completion and type safety.
+ * 
+ * @example
+ * import { createMenu, MENU_POSITION } from 'material';
+ * 
+ * // Create a menu positioned at the bottom-right of its opener
+ * const menu = createMenu({ 
+ *   opener: '#dropdown-button',
+ *   items: [...],
+ *   position: MENU_POSITION.BOTTOM_END 
+ * });
+ * 
+ * @category Components
+ */
+export { 
+  MENU_POSITION,
+  MENU_DEFAULTS,
+  MENU_INTERACTION_TYPES,
+  MENU_ITEM_TYPES,
+  MENU_EVENTS,
+  MENU_CLASSES
+} from './constants';

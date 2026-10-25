@@ -1,0 +1,248 @@
+// src/styles/components/_bottom-sheet.scss
+@use "../abstract/base" as base;
+@use "../abstract/functions" as f;
+@use "../abstract/variables" as v;
+@use "../abstract/mixins" as m;
+@use "../abstract/theme" as t;
+
+$component: "#{base.$prefix}-bottom-sheet";
+
+// -----------------------------------------------------------------------------
+// Bottom sheet (Compose SheetBottomTokens and BottomSheetDefaults)
+//
+// A surface anchored to the bottom edge: surface-container-low, extra-large
+// corners on the top two only, elevation level 1, and a 32x4dp handle that says
+// it can be dragged. It stops growing at 640dp and centres itself, so it does
+// not stretch across a desktop window.
+// -----------------------------------------------------------------------------
+.#{$component} {
+    position: fixed;
+    inset: 0;
+    z-index: v.z-index("modal");
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    // A standard sheet leaves the page usable, so the layer itself must not
+    // swallow clicks meant for what is behind it
+    pointer-events: none;
+
+    &--scrim-visible,
+    &--partial,
+    &--expanded {
+        pointer-events: auto;
+    }
+
+    // The scrim, on modal sheets only (ScrimTokens.ContainerOpacity)
+    &__scrim {
+        position: absolute;
+        inset: 0;
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        visibility: hidden;
+        // Compose's ModalBottomSheet fades its scrim on default effects both
+        // ways; it leaves the accessibility tree once the fade is done
+        transition:
+            m.spring(opacity, default-effects),
+            visibility 0s linear m.spring-duration(default-effects);
+    }
+
+    // The sheet itself
+    &__container {
+        position: relative;
+        width: 100%;
+        max-width: 640px; // BottomSheetDefaults.SheetMaxWidth
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        pointer-events: auto;
+
+        background-color: t.color("surface-container-low"); // DockedContainerColor
+        color: t.color("on-surface");
+
+        // CornerExtraLargeTop: the bottom edge meets the screen, so it is square
+        border-start-start-radius: v.shape("extra-large");
+        border-start-end-radius: v.shape("extra-large");
+        // Level 1 (DockedStandardContainerElevation), plus a shadow of the
+        // sheet's own colour below it to cover the gap the spring's overshoot
+        // opens at the bottom edge
+        box-shadow: f.get-elevation(1), 0 m.$sheet-overshoot-guard 0 0 t.color("surface-container-low");
+
+        // Use the same spatial motion in both directions, sliding fully out
+        // of view when the sheet closes.
+        transform: translateY(100%);
+        transition: m.spring(transform, default-spatial);
+
+        &:focus {
+            outline: none;
+        }
+
+        // Focus ring uses the secondary role (FocusIndicatorColor)
+        &:focus-visible {
+            outline: 3px solid t.color("secondary");
+            outline-offset: -3px;
+        }
+    }
+
+    // A 48dp button (Compose: 22dp vertical padding round the 4dp bar, and the
+    // minimum interactive size) drawing the 32x4dp bar
+    // (DockedDragHandleWidth / DockedDragHandleHeight)
+    &__handle {
+        flex: 0 0 auto;
+        position: relative;
+        align-self: center;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: none;
+        cursor: grab;
+        touch-action: none; // the sheet handles the gesture, not the browser
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 22px 8px;
+            border-radius: v.shape("extra-large"); // BottomSheetDefaults.DragHandle shape
+            background-color: t.color("on-surface-variant"); // DockedDragHandleColor
+        }
+
+        &:active {
+            cursor: grabbing;
+        }
+
+        // SheetBottomTokens.FocusIndicatorColor
+        &:focus-visible {
+            outline: 3px solid t.color("secondary");
+            outline-offset: -3px;
+        }
+    }
+
+    &__header {
+        flex: 0 0 auto;
+        padding: 0 24px 16px;
+    }
+
+    &__title {
+        margin: 0;
+        color: t.color("on-surface");
+        @include m.typography("headline-small");
+    }
+
+    &__content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 24px 24px;
+        @include m.typography("body-medium");
+        color: t.color("on-surface-variant");
+    }
+
+    // ---------------------------------------------------------------------
+    // States
+    // ---------------------------------------------------------------------
+    &--partial {
+        .#{$component}__container {
+            // the peek height, showing what the sheet holds without covering
+            // the page: the factory's peekHeight, or its content up to half
+            // the screen
+            transform: translateY(0);
+            max-height: var(--#{$component}-peek-height, 50%);
+            transition: m.spring(transform, default-spatial);
+        }
+
+        .#{$component}__scrim {
+            opacity: 1;
+            visibility: visible;
+            transition: m.spring(opacity, default-effects), visibility 0s;
+        }
+    }
+
+    &--expanded {
+        .#{$component}__container {
+            transform: translateY(0);
+            max-height: 100%;
+            transition: m.spring(transform, default-spatial);
+            // level with the top of the screen, the corners square off
+            // (DockedMinimizedContainerShape is CornerNone)
+            &:where(.#{$component}--full-height *) {
+                border-start-start-radius: 0;
+                border-start-end-radius: 0;
+            }
+        }
+
+        .#{$component}__scrim {
+            opacity: 1;
+            visibility: visible;
+            transition: m.spring(opacity, default-effects), visibility 0s;
+        }
+    }
+
+    // A standard sheet has no scrim and does not block the page
+    &--standard {
+        pointer-events: none;
+
+        .#{$component}__container {
+            pointer-events: auto;
+        }
+    }
+
+    @include m.reduced-motion {
+        .#{$component}__container,
+        .#{$component}__scrim,
+        &--partial .#{$component}__container,
+        &--partial .#{$component}__scrim,
+        &--expanded .#{$component}__container,
+        &--expanded .#{$component}__scrim {
+            transition: none;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// layer: "top": a modal sheet's root is a <dialog> the browser shows in the top
+// layer with showModal(). It stays the fixed layer over the page it is without
+// it, so this undoes the user agent's dialog box, and the scrim is its
+// ::backdrop, faded as the scrim was. Keep both display and the top-layer
+// overlay until the surface finishes sliding out.
+// -----------------------------------------------------------------------------
+dialog.#{$component} {
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+    transition:
+        display m.spring-duration(default-spatial) allow-discrete,
+        overlay m.spring-duration(default-spatial) allow-discrete;
+
+    &:not([open]) {
+        display: none;
+    }
+
+    &::backdrop {
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        transition: m.spring(opacity, default-effects);
+    }
+
+    &.#{$component}--partial::backdrop,
+    &.#{$component}--expanded::backdrop {
+        opacity: 1;
+    }
+
+    @include m.reduced-motion {
+        &,
+        &::backdrop {
+            transition: none;
+        }
+    }
+}

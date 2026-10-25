@@ -1,0 +1,297 @@
+// src/components/datepicker/utils.ts
+import { CalendarDate, MONTH_NAMES, MONTH_NAMES_SHORT } from './types';
+
+/**
+ * Parses a date from various input types
+ * @param date - Date string, Date object, or null
+ * @returns Valid Date object or null if invalid
+ */
+export const parseDate = (date: Date | string | null): Date | null => {
+  if (!date) return null;
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) return parseInputDate(date, 'YYYY-MM-DD');
+  const result = new Date(date);
+  if (isNaN(result.getTime())) return null;
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
+/** Strict inverse of formatDate: never let Date roll February 30 into March. */
+export const parseInputDate = (text: string, format: string): Date | null => {
+  const tokens: string[] = [];
+  const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = format.split(/(YYYY|MMMM|MMM|YY|MM|DD|M|D)/).map(part => {
+    if (!/^(YYYY|MMMM|MMM|YY|MM|DD|M|D)$/.test(part)) return escape(part);
+    tokens.push(part);
+    if (part === 'MMMM') return '(' + MONTH_NAMES.join('|') + ')';
+    if (part === 'MMM') return '(' + MONTH_NAMES_SHORT.join('|') + ')';
+    return part === 'YYYY' ? '(\\d{4})' : part === 'YY' ? '(\\d{2})' : '(\\d{1,2})';
+  }).join('');
+  const match = new RegExp('^' + pattern + '$', 'i').exec(text.trim());
+  if (!match) return null;
+  let year = 0, month = 0, day = 0;
+  tokens.forEach((token, index) => {
+    const value = match[index + 1];
+    if (token === 'YYYY') year = Number(value);
+    else if (token === 'YY') year = 2000 + Number(value);
+    else if (token === 'MMMM' || token === 'MMM') month = (token === 'MMMM' ? MONTH_NAMES : MONTH_NAMES_SHORT).findIndex(name => name.toLowerCase() === value.toLowerCase()) + 1;
+    else if (token.startsWith('M')) month = Number(value);
+    else day = Number(value);
+  });
+  const result = new Date(0); result.setFullYear(year, month - 1, day); result.setHours(0, 0, 0, 0);
+  return year >= 1 && result.getFullYear() === year && result.getMonth() === month - 1 && result.getDate() === day ? result : null;
+};
+
+/**
+ * Formats a date according to the specified format using a parser-based approach
+ * This avoids string replacement issues by building the output string from scratch
+ * 
+ * @param date - Date to format
+ * @param format - Format string (MM/DD/YYYY, etc.)
+ * @returns Formatted date string
+ */
+export const formatDate = (date: Date | null, format: string = 'MM/DD/YYYY'): string => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return '';
+  }
+  
+  let result = '';
+  let i = 0;
+  
+  while (i < format.length) {
+    // Check for month name patterns
+    if (format.substring(i, i+4) === 'MMMM') {
+      // Full month name
+      result += MONTH_NAMES[date.getMonth()];
+      i += 4;
+    } 
+    else if (format.substring(i, i+3) === 'MMM') {
+      // Abbreviated month name
+      result += MONTH_NAMES_SHORT[date.getMonth()];
+      i += 3;
+    }
+    else if (format.substring(i, i+2) === 'MM') {
+      // Two-digit month
+      result += (date.getMonth() + 1).toString().padStart(2, '0');
+      i += 2;
+    }
+    else if (format.substring(i, i+1) === 'M') {
+      // Single-digit month
+      result += (date.getMonth() + 1);
+      i += 1;
+    }
+    else if (format.substring(i, i+4) === 'YYYY') {
+      // 4-digit year
+      result += date.getFullYear();
+      i += 4;
+    }
+    else if (format.substring(i, i+2) === 'YY') {
+      // 2-digit year
+      result += date.getFullYear().toString().slice(-2);
+      i += 2;
+    }
+    else if (format.substring(i, i+2) === 'DD') {
+      // Two-digit day
+      result += date.getDate().toString().padStart(2, '0');
+      i += 2;
+    }
+    else if (format.substring(i, i+1) === 'D') {
+      // Single-digit day
+      result += date.getDate();
+      i += 1;
+    }
+    else {
+      // Any other character is copied as-is
+      result += format[i];
+      i += 1;
+    }
+  }
+  
+  return result;
+};
+
+/**
+ * Gets the days in a month
+ * @param year - Year
+ * @param month - Month (0-11)
+ * @returns Number of days in the month
+ */
+export const getDaysInMonth = (year: number, month: number): number => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
+/**
+ * Gets the first day of the month
+ * @param year - Year
+ * @param month - Month (0-11)
+ * @returns Day of the week (0-6, where 0 is Sunday)
+ */
+export const getFirstDayOfMonth = (year: number, month: number): number => {
+  return new Date(year, month, 1).getDay();
+};
+
+/**
+ * Checks if two dates are the same day
+ * @param date1 - First date
+ * @param date2 - Second date
+ * @returns True if same day, false otherwise
+ */
+export const isSameDay = (date1: Date, date2: Date): boolean => {
+  return (
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear()
+  );
+};
+
+/**
+ * Checks if a date is between two other dates (inclusive)
+ * @param date - Date to check
+ * @param startDate - Start date
+ * @param endDate - End date
+ * @returns True if date is between start and end, false otherwise
+ */
+export const isDateInRange = (date: Date, startDate: Date, endDate: Date): boolean => {
+  const timestamp = date.getTime();
+  return timestamp >= startDate.getTime() && timestamp <= endDate.getTime();
+};
+
+/**
+ * Generates calendar dates for a month
+ * @param year - Year
+ * @param month - Month (0-11)
+ * @param selectedDate - Currently selected date
+ * @param rangeEndDate - End date if range selection
+ * @param minDate - Minimum selectable date
+ * @param maxDate - Maximum selectable date
+ * @returns Array of calendar dates
+ */
+export const generateCalendarDates = (
+  year: number,
+  month: number,
+  selectedDate: Date | null = null,
+  rangeEndDate: Date | null = null,
+  minDate: Date | null = null,
+  maxDate: Date | null = null
+): CalendarDate[] => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // A bare `(minDate && …) || (maxDate && …)` yields null when both bounds are
+  // absent, so isDisabled was declared boolean while carrying null. Falsy
+  // either way, but a consumer testing `=== false` would have been wrong.
+  const outOfRange = (date: Date): boolean =>
+    Boolean((minDate && date < minDate) || (maxDate && date > maxDate));
+
+  const result: CalendarDate[] = [];
+  
+  // Calculate days needed from previous month
+  const firstDay = getFirstDayOfMonth(year, month);
+  const daysInPrevMonth = getDaysInMonth(year, month - 1);
+  
+  // Add days from previous month
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const date = new Date(year, month - 1, daysInPrevMonth - i);
+    const isDisabled = outOfRange(date);
+    
+    result.push({
+      date,
+      day: date.getDate(),
+      isCurrentMonth: false,
+      isToday: isSameDay(date, today),
+      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
+      isDisabled
+    });
+  }
+  
+  // Add days from current month
+  const daysInMonth = getDaysInMonth(year, month);
+  for (let i = 1; i <= daysInMonth; i++) {
+    const date = new Date(year, month, i);
+    const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
+    const isDisabled = outOfRange(date);
+    
+    const calendarDate: CalendarDate = {
+      date,
+      day: i,
+      isCurrentMonth: true,
+      isToday: isSameDay(date, today),
+      isSelected,
+      isDisabled
+    };
+    
+    // Handle range selection
+    if (selectedDate && rangeEndDate) {
+      calendarDate.isRangeStart = isSameDay(date, selectedDate);
+      calendarDate.isRangeEnd = isSameDay(date, rangeEndDate);
+      calendarDate.isRangeMiddle = isDateInRange(date, selectedDate, rangeEndDate) && 
+        !calendarDate.isRangeStart && !calendarDate.isRangeEnd;
+    }
+    
+    result.push(calendarDate);
+  }
+  
+  // Add days from next month to complete the calendar grid (6 rows × 7 columns)
+  const totalDaysNeeded = 42; // 6 rows × 7 columns
+  const remainingDays = totalDaysNeeded - result.length;
+  
+  for (let i = 1; i <= remainingDays; i++) {
+    const date = new Date(year, month + 1, i);
+    const isDisabled = outOfRange(date);
+    
+    result.push({
+      date,
+      day: i,
+      isCurrentMonth: false,
+      isToday: isSameDay(date, today),
+      isSelected: selectedDate ? isSameDay(date, selectedDate) : false,
+      isDisabled
+    });
+  }
+  
+  return result;
+};
+
+/**
+ * Adds days to a date
+ * @param date - Base date
+ * @param days - Number of days to add
+ * @returns New date with days added
+ */
+export const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+/**
+ * Adds months to a date
+ * @param date - Base date
+ * @param months - Number of months to add
+ * @returns New date with months added
+ */
+export const addMonths = (date: Date, months: number): Date => {
+  const result = new Date(date);
+  const day = result.getDate();
+  result.setDate(1);
+  result.setMonth(result.getMonth() + months);
+  result.setDate(Math.min(day, getDaysInMonth(result.getFullYear(), result.getMonth())));
+  return result;
+};
+
+/**
+ * Adds years to a date
+ * @param date - Base date
+ * @param years - Number of years to add
+ * @returns New date with years added
+ */
+export const addYears = (date: Date, years: number): Date => {
+  return addMonths(date, years * 12);
+};
+const isoDate = (date: Date | null | undefined): string => (date ? formatDate(date, "YYYY-MM-DD") : "");
+
+/**
+ * A value as ISO 8601 text, the `<m-datepicker>` element's value: a date
+ * (`2026-09-10`), a `start/end` interval, or "".
+ */
+export const toIsoValue = (value: Date | [Date, Date] | null, end?: Date | null): string =>
+  Array.isArray(value) ? `${isoDate(value[0])}/${isoDate(value[1])}` : value && end ? `${isoDate(value)}/${isoDate(end)}` : isoDate(value);

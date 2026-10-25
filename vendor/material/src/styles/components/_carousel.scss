@@ -1,0 +1,166 @@
+// src/styles/components/_carousel.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-carousel';
+
+// =============================================================================
+// CAROUSEL COMPONENT STYLES
+// =============================================================================
+// Material 3 carousel (m3.material.io carousel specs; Compose Material 3
+// carousel). The component lays the items out from a keyline strategy:
+// each item is translated to its centre and clipped to its visible width
+// (transform, clip-path and --#{base.$prefix}-carousel-fade are set per item from the
+// component). This stylesheet owns everything static: the native scroller,
+// the snap points, the item shell and the text over the image.
+//
+// Custom properties set by the component: --#{base.$prefix}-carousel-corner (item
+// corner radius, 28dp by default) and --#{base.$prefix}-carousel-fade per item (1 for
+// a large item, 0 for a small one).
+// =============================================================================
+
+.#{$component} {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  &__scroller {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    cursor: grab;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &--snap &__scroller {
+    scroll-snap-type: x mandatory;
+  }
+
+  &--snap.#{$component}--vertical &__scroller {
+    scroll-snap-type: y mandatory;
+  }
+
+  // A mouse drag turns snapping off until the release scroll settles
+  &[data-settling] &__scroller {
+    scroll-snap-type: none;
+  }
+
+  &[data-dragging] &__scroller {
+    cursor: grabbing;
+  }
+
+  &--vertical &__scroller {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  // Sized by the component to the scroll range; holds the snap points and the items
+  &__track {
+    position: relative;
+    height: 100%;
+  }
+
+  &--vertical &__track {
+    width: 100%;
+  }
+
+  &__snap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    scroll-snap-align: start;
+    pointer-events: none;
+  }
+
+  // Item: positioned and clipped by the component
+  &__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow: hidden;
+    // CarouselDefaults.shape: corner-extra-large
+    border-radius: var(--#{base.$prefix}-carousel-corner, #{v.shape('extra-large')});
+    background-color: t.color('surface-container');
+    will-change: transform, clip-path;
+    user-select: none;
+
+    &:focus {
+      outline: none;
+    }
+
+    // Focus ring: 3dp secondary, inside the clip so it stays visible
+    &:focus-visible {
+      outline: 3px solid t.color('secondary');
+      outline-offset: -3px;
+    }
+  }
+
+  &--vertical &__item {
+    width: 100%;
+    height: auto;
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  // Text over the image fades out as the item shrinks
+  &__content {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 16px;
+    color: #fff; // text over the scrim, independent of the theme
+    background: linear-gradient(to top, t.alpha('scrim', 0.6), transparent);
+    opacity: var(--#{base.$prefix}-carousel-fade, 1);
+    pointer-events: none;
+
+    > * {
+      pointer-events: auto;
+    }
+  }
+
+  &__title {
+    @include m.typography('title-medium');
+    @include m.truncate;
+  }
+
+  &__description {
+    @include m.typography('body-medium');
+    margin-top: 4px;
+    @include m.truncate;
+  }
+
+  &__button {
+    display: inline-block;
+    margin-top: 12px;
+    color: inherit;
+    text-decoration: none;
+    @include m.typography('label-large');
+  }
+
+  // Reduced motion: no smooth scrolling; the component keeps every item one size
+  @media (prefers-reduced-motion: reduce) {
+    &__scroller {
+      scroll-behavior: auto;
+    }
+  }
+}

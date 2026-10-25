@@ -1,0 +1,89 @@
+// src/components/ripple/_ripple.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-ripple';
+
+.#{$component} {
+  // Ripple container
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  
+  &-wave {
+    position: absolute;
+    border-radius: 50%;
+    
+    // Make the ripple more visible with these changes:
+    background-color: currentColor;
+    opacity: 0;  // Start with 0 opacity
+    transform: scale(0);  // Start slightly larger for better visibility
+    pointer-events: none;
+    will-change: transform, opacity;
+    
+    // Animation
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    // Active ripple
+    &.active {
+      animation: #{$component}-expand 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+      // The wave is the pressed state layer, as Compose's ripple is.
+      opacity: v.state('pressed-state-layer-opacity');
+    }
+    
+    &.fade-out {
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes #{$component}-expand {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .#{$component}-wave.active { animation: none; transform: scale(1); }
+  .#{$component}-wave { transition: none; }
+}
+
+// Standalone utility for adding ripple to any element
+[data-ripple] {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  // Handle ripple color based on data attribute
+  &[data-ripple="light"]::after {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &[data-ripple="dark"]::after {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  // Make content appear above ripple
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}

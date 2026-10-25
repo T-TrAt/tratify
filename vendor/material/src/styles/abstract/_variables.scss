@@ -1,0 +1,475 @@
+// src/styles/abstract/_variables.scss
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:string';
+@use 'base' as *;
+
+// The fast spatial spring (Compose FastSpatial: damping 0.6, stiffness 800),
+// sampled at 25 even steps. Both of its easings below come from these points,
+// so they cannot drift apart.
+$spring-fast-spatial-points: (0.0, 0.102, 0.323, 0.57, 0.784, 0.942, 1.039, 1.085, 1.094, 1.082, 1.06, 1.037, 1.018, 1.004, 0.995, 0.992, 0.991, 0.992, 0.995, 0.997, 0.999, 1.0, 1.001, 1.001, 1);
+
+/// A linear() easing through `$points`; with `$clamp`, each point at most 1.
+@function spring-linear($points, $clamp: false) {
+  $text: '';
+  @each $point in $points {
+    $value: if($clamp, math.min($point, 1), $point);
+    $text: if($text == '', '#{$value}', '#{$text}, #{$value}');
+  }
+  @return string.unquote('linear(#{$text})');
+}
+
+// Core design tokens
+$state: (
+  'hover-state-layer-opacity': 0.08,
+  'focus-state-layer-opacity': 0.1,
+  'pressed-state-layer-opacity': 0.1,
+  'dragged-state-layer-opacity': 0.16
+) !default;
+
+$motion: (
+  // Duration tokens, md.sys.motion.duration.* (material-web
+  // tokens/versions/v0_192/_md-sys-motion.scss; MDC-Android
+  // motion/res/values/tokens.xml holds the same integers). Every one of these
+  // was between 1.5x and 2x its token: short3, which M3 puts at 150ms and a
+  // dialog closes on, was 250ms.
+  'duration-short1': 50ms,
+  'duration-short2': 100ms,
+  'duration-short3': 150ms,
+  'duration-short4': 200ms,
+  'duration-medium1': 250ms,
+  'duration-medium2': 300ms,
+  'duration-medium3': 350ms,
+  'duration-medium4': 400ms,
+  'duration-long1': 450ms,
+  'duration-long2': 500ms,
+  'duration-long3': 550ms,
+  'duration-long4': 600ms,
+  'duration-extra-long1': 700ms,
+  'duration-extra-long2': 800ms,
+  'duration-extra-long3': 900ms,
+  'duration-extra-long4': 1000ms,
+  
+  // Standard easing tokens (Material Design 3 defaults)
+  'easing-standard': cubic-bezier(0.2, 0.0, 0.0, 1.0),
+  'easing-standard-accelerate': cubic-bezier(0.3, 0.0, 1.0, 1.0),
+  'easing-standard-decelerate': cubic-bezier(0.0, 0.0, 0.2, 1.0),
+  
+  // Emphasized easing tokens. M3 draws emphasized as a path no single cubic
+  // curve matches; this is material-web's approximation (internal/motion/
+  // animation.ts). It was a copy of standard, so nothing was emphasized.
+  'easing-emphasized': cubic-bezier(0.3, 0.0, 0.0, 1.0),
+  'easing-emphasized-accelerate': cubic-bezier(0.3, 0.0, 0.8, 0.15),
+  'easing-emphasized-decelerate': cubic-bezier(0.05, 0.7, 0.1, 1.0),
+  
+  // Semantic motion tokens (aliases for better developer experience)
+  'easing-accelerated': cubic-bezier(0.3, 0.0, 1.0, 1.0),  // Same as standard-accelerate
+  'easing-decelerated': cubic-bezier(0.0, 0.0, 0.2, 1.0),  // Same as standard-decelerate
+  'easing-exit': cubic-bezier(0.3, 0.0, 1.0, 1.0),         // Element leaving - accelerated motion
+  'easing-enter': cubic-bezier(0.0, 0.0, 0.2, 1.0),        // Element entering - decelerated motion
+  
+  // Animation tokens for specific behaviors
+  'easing-appear': cubic-bezier(0.0, 0.0, 0.2, 1.0),       // Elements appearing (decelerated)
+  'easing-disappear': cubic-bezier(0.3, 0.0, 1.0, 1.0),    // Elements disappearing (accelerated)
+  'easing-expand': cubic-bezier(0.0, 0.0, 0.2, 1.0),       // Elements expanding (decelerated)
+  'easing-collapse': cubic-bezier(0.3, 0.0, 1.0, 1.0),     // Elements collapsing (accelerated)
+
+  // Material 3 expressive motion scheme: springs sampled as linear() easings
+  // (Compose ExpressiveMotionTokens.kt, mass 1). Spatial springs move size,
+  // shape and position and may overshoot; effects springs change colour and
+  // opacity without overshoot. The duration is the time for the spring to
+  // settle within 0.1%.
+  'spring-default-spatial-duration': 450ms,
+  'spring-default-spatial-easing': linear(0.0, 0.055, 0.18, 0.332, 0.483, 0.619, 0.733, 0.823, 0.891, 0.94, 0.973, 0.994, 1.007, 1.013, 1.015, 1.015, 1.013, 1.011, 1.009, 1.006, 1.005, 1.003, 1.002, 1.001, 1),
+  'spring-fast-spatial-duration': 425ms,
+  'spring-fast-spatial-easing': spring-linear($spring-fast-spatial-points),
+  // The same spring with its progress clamped to 1, for colours: Compose's
+  // Color.lerp clamps the fraction, so an overshooting spring never takes a
+  // colour past its target
+  'spring-fast-spatial-clamped-easing': spring-linear($spring-fast-spatial-points, $clamp: true),
+  'spring-slow-spatial-duration': 625ms,
+  'spring-slow-spatial-easing': linear(0.0, 0.056, 0.182, 0.335, 0.488, 0.624, 0.738, 0.827, 0.895, 0.943, 0.975, 0.996, 1.007, 1.013, 1.015, 1.015, 1.013, 1.011, 1.008, 1.006, 1.004, 1.003, 1.002, 1.001, 1),
+  'spring-default-effects-duration': 250ms,
+  'spring-default-effects-easing': linear(0.0, 0.066, 0.203, 0.355, 0.496, 0.616, 0.713, 0.788, 0.845, 0.888, 0.92, 0.943, 0.96, 0.971, 0.98, 0.986, 0.99, 0.993, 0.995, 0.997, 0.998, 0.998, 0.999, 0.999, 1),
+  'spring-fast-effects-duration': 175ms,
+  'spring-fast-effects-easing': linear(0.0, 0.075, 0.227, 0.39, 0.537, 0.657, 0.751, 0.822, 0.874, 0.912, 0.939, 0.958, 0.971, 0.98, 0.987, 0.991, 0.994, 0.996, 0.997, 0.998, 0.999, 0.999, 0.999, 1.0, 1),
+  'spring-slow-effects-duration': 350ms,
+  'spring-slow-effects-easing': linear(0.0, 0.065, 0.2, 0.351, 0.491, 0.611, 0.708, 0.783, 0.841, 0.885, 0.917, 0.941, 0.958, 0.97, 0.979, 0.985, 0.99, 0.993, 0.995, 0.997, 0.998, 0.998, 0.999, 0.999, 1),
+) !default;
+
+$elevation: (
+  'level-0': none,
+  'level-1': (0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)),
+  'level-2': (0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)),
+  'level-3': (0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)),
+  'level-4': (0px 2px 3px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)),
+  'level-5': (0px 4px 4px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15))
+) !default;
+
+$typescale: (
+  'display-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 57px,
+    'line-height': 64px,
+    'letter-spacing': -0.25px,
+    'font-weight': 400
+  ),
+  'display-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 45px,
+    'line-height': 52px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'display-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 36px,
+    'line-height': 44px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'headline-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 32px,
+    'line-height': 40px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'headline-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 28px,
+    'line-height': 36px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'headline-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 24px,
+    'line-height': 32px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'title-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 22px,
+    'line-height': 28px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'title-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 16px,
+    'line-height': 24px,
+    'letter-spacing': 0.15px,
+    'font-weight': 500
+  ),
+  'title-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 14px,
+    'line-height': 20px,
+    'letter-spacing': 0.1px,
+    'font-weight': 500
+  ),
+  'body-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 16px,
+    'line-height': 24px,
+    'letter-spacing': 0.5px,
+    'font-weight': 400
+  ),
+  'body-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 14px,
+    'line-height': 20px,
+    'letter-spacing': 0.25px,
+    'font-weight': 400
+  ),
+  'body-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 12px,
+    'line-height': 16px,
+    'letter-spacing': 0.4px,
+    'font-weight': 400
+  ),
+  'label-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 14px,
+    'line-height': 20px,
+    'letter-spacing': 0.1px,
+    'font-weight': 500
+  ),
+  'label-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 12px,
+    'line-height': 16px,
+    'letter-spacing': 0.5px,
+    'font-weight': 500
+  ),
+  'label-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 11px,
+    'line-height': 16px,
+    'letter-spacing': 0.5px,
+    'font-weight': 500
+  )
+) !default;
+
+// M3's shape scale, Compose ShapeTokens, and nothing else
+$shape: (
+  'none': 0,
+  'extra-small': 4px,
+  'small': 8px,
+  'medium': 12px,
+  'large': 16px,
+  // Compose ShapeTokens.CornerValueLargeIncreased, used by the split
+  // button's inner corners when hovered or pressed
+  'large-increased': 20px,
+  'extra-large': 28px,
+  // Compose ShapeTokens.CornerValueExtraLargeIncreased and
+  // CornerValueExtraExtraLarge
+  'extra-large-increased': 32px,
+  'extra-extra-large': 48px,
+  'full': 9999px
+) !default;
+
+$breakpoints: (
+  'xs': 0,
+  'sm': 600px,
+  'md': 960px,
+  'lg': 1280px,
+  'xl': 1920px
+) !default;
+
+$z-index: (
+  'modal': 1000,
+  'snackbar': 950,
+  'popover': 900,
+  'drawer': 800,
+  'dialog': 700,
+  'dropdown': 600,
+  'tooltip': 500,
+  'menu': 700,
+  'sticky': 100,
+  'fixed': 50,
+  'default': 1,
+  'below': -1
+) !default;
+
+// Component-specific tokens
+$card: (
+  'width': 344px,
+  'width-small': 344px,
+  'width-medium': 480px,
+  'width-large': 624px,
+  'border-radius': 12px,
+  'padding': 16px
+) !default;
+
+// Chip configuration - updated with MD3 values
+$chip-config: (
+  'height': 32px,
+  'border-radius': 8px,
+  'padding-horizontal': 12px,
+  'outlined-border-opacity': 0.12,
+  'outlined-border-hover-opacity': 0.29,
+  'outlined-border-focus-opacity': 0.38,
+  'outlined-selected-border-opacity': 0,
+  'icon-size': 18px
+) !default;
+
+$button: (
+  // M3 button tokens (Compose Material 3 ButtonXSmall/Small/Medium/Large/XLargeTokens.kt)
+  'height': 40px,
+  'min-width': 58px, // ButtonDefaults.MinWidth
+  'padding-horizontal': 16px,
+  'padding-horizontal-small': 12px, // text button (ButtonDefaults.TextButtonContentPadding)
+  'padding-icon': 12px, // small button leading space next to an icon (pointer devices)
+  'transition-duration': map.get($motion, 'duration-short2'),
+  'transition-easing': map.get($motion, 'easing-standard'),
+  // Container height per size
+  'height-xs': 32px,
+  'height-s': 40px,
+  'height-m': 56px,
+  'height-l': 96px,
+  'height-xl': 136px,
+  // Leading and trailing space per size
+  'padding-xs': 12px,
+  'padding-s': 16px,
+  'padding-m': 24px,
+  'padding-l': 48px,
+  'padding-xl': 64px,
+  // Icon size per size
+  'icon-size-xs': 20px,
+  'icon-size-s': 20px,
+  'icon-size-m': 24px,
+  'icon-size-l': 32px,
+  'icon-size-xl': 40px,
+  // Icon to label space per size
+  'icon-gap-xs': 4px, // md.comp.button.xsmall.icon-label-space; ButtonDefaults.ExtraSmallIconSpacing
+  'icon-gap-s': 8px,
+  'icon-gap-m': 8px,
+  'icon-gap-l': 12px,
+  'icon-gap-xl': 16px,
+  // Outlined outline width per size
+  'outline-width-xs': 1px,
+  'outline-width-s': 1px,
+  'outline-width-m': 1px,
+  'outline-width-l': 2px,
+  'outline-width-xl': 3px,
+  // Square container shape per size
+  'shape-square-xs': map.get($shape, 'medium'),
+  'shape-square-s': map.get($shape, 'medium'),
+  'shape-square-m': map.get($shape, 'large'),
+  'shape-square-l': map.get($shape, 'extra-large'),
+  'shape-square-xl': map.get($shape, 'extra-large'),
+  // Round container shape per size: exactly half the container height.
+  //
+  // A pill needs the real radius, not merely a large one. border-radius
+  // animates on the number in the stylesheet, not on the corner you see, so a
+  // 9999px pill morphing to a 12px pressed shape spends almost the whole
+  // transition above half the height, paints as a pill throughout, and then
+  // snaps square at the very end. Half the height interpolates linearly and
+  // the morph reads as a morph.
+  'shape-round-xs': 16px,
+  'shape-round-s': 20px,
+  'shape-round-m': 28px,
+  'shape-round-l': 48px,
+  'shape-round-xl': 68px,
+  // Pressed container shape per size (round and square)
+  'shape-pressed-xs': map.get($shape, 'small'),
+  'shape-pressed-s': map.get($shape, 'small'),
+  'shape-pressed-m': map.get($shape, 'medium'),
+  'shape-pressed-l': map.get($shape, 'large'),
+  'shape-pressed-xl': map.get($shape, 'large'),
+  // Minimum touch target for the xs and s sizes
+  'touch-target': 48px
+) !default;
+
+
+// Define spacing scale (this might already exist, if not, add it)
+$spacing-scale: (
+  '0': 0,
+  '1': 4px,
+  '2': 8px,
+  '3': 12px,
+  '4': 16px,
+  '5': 20px,
+  '6': 24px,
+  '8': 32px,
+  '10': 40px,
+  '12': 48px,
+  '14': 56px,
+  '16': 64px,
+  '20': 80px,
+  '24': 96px,
+  '32': 128px
+);
+
+// Add spacing function
+@function spacing($key) {
+  @if not map.has-key($spacing-scale, $key) {
+    @error 'Spacing key "#{$key}" not found in spacing scale.';
+  }
+  @return map.get($spacing-scale, $key);
+}
+
+// Helper functions for easier token access
+@function state($key) {
+  @return map.get($state, $key);
+}
+
+@function motion($key) {
+  @return map.get($motion, $key);
+}
+
+@function elevation($level) {
+  @return map.get($elevation, $level);
+}
+
+@function typography($scale) {
+  @return map.get($typescale, $scale);
+}
+
+// A corner as its token, the compiled value as the fallback: an app or
+// theme sets --{prefix}-sys-shape-corner-<size> (base/_tokens.scss declares them)
+@function shape($size) {
+  @if not map.has-key($shape, $size) {
+    @error "No shape step '#{$size}'. M3's scale: #{map.keys($shape)}. "
+      + "extra-tiny, tiny and pill were removed in material 3.0.0: write a literal radius, or use full.";
+  }
+  @return var(--#{$prefix}-sys-shape-corner-#{$size}, #{map.get($shape, $size)});
+}
+
+@function z-index($layer) {
+  @return map.get($z-index, $layer);
+}
+
+@function breakpoint($size) {
+  @return map.get($breakpoints, $size);
+}
+
+// The button shapes that are corner tokens: square and pressed. Round is half
+// the container height, not a token (see shape-round-* in $button).
+$button-shape-tokens: (
+  'shape-square-xs': 'medium', 'shape-square-s': 'medium', 'shape-square-m': 'large',
+  'shape-square-l': 'extra-large', 'shape-square-xl': 'extra-large',
+  'shape-pressed-xs': 'small', 'shape-pressed-s': 'small', 'shape-pressed-m': 'medium',
+  'shape-pressed-l': 'large', 'shape-pressed-xl': 'large'
+);
+
+@function button($prop) {
+  @if map.has-key($button-shape-tokens, $prop) {
+    @return shape(map.get($button-shape-tokens, $prop));
+  }
+  @return map.get($button, $prop);
+}
+
+@function card($key) {
+  @if $key == 'border-radius' { @return shape('medium'); }
+  @return map.get($card, $key);
+}
+
+@function chip($key, $fallback: null) {
+  @if $key == 'border-radius' { @return shape('small'); }
+  @if map.has-key($chip-config, $key) {
+    @return map.get($chip-config, $key);
+  }
+  @return $fallback;
+}
+
+// TextField configuration
+$text-field: (
+  // The width of a field the page does not size (TextFieldDefaults.MinWidth)
+  'width': 280px,
+  'height': 56px,
+  'height-small': 48px,
+  'height-large': 64px,
+  // The textarea's box (components/_text-field.scss, &--multiline). The height
+  // is not an M3 measure: TextFieldDefaults.MinHeight is the 56px line above,
+  // and m3.material.io gives a text area no number ("Text areas are taller
+  // than text fields", text fields guidelines, "Input text").
+  'height-multiline': 100px,
+  // Where the first line starts, which a sibling on the field's line aligns
+  // to: the single-line field's text. 16px, the content padding
+  // (TextFieldPadding), outlined or without a label; under a filled field's
+  // floated label, 8px and the label's 16px line.
+  'padding-top-multiline': 16px,
+  'padding-top-multiline-label': 24px,
+  // Compact multiline keeps the compact field's 40px, and its first line is
+  // the compact single-line field's (10.5px, and 13.5px under a filled label).
+  'padding-top-multiline-compact': 10px,
+  'padding-top-multiline-compact-label': 14px,
+  'padding-horizontal': 16px,
+  'padding-vertical': 16px,
+  'border-radius': map.get($shape, 'extra-small'),
+  'border-width': 1px,
+  'label-offset': 16px,
+  'icon-size': 24px
+) !default;
+
+/// A text field measurement: `v.text-field('height')`. 0.10's `$textfield` and
+/// `textfield()` are removed in material 3.0.0.
+@function text-field($key) {
+  @if $key == 'border-radius' { @return shape('extra-small'); }
+  @return map.get($text-field, $key);
+}

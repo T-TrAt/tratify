@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { catalog } from '../../playground/catalog'
+import { overviewCatalog as catalog } from '../../playground/catalog'
 
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] })
 
